@@ -1,10 +1,11 @@
 #pragma once
 
+#include <windows.h>
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
 #include "glm/vec4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#define STEP 0.001f
+#define STEP 0.01f
 
 struct CameraDesc
 {
@@ -41,6 +42,10 @@ public:
 	bool mBack;
 	bool mLeft;
 	bool mRight;
+	bool mUp;
+	bool mDown;
+	bool mRotateLeft;
+	bool mRotateRight;
 
 	CCamera();
 	~CCamera();
@@ -70,11 +75,14 @@ public:
 	float getNear();
 	float getFar();
 
-	virtual void UpdateVM();
-	void UpdatePM();
+	virtual void updateVM();
+	void updatePM();
 	virtual void move();
 	void rotate(glm::vec3 mouseDir);
 	void rotateUp(glm::vec3 Dir);
 	void rotateRight(glm::vec3 Dir);
-	void CreateVM();
+	void rotateFront(glm::vec3 Dir);
+	void createVM();
+	void getKeyPress(WPARAM key);
+	void getKeyRelease(WPARAM key);
 };

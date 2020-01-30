@@ -5,7 +5,6 @@
 //
 // Copyright (c) Microsoft Corporation. All rights reserved.
 //--------------------------------------------------------------------------------------
-#include <windows.h>
 #include <d3d11.h>
 #include <d3dx11.h>
 #include <d3dcompiler.h>
@@ -66,6 +65,20 @@ struct CBChangesEveryFrame
 	XMFLOAT4 vMeshColor;
 };
 
+//Lab array
+glm::vec3 Lab[32]{
+	{-2, 0, 2}, {-2, 0, 4}, {0, 0, 6},
+	{2, 0, 6},	{4, 0, 6}, {4, 0, 8},
+	{4, 0, 10}, {2, 0, 10}, {0, 0, 10},
+	{0, 0, 14}, {2, 0, 14}, {4, 0, 14},
+	{6, 0, 14}, {8, 0, 12}, {8, 0, 10},
+	{10, 0, 10},{12, 0, 10},{10, 0, 14},
+	{12, 0, 14},{14, 0, 14},{16, 0, 12},
+	{16, 0, 10},{16, 0, 8}, {16, 0, 6},
+	{14, 0, 6},	{12, 0, 6}, {10, 0, 6},
+	{8, 0, 6},	{8, 0, 4},	{6, 0, 2},
+	{4, 0, 2}, {2, 0, 2}
+};
 
 //--------------------------------------------------------------------------------------
 // Global Variables
@@ -605,7 +618,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 				g_Camera.setHeigth(height);
 				g_Camera.setWidth(width);
 				//Update projection matrix with new params
-				g_Camera.UpdatePM();
+				g_Camera.updatePM();
 				//Update CB
 				CBChangeOnResize cbChangesOnResize;
 				cbChangesOnResize.mProjection = g_Camera.Proj;
@@ -615,49 +628,30 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 		}
 		case WM_KEYDOWN:
 		{
-			//glm::vec3 movement{0.f, 0.f, 0.f};
-			if (wParam == 'W')
+			if (wParam == VK_LEFT)
 			{
-				g_Camera.mForward = true;
-				//movement.z += STEP;
+				g_Camera.rotateFront({0.f, 0.f, 10.f});
+				CBNeverChanges cbNeverChanges;
+				cbNeverChanges.mView = g_Camera.View;
+				g_pImmediateContext->UpdateSubresource(g_pCBNeverChanges, 0, NULL, &cbNeverChanges, 0, 0);
 			}
-			else if (wParam == 'S')
+			else if (wParam == VK_RIGHT)
 			{
-				g_Camera.mBack = true;
-				//movement.z -= STEP;
+				g_Camera.rotateFront({ 0.f, 0.f, -10.f });
+				CBNeverChanges cbNeverChanges;
+				cbNeverChanges.mView = g_Camera.View;
+				g_pImmediateContext->UpdateSubresource(g_pCBNeverChanges, 0, NULL, &cbNeverChanges, 0, 0);
 			}
-			if (wParam == 'A')
+			else
 			{
-				g_Camera.mLeft = true;
-				//movement.x -= STEP;
-			}
-			else if (wParam == 'D')
-			{
-				g_Camera.mRight = true;
-				//movement.x += STEP;
-			}
+				g_Camera.getKeyPress(wParam);
+			}			
 			break;			
 		}
 		case WM_KEYUP:
-			if (wParam == 'W')
+			if (wParam != VK_LEFT || wParam != VK_RIGHT)
 			{
-				g_Camera.mForward = false;
-				//movement.z += STEP;
-			}
-			else if (wParam == 'S')
-			{
-				g_Camera.mBack = false;
-				//movement.z -= STEP;
-			}
-			if (wParam == 'A')
-			{
-				g_Camera.mLeft = false;
-				//movement.x -= STEP;
-			}
-			else if (wParam == 'D')
-			{
-				g_Camera.mRight = false;
-				//movement.x += STEP;
+				g_Camera.getKeyRelease(wParam);
 			}
 			break;
 		case WM_LBUTTONDOWN:
@@ -715,7 +709,7 @@ void Render()
         t = ( dwTimeCur - dwTimeStart ) / 1000.0f;
     }
 
-	if (g_Camera.mForward || g_Camera.mBack || g_Camera.mLeft || g_Camera.mRight)
+	if (g_Camera.mForward || g_Camera.mBack || g_Camera.mLeft || g_Camera.mRight || g_Camera.mUp || g_Camera.mDown)
 	{
 		g_Camera.move();
 		CBNeverChanges cbNeverChanges;
@@ -746,42 +740,26 @@ void Render()
     //
     // Update variables that change once per frame
     //
-	g_World = glm::mat4(1.0f);
-	g_World = glm::translate(g_World, { 2.f, 0.f, 0.f });
-    CBChangesEveryFrame cb;
-	cb.mWorld = glm::transpose(g_World);
-    cb.vMeshColor = g_vMeshColor;
-    g_pImmediateContext->UpdateSubresource( g_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0 );
+	for (int i = 0; i < 32; i++)
+	{
+		g_World = glm::mat4(1.f);
+		g_World = glm::translate(g_World, Lab[i]);
 
-    //
-    // Render the cube
-    //
-    g_pImmediateContext->VSSetShader( g_pVertexShader, NULL, 0 );
-    g_pImmediateContext->VSSetConstantBuffers( 0, 1, &g_pCBNeverChanges );
-    g_pImmediateContext->VSSetConstantBuffers( 1, 1, &g_pCBChangeOnResize );
-    g_pImmediateContext->VSSetConstantBuffers( 2, 1, &g_pCBChangesEveryFrame );
-    g_pImmediateContext->PSSetShader( g_pPixelShader, NULL, 0 );
-    g_pImmediateContext->PSSetConstantBuffers( 2, 1, &g_pCBChangesEveryFrame );
-    g_pImmediateContext->PSSetShaderResources( 0, 1, &g_pTextureRV );
-    g_pImmediateContext->PSSetSamplers( 0, 1, &g_pSamplerLinear );
-    g_pImmediateContext->DrawIndexed( 36, 0, 0 );
+		CBChangesEveryFrame cb;
+		cb.mWorld = glm::transpose(g_World);
+		cb.vMeshColor = g_vMeshColor;
+		g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0);
 
-	g_World = glm::mat4(1.0f);
-	g_World = glm::translate(g_World, { -2.f, 0.f, 0.f });
-	cb.mWorld = glm::transpose(g_World);
-	cb.vMeshColor = g_vMeshColor;
-	g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0);
-
-	g_pImmediateContext->VSSetShader(g_pVertexShader, NULL, 0);
-	g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pCBNeverChanges);
-	g_pImmediateContext->VSSetConstantBuffers(1, 1, &g_pCBChangeOnResize);
-	g_pImmediateContext->VSSetConstantBuffers(2, 1, &g_pCBChangesEveryFrame);
-	g_pImmediateContext->PSSetShader(g_pPixelShader, NULL, 0);
-	g_pImmediateContext->PSSetConstantBuffers(2, 1, &g_pCBChangesEveryFrame);
-	g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
-	g_pImmediateContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
-	g_pImmediateContext->DrawIndexed(36, 0, 0);
-
+		g_pImmediateContext->VSSetShader(g_pVertexShader, NULL, 0);
+		g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pCBNeverChanges);
+		g_pImmediateContext->VSSetConstantBuffers(1, 1, &g_pCBChangeOnResize);
+		g_pImmediateContext->VSSetConstantBuffers(2, 1, &g_pCBChangesEveryFrame);
+		g_pImmediateContext->PSSetShader(g_pPixelShader, NULL, 0);
+		g_pImmediateContext->PSSetConstantBuffers(2, 1, &g_pCBChangesEveryFrame);
+		g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
+		g_pImmediateContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
+		g_pImmediateContext->DrawIndexed(36, 0, 0);
+	}
 
     //
     // Present our back buffer to our front buffer

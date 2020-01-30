@@ -7,6 +7,10 @@ CCamera::CCamera()
 	mBack = false;
 	mLeft = false;
 	mRight = false;
+	mUp = false;
+	mDown = false;
+	mRotateLeft = false;
+	mRotateRight = false;
 }
 
 CCamera::~CCamera(){}
@@ -25,9 +29,9 @@ int CCamera::init(CameraDesc Ref)
 
 	//Set Front, Right & Up
 
-	CreateVM();
-	UpdateVM();
-	UpdatePM();
+	createVM();
+	updateVM();
+	updatePM();
 
 	return 0;
 }
@@ -137,16 +141,15 @@ glm::vec3 CCamera::getRight()
 	return Desc.Right;
 }
 
-void CCamera::UpdateVM()
+void CCamera::updateVM()
 {
 	Desc.Right =	{ View[0][0], View[0][1], View[0][2] };
-	Desc.Up =		{ View[1][0], View[1][1], View[1][2] };
+	Up =			{ View[1][0], View[1][1], View[1][2] };
 	Desc.Front =	{ View[2][0], View[2][1], View[2][2] };
-	Up = Desc.Up;
 	Desc.LAt = Desc.Front + Desc.Pos;
 }
 
-void CCamera::UpdatePM()
+void CCamera::updatePM()
 {
 	Proj = glm::perspectiveFovLH(Desc.FOV, Desc.Width, Desc.Height, Desc.NearPlane, Desc.FarPlane);
 	Proj = glm::transpose(Proj);
@@ -171,9 +174,15 @@ void CCamera::move()
 	{
 		Desc.Pos += (getRight() * STEP);
 	}
-	/*Desc.Pos += (getRight() * tras.x);
-	Desc.Pos += (getFront() * tras.z);
-	Desc.Pos += (Up * tras.y);*/
+	
+	if (mUp)
+	{
+		Desc.Pos += (Desc.Up * STEP);
+	}
+	if (mDown)
+	{
+		Desc.Pos += (Desc.Up * -STEP);
+	}
 
 	glm::mat4 Axis
 	{
@@ -195,16 +204,13 @@ void CCamera::move()
 
 	View = Pos;
 
-	UpdateVM();
+	updateVM();
 }
 
 void CCamera::rotate(glm::vec3 mouseDir)
 {
-	rotateUp(mouseDir);
-	UpdateVM();
+	rotateUp(mouseDir);	
 	rotateRight(mouseDir);
-	UpdateVM();
-	//CreateVM();
 }
 
 void CCamera::rotateUp(glm::vec3 Dir)
@@ -220,6 +226,7 @@ void CCamera::rotateUp(glm::vec3 Dir)
 		0.f,	 0.f, 0.f,		1.f
 	};
 	View *= RotX;
+	updateVM();
 }
 
 void CCamera::rotateRight(glm::vec3 Dir)
@@ -235,9 +242,85 @@ void CCamera::rotateRight(glm::vec3 Dir)
 		0.f, 0.f,	 0.f,	  1.f
 	};
 	View *= RotY;
+	updateVM();
 }
 
-void CCamera::CreateVM()
+void CCamera::rotateFront(glm::vec3 Dir)
+{
+	float camcos = cosf(Dir.z / 100.f);
+	float camsin = sinf(Dir.z / 100.f);
+
+	glm::mat4 RotZ
+	{
+		camcos, -camsin,	0,	0.f,
+		camsin, camcos, 0.f,0.f,
+		0.f, 0.f,1.f, 0.f,
+		0.f, 0.f,	0.f,	1.f
+	};
+	View *= RotZ;
+	updateVM();
+}
+
+void CCamera::getKeyPress(WPARAM key)
+{
+	//Z Movement
+	if (key == 'W')
+	{
+		mForward = true;
+	}
+	else if (key == 'S')
+	{
+		mBack = true;
+	}
+	//X Movement
+	if (key == 'A')
+	{
+		mLeft = true;
+	}
+	else if (key == 'D')
+	{
+		mRight = true;
+	}
+	//Y Movement
+	if (key == 'Q')
+	{
+		mUp = true;
+	}
+	else if (key == 'E')
+	{
+		mDown = true;
+	}
+}
+
+void CCamera::getKeyRelease(WPARAM key)
+{
+	if (key == 'W')
+	{
+		mForward = false;
+	}
+	else if (key == 'S')
+	{
+		mBack = false;
+	}
+	if (key == 'A')
+	{
+		mLeft = false;
+	}
+	else if (key == 'D')
+	{
+		mRight = false;
+	}
+	if (key == 'Q')
+	{
+		mUp = false;
+	}
+	else if (key == 'E')
+	{
+		mDown = false;
+	}
+}
+
+void CCamera::createVM()
 {
 	setFront(getLAt(), getPos());
 	setRight(getUp(), getFront());
@@ -256,6 +339,5 @@ void CCamera::CreateVM()
 		0, 0, 1, -Desc.Pos.z,
 		0, 0, 0, 1
 	};
-
 	View = Pos * Axis;
 }
