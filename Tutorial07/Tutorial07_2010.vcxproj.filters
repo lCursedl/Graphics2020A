@@ -19,6 +19,9 @@
   <ItemGroup>
     <ClCompile Include="CCamera.cpp" />
     <ClCompile Include="CCameraFP.cpp" />
+    <ClCompile Include="CDevice.cpp" />
+    <ClCompile Include="CSwapChain.cpp" />
+    <ClCompile Include="CDeviceContext.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tutorial07.cpp" />
@@ -106,6 +109,10 @@
       <Filter>glm</Filter>
     </ClInclude>
     <ClInclude Include="CCameraFP.h" />
+    <ClInclude Include="CDevice.h" />
+    <ClInclude Include="Define.h" />
+    <ClInclude Include="CSwapChain.h" />
+    <ClInclude Include="CDeviceContext.h" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

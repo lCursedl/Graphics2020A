@@ -376,6 +376,9 @@
   <ItemGroup>
     <ClCompile Include="CCamera.cpp" />
     <ClCompile Include="CCameraFP.cpp" />
+    <ClCompile Include="CDevice.cpp" />
+    <ClCompile Include="CDeviceContext.cpp" />
+    <ClCompile Include="CSwapChain.cpp" />
     <ClCompile Include="Tutorial07.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -384,6 +387,10 @@
   <ItemGroup>
     <ClInclude Include="CCamera.h" />
     <ClInclude Include="CCameraFP.h" />
+    <ClInclude Include="CDevice.h" />
+    <ClInclude Include="CDeviceContext.h" />
+    <ClInclude Include="CSwapChain.h" />
+    <ClInclude Include="Define.h" />
     <ClInclude Include="glm\common.hpp" />
     <ClInclude Include="glm\exponential.hpp" />
     <ClInclude Include="glm\ext.hpp" />
