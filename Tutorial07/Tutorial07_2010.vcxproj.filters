@@ -15,13 +15,38 @@
     <Filter Include="glm">
       <UniqueIdentifier>{5bdf7be2-2ef3-43f0-9b96-2e5c0d2117cb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Graphics">
+      <UniqueIdentifier>{a84625db-d5bc-4620-a553-c3f29406e62f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\include">
+      <UniqueIdentifier>{103be23f-7935-4833-ad9c-cb1817d2aa00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\source">
+      <UniqueIdentifier>{f9e5ce42-1426-46a0-9350-ca5eb0c7dc2e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CCamera.cpp" />
     <ClCompile Include="CCameraFP.cpp" />
-    <ClCompile Include="CDevice.cpp" />
-    <ClCompile Include="CSwapChain.cpp" />
-    <ClCompile Include="CDeviceContext.cpp" />
+    <ClCompile Include="CBuffer.cpp">
+      <Filter>Graphics\source</Filter>
+    </ClCompile>
+    <ClCompile Include="CDevice.cpp">
+      <Filter>Graphics\source</Filter>
+    </ClCompile>
+    <ClCompile Include="CDeviceContext.cpp">
+      <Filter>Graphics\source</Filter>
+    </ClCompile>
+    <ClCompile Include="CSwapChain.cpp">
+      <Filter>Graphics\source</Filter>
+    </ClCompile>
+    <ClCompile Include="CVertexBuffer.cpp">
+      <Filter>Graphics\source</Filter>
+    </ClCompile>
+    <ClCompile Include="CTexture2D.cpp">
+      <Filter>Graphics\source</Filter>
+    </ClCompile>
+    <ClCompile Include="CDepthStencilView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tutorial07.cpp" />
@@ -109,10 +134,28 @@
       <Filter>glm</Filter>
     </ClInclude>
     <ClInclude Include="CCameraFP.h" />
-    <ClInclude Include="CDevice.h" />
-    <ClInclude Include="Define.h" />
-    <ClInclude Include="CSwapChain.h" />
-    <ClInclude Include="CDeviceContext.h" />
+    <ClInclude Include="CBuffer.h">
+      <Filter>Graphics\include</Filter>
+    </ClInclude>
+    <ClInclude Include="CDevice.h">
+      <Filter>Graphics\include</Filter>
+    </ClInclude>
+    <ClInclude Include="CDeviceContext.h">
+      <Filter>Graphics\include</Filter>
+    </ClInclude>
+    <ClInclude Include="CSwapChain.h">
+      <Filter>Graphics\include</Filter>
+    </ClInclude>
+    <ClInclude Include="Define.h">
+      <Filter>Graphics\include</Filter>
+    </ClInclude>
+    <ClInclude Include="CVertexBuffer.h">
+      <Filter>Graphics\include</Filter>
+    </ClInclude>
+    <ClInclude Include="CTexture2D.h">
+      <Filter>Graphics\include</Filter>
+    </ClInclude>
+    <ClInclude Include="CDepthStencilView.h" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>
