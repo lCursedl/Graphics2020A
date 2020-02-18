@@ -9,6 +9,7 @@
 #include <d3dx11.h>
 #include <d3dcompiler.h>
 #include <xnamath.h>
+#include <vector>
 #include "resource.h"
 #include "CCamera.h"
 #include "CDevice.h"
@@ -17,6 +18,7 @@
 #include "CVertexBuffer.h"
 #include "CTexture2D.h"
 #include "CDepthStencilView.h"
+#include "CVertexShader.h"
 //--------------------------------------------------------------------------------------
 // Structures
 //--------------------------------------------------------------------------------------
@@ -119,8 +121,6 @@ XMFLOAT4                            g_vMeshColor( 0.7f, 0.7f, 0.7f, 1.0f );
 CCamera								g_Camera;
 
 glm::mat4							g_World;
-glm::mat4							g_View;
-glm::mat4							g_Projection;
 
 CDevice *							g_pDevice = CDevice::getInstance();
 CSwapChain *						g_SwapChain = CSwapChain::getInstance();
@@ -128,6 +128,7 @@ CDeviceContext *					g_DeviceContext = CDeviceContext::getInstance();
 CVertexBuffer						g_VertexBuffer;
 CTexture2D							g_DepthStencil;
 CDepthStencilView					g_DepthStencilView;
+CVertexShader						g_VertexShader;
 
 //--------------------------------------------------------------------------------------
 // Forward declarations
@@ -138,6 +139,74 @@ void CleanupDevice();
 LRESULT CALLBACK    WndProc( HWND, UINT, WPARAM, LPARAM );
 void Render();
 
+
+HRESULT CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* pShaderBlob, ID3D11Device* pD3DDevice, ID3D11InputLayout** pInputLayout)
+{
+	// Reflect shader info
+	ID3D11ShaderReflection* pVertexShaderReflection = NULL;
+	if (FAILED(D3DReflect(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&pVertexShaderReflection)))
+	{
+		return S_FALSE;
+	}
+
+	// Get shader info
+	D3D11_SHADER_DESC shaderDesc;
+	pVertexShaderReflection->GetDesc(&shaderDesc);
+
+	// Read input layout description from shader info
+	std::vector<D3D11_INPUT_ELEMENT_DESC> inputLayoutDesc;
+	int offset = 0;
+	for (int i = 0; i < shaderDesc.InputParameters; i++)
+	{
+		D3D11_SIGNATURE_PARAMETER_DESC paramDesc;
+		pVertexShaderReflection->GetInputParameterDesc(i, &paramDesc);
+
+		// fill out input element desc
+		D3D11_INPUT_ELEMENT_DESC elementDesc;
+		elementDesc.SemanticName = paramDesc.SemanticName;
+		elementDesc.SemanticIndex = paramDesc.SemanticIndex;
+		elementDesc.InputSlot = 0;
+		elementDesc.AlignedByteOffset = offset;
+		elementDesc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+		elementDesc.InstanceDataStepRate = 0;
+
+		// determine DXGI format
+		if (paramDesc.Mask == 1)
+		{
+			if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) elementDesc.Format = DXGI_FORMAT_R32_UINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) elementDesc.Format = DXGI_FORMAT_R32_SINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) elementDesc.Format = DXGI_FORMAT_R32_FLOAT;
+		}
+		else if (paramDesc.Mask <= 3)
+		{
+			if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) elementDesc.Format = DXGI_FORMAT_R32G32_UINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) elementDesc.Format = DXGI_FORMAT_R32G32_SINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) elementDesc.Format = DXGI_FORMAT_R32G32_FLOAT;
+		}
+		else if (paramDesc.Mask <= 15)
+		{
+			if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) elementDesc.Format = DXGI_FORMAT_R32G32B32_UINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) elementDesc.Format = DXGI_FORMAT_R32G32B32_SINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) elementDesc.Format = DXGI_FORMAT_R32G32B32_FLOAT; offset += 12;
+		}
+		else if (paramDesc.Mask <= 7)
+		{
+			if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) elementDesc.Format = DXGI_FORMAT_R32G32B32A32_UINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) elementDesc.Format = DXGI_FORMAT_R32G32B32A32_SINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) elementDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		}
+
+		//save element desc
+		inputLayoutDesc.push_back(elementDesc);
+	}
+
+	// Try to create Input Layout
+	HRESULT hr = pD3DDevice->CreateInputLayout(&inputLayoutDesc[0], inputLayoutDesc.size(), pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), pInputLayout);
+
+	//Free allocation shader reflection memory
+	pVertexShaderReflection->Release();
+	return hr;
+}
 
 //--------------------------------------------------------------------------------------
 // Entry point to the program. Initializes everything and goes into a message processing 
@@ -424,8 +493,8 @@ HRESULT InitDevice()
 	g_DeviceContext->m_DeviceContext->RSSetViewports( 1, &vp );
 
     // Compile the vertex shader
-    ID3DBlob* pVSBlob = NULL;
-    hr = CompileShaderFromFile( L"Tutorial07.fx", "VS", "vs_4_0", &pVSBlob );
+    //ID3DBlob* pVSBlob = NULL;
+    hr = CompileShaderFromFile( L"Tutorial07.fx", "VS", "vs_4_0", &g_VertexShader.m_pVSBlob );
     if( FAILED( hr ) )
     {
         MessageBox( NULL,
@@ -433,28 +502,32 @@ HRESULT InitDevice()
         return hr;
     }
 
-    // Create the vertex shader
-    hr = g_pDevice->m_Device->CreateVertexShader( pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), NULL, &g_pVertexShader );
+    //// Create the vertex shader
+	hr = g_pDevice->m_Device->CreateVertexShader( g_VertexShader.m_pVSBlob->GetBufferPointer(), g_VertexShader.m_pVSBlob->GetBufferSize(), NULL, &g_VertexShader.m_pVertexShader );
     if( FAILED( hr ) )
     {    
-        pVSBlob->Release();
+        g_VertexShader.m_pVSBlob->Release();
         return hr;
     }
 
-    // Define the input layout
-    D3D11_INPUT_ELEMENT_DESC layout[] =
-    {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-    };
-    UINT numElements = ARRAYSIZE( layout );
+	hr = CreateInputLayoutDescFromVertexShaderSignature(g_VertexShader.m_pVSBlob, g_pDevice->m_Device, &g_pVertexLayout);
+	if (FAILED(hr))
+		return hr;
 
-    // Create the input layout
-    hr = g_pDevice->m_Device->CreateInputLayout( layout, numElements, pVSBlob->GetBufferPointer(),
-                                          pVSBlob->GetBufferSize(), &g_pVertexLayout );
-    pVSBlob->Release();
-    if( FAILED( hr ) )
-        return hr;
+    // Define the input layout
+    //D3D11_INPUT_ELEMENT_DESC layout[] =
+    //{
+    //    { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    //    { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    //};
+    //UINT numElements = ARRAYSIZE( layout );
+
+    //// Create the input layout
+    //hr = g_pDevice->m_Device->CreateInputLayout( layout, numElements, g_VertexShader.m_pVSBlob->GetBufferPointer(),
+    //                                      g_VertexShader.m_pVSBlob->GetBufferSize(), &g_pVertexLayout );
+    //g_VertexShader.m_pVSBlob->Release();
+    //if( FAILED( hr ) )
+    //    return hr;
 
     // Set the input layout
 	g_DeviceContext->m_DeviceContext->IASetInputLayout( g_pVertexLayout );
@@ -540,7 +613,6 @@ HRESULT InitDevice()
 	g_DeviceContext->m_DeviceContext->IASetVertexBuffers( 0, 1, &g_VertexBuffer.m_Buffer.m_pBuffer, &stride, &offset );
 
     // Create index buffer
-    // Create vertex buffer
     WORD indices[] =
     {
         3,1,0,
@@ -663,7 +735,7 @@ void CleanupDevice()
     if( g_VertexBuffer.m_Buffer.m_pBuffer) g_VertexBuffer.m_Buffer.m_pBuffer->Release();
     if( g_pIndexBuffer ) g_pIndexBuffer->Release();
     if( g_pVertexLayout ) g_pVertexLayout->Release();
-    if( g_pVertexShader ) g_pVertexShader->Release();
+    if( g_VertexShader.m_pVertexShader ) g_VertexShader.m_pVertexShader->Release();
     if( g_pPixelShader ) g_pPixelShader->Release();
     if( g_DepthStencil.m_pTexture) g_DepthStencil.m_pTexture->Release();
     if( g_DepthStencilView.m_pDepthStencilView ) g_DepthStencilView.m_pDepthStencilView->Release();
@@ -840,7 +912,7 @@ void Render()
 		cb.vMeshColor = g_vMeshColor;
 		g_DeviceContext->m_DeviceContext->UpdateSubresource(g_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0);
 
-		g_DeviceContext->m_DeviceContext->VSSetShader(g_pVertexShader, NULL, 0);
+		g_DeviceContext->m_DeviceContext->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
 		g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(0, 1, &g_pCBNeverChanges);
 		g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(1, 1, &g_pCBChangeOnResize);
 		g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(2, 1, &g_pCBChangesEveryFrame);

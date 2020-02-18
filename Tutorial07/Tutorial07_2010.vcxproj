@@ -383,6 +383,7 @@
     <ClCompile Include="CSwapChain.cpp" />
     <ClCompile Include="CTexture2D.cpp" />
     <ClCompile Include="CVertexBuffer.cpp" />
+    <ClCompile Include="CVertexShader.cpp" />
     <ClCompile Include="Tutorial07.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -398,6 +399,7 @@
     <ClInclude Include="CSwapChain.h" />
     <ClInclude Include="CTexture2D.h" />
     <ClInclude Include="CVertexBuffer.h" />
+    <ClInclude Include="CVertexShader.h" />
     <ClInclude Include="Define.h" />
     <ClInclude Include="glm\common.hpp" />
     <ClInclude Include="glm\exponential.hpp" />

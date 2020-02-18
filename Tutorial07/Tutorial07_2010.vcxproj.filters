@@ -47,6 +47,7 @@
       <Filter>Graphics\source</Filter>
     </ClCompile>
     <ClCompile Include="CDepthStencilView.cpp" />
+    <ClCompile Include="CVertexShader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tutorial07.cpp" />
@@ -156,6 +157,7 @@
       <Filter>Graphics\include</Filter>
     </ClInclude>
     <ClInclude Include="CDepthStencilView.h" />
+    <ClInclude Include="CVertexShader.h" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>
