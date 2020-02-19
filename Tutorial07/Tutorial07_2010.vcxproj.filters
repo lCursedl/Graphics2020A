@@ -46,8 +46,18 @@
     <ClCompile Include="CTexture2D.cpp">
       <Filter>Graphics\source</Filter>
     </ClCompile>
-    <ClCompile Include="CDepthStencilView.cpp" />
-    <ClCompile Include="CVertexShader.cpp" />
+    <ClCompile Include="CViewport.cpp">
+      <Filter>Graphics\source</Filter>
+    </ClCompile>
+    <ClCompile Include="CDepthStencilView.cpp">
+      <Filter>Graphics\source</Filter>
+    </ClCompile>
+    <ClCompile Include="CVertexShader.cpp">
+      <Filter>Graphics\source</Filter>
+    </ClCompile>
+    <ClCompile Include="CIndexBuffer.cpp">
+      <Filter>Graphics\source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tutorial07.cpp" />
@@ -156,8 +166,18 @@
     <ClInclude Include="CTexture2D.h">
       <Filter>Graphics\include</Filter>
     </ClInclude>
-    <ClInclude Include="CDepthStencilView.h" />
-    <ClInclude Include="CVertexShader.h" />
+    <ClInclude Include="CViewport.h">
+      <Filter>Graphics\include</Filter>
+    </ClInclude>
+    <ClInclude Include="CDepthStencilView.h">
+      <Filter>Graphics\include</Filter>
+    </ClInclude>
+    <ClInclude Include="CVertexShader.h">
+      <Filter>Graphics\include</Filter>
+    </ClInclude>
+    <ClInclude Include="CIndexBuffer.h">
+      <Filter>Graphics\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

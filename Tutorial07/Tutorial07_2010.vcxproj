@@ -380,10 +380,12 @@
     <ClCompile Include="CDepthStencilView.cpp" />
     <ClCompile Include="CDevice.cpp" />
     <ClCompile Include="CDeviceContext.cpp" />
+    <ClCompile Include="CIndexBuffer.cpp" />
     <ClCompile Include="CSwapChain.cpp" />
     <ClCompile Include="CTexture2D.cpp" />
     <ClCompile Include="CVertexBuffer.cpp" />
     <ClCompile Include="CVertexShader.cpp" />
+    <ClCompile Include="CViewport.cpp" />
     <ClCompile Include="Tutorial07.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -396,10 +398,12 @@
     <ClInclude Include="CDepthStencilView.h" />
     <ClInclude Include="CDevice.h" />
     <ClInclude Include="CDeviceContext.h" />
+    <ClInclude Include="CIndexBuffer.h" />
     <ClInclude Include="CSwapChain.h" />
     <ClInclude Include="CTexture2D.h" />
     <ClInclude Include="CVertexBuffer.h" />
     <ClInclude Include="CVertexShader.h" />
+    <ClInclude Include="CViewport.h" />
     <ClInclude Include="Define.h" />
     <ClInclude Include="glm\common.hpp" />
     <ClInclude Include="glm\exponential.hpp" />

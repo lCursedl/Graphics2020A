@@ -4,13 +4,11 @@
 
 struct DeviceStruct
 {
-#ifdef D3D11
-	D3D_DRIVER_TYPE m_DriverType;
-	D3D_DRIVER_TYPE m_DriverTypes[3];
-	UINT m_DeviceFlags;
-	D3D_FEATURE_LEVEL m_FeatureLevels[3];
-	UINT m_numFeatureLevels;
-#endif // D3D11
+	DRIVER_TYPE m_DriverType;
+	DRIVER_TYPE m_DriverTypes[3];
+	unsigned int m_DeviceFlags;
+	FEATURE_LEVEL m_FeatureLevels[3];
+	unsigned int m_numFeatureLevels;
 };
 
 class CDevice

@@ -1,12 +1,11 @@
 #pragma once
 #include "CBuffer.h"
 
-class CVertexBuffer
+class CIndexBuffer
 {
 public:
 
 	void init(SubresourceData s, BufferStruct b);
-
 	CBuffer m_Buffer;
 #ifdef D3D11
 	D3D11_SUBRESOURCE_DATA m_Data;

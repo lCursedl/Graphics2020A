@@ -6,6 +6,26 @@
 
 #ifdef D3D11
 
+enum DRIVER_TYPE
+{
+	DRIVER_TYPE_UNKNOWN = 0,
+	DRIVER_TYPE_HARDWARE = (DRIVER_TYPE_UNKNOWN + 1),
+	DRIVER_TYPE_REFERENCE = (DRIVER_TYPE_HARDWARE + 1),
+	DRIVER_TYPE_NULL = (DRIVER_TYPE_REFERENCE + 1),
+	DRIVER_TYPE_SOFTWARE = (DRIVER_TYPE_NULL + 1),
+	DRIVER_TYPE_WARP = (DRIVER_TYPE_SOFTWARE + 1)
+};
+
+enum FEATURE_LEVEL
+{
+	FEATURE_LEVEL_9_1 = 0x9100,
+	FEATURE_LEVEL_9_2 = 0x9200,
+	FEATURE_LEVEL_9_3 = 0x9300,
+	FEATURE_LEVEL_10_0 = 0xa000,
+	FEATURE_LEVEL_10_1 = 0xa100,
+	FEATURE_LEVEL_11_0 = 0xb000
+};
+
 enum USAGE
 {
 	USAGE_DEFAULT,
@@ -169,6 +189,13 @@ struct SAMPLEDESC
 {
 	unsigned int count;
 	unsigned int quality;
+};
+
+struct SubresourceData
+{
+	const void * psysMem;
+	unsigned int sysMemPitch;
+	unsigned int sysMemSlicePitch;
 };
 
 #endif // D3D11
