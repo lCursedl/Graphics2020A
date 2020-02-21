@@ -207,6 +207,18 @@ void CCamera::move()
 	updateVM();
 }
 
+void CCamera::rotate()
+{
+	if (mRotateLeft)
+	{
+		rotateFront({0.f, 0.f, ROTATESTEP});
+	}
+	if (mRotateRight)
+	{
+		rotateFront({ 0.f, 0.f, -ROTATESTEP });
+	}
+}
+
 void CCamera::rotate(glm::vec3 mouseDir)
 {
 	rotateUp(mouseDir);	
@@ -290,6 +302,15 @@ void CCamera::getKeyPress(WPARAM key)
 	{
 		mDown = true;
 	}
+	
+	if (key == VK_LEFT)
+	{
+		mRotateLeft = true;
+	}
+	else if (key == VK_RIGHT)
+	{
+		mRotateRight = true;
+	}
 }
 
 void CCamera::getKeyRelease(WPARAM key)
@@ -317,6 +338,14 @@ void CCamera::getKeyRelease(WPARAM key)
 	else if (key == 'E')
 	{
 		mDown = false;
+	}
+	if (key == VK_LEFT)
+	{
+		mRotateLeft = false;
+	}
+	else if (key == VK_RIGHT)
+	{
+		mRotateRight = false;
 	}
 }
 

@@ -58,6 +58,10 @@
     <ClCompile Include="CIndexBuffer.cpp">
       <Filter>Graphics\source</Filter>
     </ClCompile>
+    <ClCompile Include="CPixelShader.cpp">
+      <Filter>Graphics\source</Filter>
+    </ClCompile>
+    <ClCompile Include="CInputLayout.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tutorial07.cpp" />
@@ -178,6 +182,10 @@
     <ClInclude Include="CIndexBuffer.h">
       <Filter>Graphics\include</Filter>
     </ClInclude>
+    <ClInclude Include="CPixelShader.h">
+      <Filter>Graphics\include</Filter>
+    </ClInclude>
+    <ClInclude Include="CInputLayout.h" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

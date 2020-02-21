@@ -5,20 +5,19 @@ CSwapChain::CSwapChain(){}
 
 void CSwapChain::init(SwapChainStruct s)
 {
-	m_struct = s;
 
 	ZeroMemory(&m_sd, sizeof(m_sd));
-	m_sd.BufferCount = m_struct.bufferCount;
-	m_sd.BufferDesc.Width = m_struct.W;
-	m_sd.BufferDesc.Height = m_struct.H;
-	m_sd.BufferDesc.Format = m_struct.format;
-	m_sd.BufferDesc.RefreshRate.Numerator = m_struct.refreshNumerator;
-	m_sd.BufferDesc.RefreshRate.Denominator = m_struct.refreshDenominator;
-	m_sd.BufferUsage = m_struct.bufferUsage;
-	m_sd.OutputWindow = m_struct.outputWND;
-	m_sd.SampleDesc.Count = m_struct.count;
-	m_sd.SampleDesc.Quality = m_struct.quality;
-	m_sd.Windowed = m_struct.windowed;
+	m_sd.BufferCount = s.bufferCount;
+	m_sd.BufferDesc.Width = s.W;
+	m_sd.BufferDesc.Height = s.H;
+	m_sd.BufferDesc.Format = (DXGI_FORMAT)s.format;
+	m_sd.BufferDesc.RefreshRate.Numerator = s.refreshNumerator;
+	m_sd.BufferDesc.RefreshRate.Denominator = s.refreshDenominator;
+	m_sd.BufferUsage = s.bufferUsage;
+	m_sd.OutputWindow = s.outputWND;
+	m_sd.SampleDesc.Count = s.count;
+	m_sd.SampleDesc.Quality = s.quality;
+	m_sd.Windowed = s.windowed;
 }
 
 CSwapChain * CSwapChain::getInstance()

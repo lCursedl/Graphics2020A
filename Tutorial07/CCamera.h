@@ -6,6 +6,7 @@
 #include "glm/vec4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #define STEP 0.01f
+#define ROTATESTEP 0.25f
 
 struct CameraDesc
 {
@@ -78,6 +79,7 @@ public:
 	virtual void updateVM();
 	void updatePM();
 	virtual void move();
+	virtual void rotate();
 	void rotate(glm::vec3 mouseDir);
 	void rotateUp(glm::vec3 Dir);
 	void rotateRight(glm::vec3 Dir);
