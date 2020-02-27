@@ -1,6 +1,6 @@
 #pragma once
 #include "CBuffer.h"
-
+//Class which contains a CBuffer
 class CVertexBuffer
 {
 public:

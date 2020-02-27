@@ -61,7 +61,12 @@
     <ClCompile Include="CPixelShader.cpp">
       <Filter>Graphics\source</Filter>
     </ClCompile>
-    <ClCompile Include="CInputLayout.cpp" />
+    <ClCompile Include="CRenderTargetView.cpp">
+      <Filter>Graphics\source</Filter>
+    </ClCompile>
+    <ClCompile Include="CSamplerState.cpp">
+      <Filter>Graphics\source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tutorial07.cpp" />
@@ -185,7 +190,12 @@
     <ClInclude Include="CPixelShader.h">
       <Filter>Graphics\include</Filter>
     </ClInclude>
-    <ClInclude Include="CInputLayout.h" />
+    <ClInclude Include="CRenderTargetView.h">
+      <Filter>Graphics\include</Filter>
+    </ClInclude>
+    <ClInclude Include="CSamplerState.h">
+      <Filter>Graphics\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

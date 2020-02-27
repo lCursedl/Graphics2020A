@@ -22,40 +22,17 @@
 #include "CVertexShader.h"
 #include "CPixelShader.h"
 #include "CViewport.h"
-#include "CInputLayout.h"
+#include "CRenderTargetView.h"
+#include "CSamplerState.h"
 
 //--------------------------------------------------------------------------------------
 // Structures
 //--------------------------------------------------------------------------------------
 
-struct glmSimpleVertex
-{
-	glm::vec3 Pos;
-	glm::vec2 Tex;
-};
-
-struct glmCBNeverChanges
-{
-	glm::mat4 mView;
-};
-
-struct glmCBChangeOnResize
-{
-	glm::mat4 mProjection;
-};
-
-struct glmCBChangesEveryFrame
-{
-	glm::mat4 mWorld;
-	XMFLOAT4 vMeshColor;
-};
-
-//DirectX Structures
-
 struct SimpleVertex
 {
-    XMFLOAT3 Pos;
-    XMFLOAT2 Tex;
+    glm::vec3 Pos;
+    glm::vec2 Tex;
 };
 
 struct CBNeverChanges
@@ -71,7 +48,7 @@ struct CBChangeOnResize
 struct CBChangesEveryFrame
 {
 	glm::mat4 mWorld;
-	XMFLOAT4 vMeshColor;
+	glm::vec4 vMeshColor;
 };
 
 //Lab array
@@ -98,34 +75,22 @@ CDeviceContext * CDeviceContext::m_DCInstance = nullptr;
 //--------------------------------------------------------------------------------------
 HINSTANCE                           g_hInst = NULL;
 HWND                                g_hWnd = NULL;
-//D3D_DRIVER_TYPE                     g_driverType = D3D_DRIVER_TYPE_NULL;
-//D3D_FEATURE_LEVEL                   g_featureLevel = D3D_FEATURE_LEVEL_11_0;
-//ID3D11Device*                       g_pd3dDevice = NULL;
-//ID3D11DeviceContext*                g_pImmediateContext = NULL;
-//IDXGISwapChain*                     g_pSwapChain = NULL;
-ID3D11RenderTargetView*             g_pRenderTargetView = NULL;
-//ID3D11Texture2D*                    g_pDepthStencil = NULL;
-//ID3D11DepthStencilView*             g_pDepthStencilView = NULL;
-//ID3D11VertexShader*                 g_pVertexShader = NULL;
-//ID3D11PixelShader*                  g_pPixelShader = NULL;
-ID3D11InputLayout*                  g_pVertexLayout = NULL;
-//ID3D11Buffer*                       g_pVertexBuffer = NULL;
-//ID3D11Buffer*                       g_pIndexBuffer = NULL;
-//ID3D11Buffer*                       g_pCBNeverChanges = NULL;
-//ID3D11Buffer*                       g_pCBChangeOnResize = NULL;
-//ID3D11Buffer*                       g_pCBChangesEveryFrame = NULL;
 ID3D11ShaderResourceView*           g_pTextureRV = NULL;
-ID3D11SamplerState*                 g_pSamplerLinear = NULL;
 
-XMFLOAT4                            g_vMeshColor( 0.7f, 0.7f, 0.7f, 1.0f );
+glm::vec4							g_MeshColor { 0.7f, 0.7f, 0.7f, 1.0f };
 
 CCamera								g_Camera;
+CCamera								anotherCamera;
 
 glm::mat4							g_World;
 
 FEATURE_LEVEL						featureLevel = FEATURE_LEVEL_11_0;
+
+//Pointer to CDevice Singleton
 CDevice *							g_pDevice = CDevice::getInstance();
+//Pointer to CSwapchain Singleton
 CSwapChain *						g_SwapChain = CSwapChain::getInstance();
+//Pointer to CDeviceContext Singleton
 CDeviceContext *					g_DeviceContext = CDeviceContext::getInstance();
 CVertexBuffer						g_VertexBuffer;
 CIndexBuffer						g_IndexBuffer;
@@ -136,7 +101,12 @@ CTexture2D							g_DepthStencil;
 CDepthStencilView					g_DepthStencilView;
 CVertexShader						g_VertexShader;
 CPixelShader						g_PixelShader;
-CInputLayout						g_VertexLayout;
+CRenderTargetView					g_RenderTargetView;
+CSamplerState						g_SamplerState;
+
+CBuffer								g_CBNeverChanges2;
+CBuffer								g_CBChangeOnResize2;
+CBuffer								g_CBChangesEveryFrame2;
 
 //--------------------------------------------------------------------------------------
 // Forward declarations
@@ -387,12 +357,11 @@ HRESULT InitDevice()
 
     // Create a render target view
 	CTexture2D BackBuffer;
-    //ID3D11Texture2D* pBackBuffer = NULL;
     hr = g_SwapChain->m_pSwapChain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), ( LPVOID* )&BackBuffer.m_pTexture );
     if( FAILED( hr ) )
         return hr;
 
-    hr = g_pDevice->m_Device->CreateRenderTargetView(BackBuffer.m_pTexture, NULL, &g_pRenderTargetView );
+    hr = g_pDevice->m_Device->CreateRenderTargetView(BackBuffer.m_pTexture, NULL, &g_RenderTargetView.m_pRTV);
 	BackBuffer.m_pTexture->Release();
     if( FAILED( hr ) )
         return hr;
@@ -429,7 +398,7 @@ HRESULT InitDevice()
     if( FAILED( hr ) )
         return hr;
 
-	g_DeviceContext->m_DeviceContext->OMSetRenderTargets( 1, &g_pRenderTargetView, g_DepthStencilView.m_pDepthStencilView);
+	g_DeviceContext->m_DeviceContext->OMSetRenderTargets( 1, &g_RenderTargetView.m_pRTV, g_DepthStencilView.m_pDepthStencilView);
 
     // Setup the viewport
 	ViewportStruct vpStruct;
@@ -462,12 +431,12 @@ HRESULT InitDevice()
     }
 
 	//Create input layout from compiled VS
-	hr = CreateInputLayoutDescFromVertexShaderSignature(g_VertexShader.m_pVSBlob, g_pDevice->m_Device, &g_VertexLayout.m_pInputLayout);
+	hr = CreateInputLayoutDescFromVertexShaderSignature(g_VertexShader.m_pVSBlob, g_pDevice->m_Device, &g_VertexShader.m_pInputLayout);
 	if (FAILED(hr))
 		return hr;
 
     // Set the input layout
-	g_DeviceContext->m_DeviceContext->IASetInputLayout( g_VertexLayout.m_pInputLayout );
+	g_DeviceContext->m_DeviceContext->IASetInputLayout(g_VertexShader.m_pInputLayout );
 
     // Compile the pixel shader
     hr = CompileShaderFromFile( L"Tutorial07.fx", "PS", "ps_4_0", &g_PixelShader.m_pPSBlob);
@@ -487,48 +456,36 @@ HRESULT InitDevice()
     // Create vertex buffer
     SimpleVertex vertices[] =
     {
-        { XMFLOAT3( -1.0f, 1.0f, -1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, -1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-        { XMFLOAT3( -1.0f, 1.0f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
+        { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 0.0f, 0.0f ) },
+        { glm::vec3( 1.0f, 1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
+        { glm::vec3( 1.0f, 1.0f, 1.0f ), glm::vec2( 1.0f, 1.0f ) },
+        { glm::vec3( -1.0f, 1.0f, 1.0f ), glm::vec2( 0.0f, 1.0f ) },
 
-        { XMFLOAT3( -1.0f, -1.0f, -1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, -1.0f, -1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, -1.0f, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-        { XMFLOAT3( -1.0f, -1.0f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
+        { glm::vec3( -1.0f, -1.0f, -1.0f ), glm::vec2( 0.0f, 0.0f ) },
+        { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
+        { glm::vec3( 1.0f, -1.0f, 1.0f ), glm::vec2( 1.0f, 1.0f ) },
+        { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 1.0f ) },
 
-        { XMFLOAT3( -1.0f, -1.0f, 1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
-        { XMFLOAT3( -1.0f, -1.0f, -1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
-        { XMFLOAT3( -1.0f, 1.0f, -1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-        { XMFLOAT3( -1.0f, 1.0f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
+        { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 0.0f ) },
+        { glm::vec3( -1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
+        { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 1.0f, 1.0f ) },
+        { glm::vec3( -1.0f, 1.0f, 1.0f ), glm::vec2( 0.0f, 1.0f ) },
 
-        { XMFLOAT3( 1.0f, -1.0f, 1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, -1.0f, -1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, -1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
+        { glm::vec3( 1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 0.0f ) },
+        { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
+        { glm::vec3( 1.0f, 1.0f, -1.0f ), glm::vec2( 1.0f, 1.0f ) },
+        { glm::vec3( 1.0f, 1.0f, 1.0f ), glm::vec2( 0.0f, 1.0f ) },
 
-        { XMFLOAT3( -1.0f, -1.0f, -1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, -1.0f, -1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, -1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-        { XMFLOAT3( -1.0f, 1.0f, -1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
+        { glm::vec3( -1.0f, -1.0f, -1.0f ), glm::vec2( 0.0f, 0.0f ) },
+        { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
+        { glm::vec3( 1.0f, 1.0f, -1.0f ), glm::vec2( 1.0f, 1.0f ) },
+        { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 0.0f, 1.0f ) },
 
-        { XMFLOAT3( -1.0f, -1.0f, 1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, -1.0f, 1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-        { XMFLOAT3( -1.0f, 1.0f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
-
-
+        { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 0.0f ) },
+        { glm::vec3( 1.0f, -1.0f, 1.0f ), glm::vec2( 1.0f, 0.0f ) },
+        { glm::vec3( 1.0f, 1.0f, 1.0f ), glm::vec2( 1.0f, 1.0f ) },
+        { glm::vec3( -1.0f, 1.0f, 1.0f ), glm::vec2( 0.0f, 1.0f ) },
     };
-
-    /*D3D11_BUFFER_DESC bd;
-    ZeroMemory( &bd, sizeof(bd) );
-    bd.Usage = D3D11_USAGE_DEFAULT;
-    bd.ByteWidth = sizeof( SimpleVertex ) * 24;
-    bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    bd.CPUAccessFlags = 0;
-    D3D11_SUBRESOURCE_DATA InitData;
-    ZeroMemory( &InitData, sizeof(InitData) );
-    InitData.pSysMem = vertices;*/
 
 	BufferStruct bufferstrct;
 	bufferstrct.usage = USAGE_DEFAULT;
@@ -601,7 +558,7 @@ HRESULT InitDevice()
     hr = g_pDevice->m_Device->CreateBuffer( &g_CBChangeOnResize.m_bd, NULL, &g_CBChangeOnResize.m_pBuffer );
     if( FAILED( hr ) )
         return hr;
-    
+
 	bufferstrct.byteWidth = sizeof(CBChangesEveryFrame);
 	g_CBChangesEveryFrame.init(bufferstrct);
     hr = g_pDevice->m_Device->CreateBuffer( &g_CBChangesEveryFrame.m_bd, NULL, &g_CBChangesEveryFrame.m_pBuffer );
@@ -609,21 +566,25 @@ HRESULT InitDevice()
         return hr;
 
     // Load the Texture
+	//hr = D3DX11CreateShaderResourceViewFromMemory(g_pDevice->m_Device, );
     hr = D3DX11CreateShaderResourceViewFromFile( g_pDevice->m_Device, L"seafloor.dds", NULL, NULL, &g_pTextureRV, NULL );
     if( FAILED( hr ) )
         return hr;
 
     // Create the sample state
-    D3D11_SAMPLER_DESC sampDesc;
-    ZeroMemory( &sampDesc, sizeof(sampDesc) );
-    sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-    sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-    sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-    sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-    sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-    sampDesc.MinLOD = 0;
-    sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-    hr = g_pDevice->m_Device->CreateSamplerState( &sampDesc, &g_pSamplerLinear );
+	SAMPLER_DESC samplerDsc;
+	ZeroMemory(&samplerDsc, sizeof(samplerDsc));
+	samplerDsc.filter = FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDsc.addresU = TEXTURE_ADDRESS_WRAP;
+	samplerDsc.addresV = TEXTURE_ADDRESS_WRAP;
+	samplerDsc.addresW = TEXTURE_ADDRESS_WRAP;
+	samplerDsc.comparisonFunc = COMPARISON_NEVER;
+	samplerDsc.minLOD = 0;
+	samplerDsc.maxLOD = D3D11_FLOAT32_MAX;
+
+	g_SamplerState.init(samplerDsc);
+
+    hr = g_pDevice->m_Device->CreateSamplerState( &g_SamplerState.m_Desc, &g_SamplerState.m_pSamplerLinear );
     if( FAILED( hr ) )
         return hr;
 
@@ -643,6 +604,7 @@ HRESULT InitDevice()
 	MyDesc.FarPlane = 100.f;
 
 	g_Camera.init(MyDesc);
+	anotherCamera.init(MyDesc);
 
 	// Set camera VM
 
@@ -667,19 +629,19 @@ void CleanupDevice()
 {
     if(g_DeviceContext->m_DeviceContext) g_DeviceContext->m_DeviceContext->ClearState();
 
-    if( g_pSamplerLinear ) g_pSamplerLinear->Release();
+    if( g_SamplerState.m_pSamplerLinear ) g_SamplerState.m_pSamplerLinear->Release();
     if( g_pTextureRV ) g_pTextureRV->Release();
     if( g_CBNeverChanges.m_pBuffer ) g_CBNeverChanges.m_pBuffer->Release();
     if( g_CBChangeOnResize.m_pBuffer ) g_CBChangeOnResize.m_pBuffer->Release();
     if( g_CBChangesEveryFrame.m_pBuffer ) g_CBChangesEveryFrame.m_pBuffer->Release();
     if( g_VertexBuffer.m_Buffer.m_pBuffer) g_VertexBuffer.m_Buffer.m_pBuffer->Release();
     if( g_IndexBuffer.m_Buffer.m_pBuffer ) g_IndexBuffer.m_Buffer.m_pBuffer->Release();
-    if( g_VertexLayout.m_pInputLayout ) g_VertexLayout.m_pInputLayout->Release();
+    if( g_VertexShader.m_pInputLayout ) g_VertexShader.m_pInputLayout->Release();
     if( g_VertexShader.m_pVertexShader ) g_VertexShader.m_pVertexShader->Release();
     if( g_PixelShader.m_pPixelShader) g_PixelShader.m_pPixelShader->Release();
     if( g_DepthStencil.m_pTexture) g_DepthStencil.m_pTexture->Release();
     if( g_DepthStencilView.m_pDepthStencilView ) g_DepthStencilView.m_pDepthStencilView->Release();
-    if( g_pRenderTargetView ) g_pRenderTargetView->Release();
+    if( g_RenderTargetView.m_pRTV ) g_RenderTargetView.m_pRTV->Release();
     if( g_SwapChain->m_pSwapChain) g_SwapChain->m_pSwapChain->Release();
     if( g_DeviceContext->m_DeviceContext) g_DeviceContext->m_DeviceContext->Release();
     if( g_pDevice->m_Device ) g_pDevice->m_Device->Release();
@@ -728,13 +690,13 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 				if (g_SwapChain->m_pSwapChain)
 				{
 					g_DeviceContext->m_DeviceContext->OMSetRenderTargets(0, 0, 0);
-					g_pRenderTargetView->Release();
+					g_RenderTargetView.m_pRTV->Release();
 					HRESULT h;
 					h = g_SwapChain->m_pSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
 
 					CBuffer tempBack;
 					h = g_SwapChain->m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&tempBack.m_pBuffer);
-					h = g_pDevice->m_Device->CreateRenderTargetView(tempBack.m_pBuffer, NULL, &g_pRenderTargetView);
+					h = g_pDevice->m_Device->CreateRenderTargetView(tempBack.m_pBuffer, NULL, &g_RenderTargetView.m_pRTV);
 					tempBack.m_pBuffer->Release();
 
 					g_DepthStencil.m_pTexture->Release();
@@ -766,7 +728,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 
 					h = g_pDevice->m_Device->CreateDepthStencilView(g_DepthStencil.m_pTexture, &g_DepthStencilView.m_Desc, &g_DepthStencilView.m_pDepthStencilView);
 
-					g_DeviceContext->m_DeviceContext->OMSetRenderTargets(1, &g_pRenderTargetView, g_DepthStencilView.m_pDepthStencilView);
+					g_DeviceContext->m_DeviceContext->OMSetRenderTargets(1, &g_RenderTargetView.m_pRTV, g_DepthStencilView.m_pDepthStencilView);
 
 					ViewportStruct V;
 					V.W = width;
@@ -785,31 +747,11 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 		}
 		case WM_KEYDOWN:
 		{
-			/*if (wParam == VK_LEFT)
-			{
-				g_Camera.rotateFront({0.f, 0.f, 10.f});
-				CBNeverChanges cbNeverChanges;
-				cbNeverChanges.mView = g_Camera.View;
-				g_DeviceContext->m_DeviceContext->UpdateSubresource(g_CBNeverChanges.m_pBuffer, 0, NULL, &cbNeverChanges, 0, 0);
-			}
-			else if (wParam == VK_RIGHT)
-			{
-				g_Camera.rotateFront({ 0.f, 0.f, -10.f });
-				CBNeverChanges cbNeverChanges;
-				cbNeverChanges.mView = g_Camera.View;
-				g_DeviceContext->m_DeviceContext->UpdateSubresource(g_CBNeverChanges.m_pBuffer, 0, NULL, &cbNeverChanges, 0, 0);
-			}
-			else
-			{*/
-				g_Camera.getKeyPress(wParam);
-			//}			
+			g_Camera.getKeyPress(wParam);		
 			break;			
 		}
 		case WM_KEYUP:
-			//if (wParam != VK_LEFT || wParam != VK_RIGHT)
-			//{
-				g_Camera.getKeyRelease(wParam);
-			//}
+			g_Camera.getKeyRelease(wParam);
 			break;
 		case WM_LBUTTONDOWN:
 		{
@@ -879,15 +821,15 @@ void Render()
 	//g_World = glm::rotate(g_World, .001f, {0, 1, 0});
 
     // Modify the color
-    g_vMeshColor.x = ( sinf( t * 1.0f ) + 1.0f ) * 0.5f;
-    g_vMeshColor.y = ( cosf( t * 3.0f ) + 1.0f ) * 0.5f;
-    g_vMeshColor.z = ( sinf( t * 5.0f ) + 1.0f ) * 0.5f;
+	g_MeshColor.x = (sinf(t * 1.0f) + 1.0f) * 0.5f;
+	g_MeshColor.y = (cosf(t * 3.0f) + 1.0f) * 0.5f;
+	g_MeshColor.z = (sinf(t * 5.0f) + 1.0f) * 0.5f;
 
     //
     // Clear the back buffer
     //
     float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
-	g_DeviceContext->m_DeviceContext->ClearRenderTargetView(g_pRenderTargetView, ClearColor );
+	g_DeviceContext->m_DeviceContext->ClearRenderTargetView(g_RenderTargetView.m_pRTV, ClearColor );
 
     //
     // Clear the depth buffer to 1.0 (max depth)
@@ -904,7 +846,7 @@ void Render()
 
 		CBChangesEveryFrame cb;
 		cb.mWorld = glm::transpose(g_World);
-		cb.vMeshColor = g_vMeshColor;
+		cb.vMeshColor = g_MeshColor;
 		g_DeviceContext->m_DeviceContext->UpdateSubresource(g_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
 
 		g_DeviceContext->m_DeviceContext->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
@@ -914,7 +856,7 @@ void Render()
 		g_DeviceContext->m_DeviceContext->PSSetShader( g_PixelShader.m_pPixelShader, NULL, 0);
 		g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(2, 1, &g_CBChangesEveryFrame.m_pBuffer);
 		g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &g_pTextureRV);
-		g_DeviceContext->m_DeviceContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
+		g_DeviceContext->m_DeviceContext->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
 		g_DeviceContext->m_DeviceContext->DrawIndexed(36, 0, 0);
 	}
 

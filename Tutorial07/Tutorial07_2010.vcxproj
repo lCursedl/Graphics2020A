@@ -381,8 +381,9 @@
     <ClCompile Include="CDevice.cpp" />
     <ClCompile Include="CDeviceContext.cpp" />
     <ClCompile Include="CIndexBuffer.cpp" />
-    <ClCompile Include="CInputLayout.cpp" />
     <ClCompile Include="CPixelShader.cpp" />
+    <ClCompile Include="CRenderTargetView.cpp" />
+    <ClCompile Include="CSamplerState.cpp" />
     <ClCompile Include="CSwapChain.cpp" />
     <ClCompile Include="CTexture2D.cpp" />
     <ClCompile Include="CVertexBuffer.cpp" />
@@ -401,8 +402,9 @@
     <ClInclude Include="CDevice.h" />
     <ClInclude Include="CDeviceContext.h" />
     <ClInclude Include="CIndexBuffer.h" />
-    <ClInclude Include="CInputLayout.h" />
     <ClInclude Include="CPixelShader.h" />
+    <ClInclude Include="CRenderTargetView.h" />
+    <ClInclude Include="CSamplerState.h" />
     <ClInclude Include="CSwapChain.h" />
     <ClInclude Include="CTexture2D.h" />
     <ClInclude Include="CVertexBuffer.h" />

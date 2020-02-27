@@ -11,7 +11,7 @@ struct BufferStruct
 	unsigned int miscFlags;
 	unsigned int structureByteStride;
 };
-
+//Class which contains a ID3D11Buffer pointer
 class CBuffer
 {
 public:
