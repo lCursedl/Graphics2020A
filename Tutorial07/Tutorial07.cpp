@@ -5,10 +5,8 @@
 //
 // Copyright (c) Microsoft Corporation. All rights reserved.
 //--------------------------------------------------------------------------------------
-//#include <d3d11.h>
-#include <d3dx11.h>
-#include <d3dcompiler.h>
-#include <xnamath.h>
+
+
 #include <vector>
 #include "resource.h"
 #include "CCamera.h"
@@ -24,6 +22,7 @@
 #include "CViewport.h"
 #include "CRenderTargetView.h"
 #include "CSamplerState.h"
+#include "imgui.h"
 
 //--------------------------------------------------------------------------------------
 // Structures
@@ -75,7 +74,9 @@ CDeviceContext * CDeviceContext::m_DCInstance = nullptr;
 //--------------------------------------------------------------------------------------
 HINSTANCE                           g_hInst = NULL;
 HWND                                g_hWnd = NULL;
+#ifdef D3D11
 ID3D11ShaderResourceView*           g_pTextureRV = NULL;
+#endif
 
 glm::vec4							g_MeshColor { 0.7f, 0.7f, 0.7f, 1.0f };
 
@@ -117,7 +118,7 @@ void CleanupDevice();
 LRESULT CALLBACK    WndProc( HWND, UINT, WPARAM, LPARAM );
 void Render();
 
-
+#ifdef D3D11
 HRESULT CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* pShaderBlob, ID3D11Device* pD3DDevice, ID3D11InputLayout** pInputLayout)
 {
 	// Reflect shader info
@@ -185,6 +186,7 @@ HRESULT CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* pShaderBlob, ID
 	pVertexShaderReflection->Release();
 	return hr;
 }
+#endif
 
 //--------------------------------------------------------------------------------------
 // Entry point to the program. Initializes everything and goes into a message processing 
@@ -218,9 +220,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
             Render();
         }
     }
-
     CleanupDevice();
-
     return ( int )msg.wParam;
 }
 
@@ -266,6 +266,7 @@ HRESULT InitWindow( HINSTANCE hInstance, int nCmdShow )
 //--------------------------------------------------------------------------------------
 // Helper for compiling shaders with D3DX11
 //--------------------------------------------------------------------------------------
+#ifdef D3D11
 HRESULT CompileShaderFromFile( WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut )
 {
     HRESULT hr = S_OK;
@@ -293,7 +294,7 @@ HRESULT CompileShaderFromFile( WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR sz
 
     return S_OK;
 }
-
+#endif
 
 //--------------------------------------------------------------------------------------
 // Create Direct3D device and swap chain
@@ -307,6 +308,7 @@ HRESULT InitDevice()
     unsigned int width = rc.right - rc.left;
     unsigned int height = rc.bottom - rc.top;
 
+#ifdef D3D11
 	DeviceStruct T;
 
 	T.m_DeviceFlags = 0;
@@ -392,7 +394,7 @@ HRESULT InitDevice()
 	DSV.viewDimension = DSV_DIMENSION_TEXTURE2D;
 	DSV.texture2D.mipSlice = 0;
 
-	g_DepthStencilView.init(DSV, g_DepthStencil.m_Desc.Format);
+	g_DepthStencilView.init(DSV, (FORMAT)g_DepthStencil.m_Desc.Format);
 
     hr = g_pDevice->m_Device->CreateDepthStencilView(g_DepthStencil.m_pTexture, &g_DepthStencilView.m_Desc, &g_DepthStencilView.m_pDepthStencilView );
     if( FAILED( hr ) )
@@ -587,7 +589,7 @@ HRESULT InitDevice()
     hr = g_pDevice->m_Device->CreateSamplerState( &g_SamplerState.m_Desc, &g_SamplerState.m_pSamplerLinear );
     if( FAILED( hr ) )
         return hr;
-
+#endif
     // Initialize the world matrices
 	g_World = glm::mat4(1.0f);
 
@@ -597,7 +599,7 @@ HRESULT InitDevice()
 	MyDesc.Pos = { 0.f, 1.f, -6.f };
 	MyDesc.LAt = { 0.f, 1.f, 0.f };
 	MyDesc.Up = { 0.f, 1.f, 0.f };
-	MyDesc.FOV = XM_PIDIV4;
+	MyDesc.FOV = PIDIV4;
 	MyDesc.Width = width;
 	MyDesc.Height = height;
 	MyDesc.NearPlane = 0.01f;
@@ -610,14 +612,17 @@ HRESULT InitDevice()
 
     CBNeverChanges cbNeverChanges;
 	cbNeverChanges.mView = g_Camera.View;
-	g_DeviceContext->m_DeviceContext->UpdateSubresource( g_CBNeverChanges.m_pBuffer, 0, NULL, &cbNeverChanges, 0, 0 );
+#ifdef D3D11
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(g_CBNeverChanges.m_pBuffer, 0, NULL, &cbNeverChanges, 0, 0);
+#endif // D3D11	
 
     // Initialize the camera PM
     
     CBChangeOnResize cbChangesOnResize;
 	cbChangesOnResize.mProjection = g_Camera.Proj;
+#ifdef D3D11
 	g_DeviceContext->m_DeviceContext->UpdateSubresource( g_CBChangeOnResize.m_pBuffer, 0, NULL, &cbChangesOnResize, 0, 0 );
-
+#endif
     return S_OK;
 }
 
@@ -627,8 +632,8 @@ HRESULT InitDevice()
 //--------------------------------------------------------------------------------------
 void CleanupDevice()
 {
-    if(g_DeviceContext->m_DeviceContext) g_DeviceContext->m_DeviceContext->ClearState();
-
+#ifdef D3D11
+    if( g_DeviceContext->m_DeviceContext) g_DeviceContext->m_DeviceContext->ClearState();
     if( g_SamplerState.m_pSamplerLinear ) g_SamplerState.m_pSamplerLinear->Release();
     if( g_pTextureRV ) g_pTextureRV->Release();
     if( g_CBNeverChanges.m_pBuffer ) g_CBNeverChanges.m_pBuffer->Release();
@@ -645,6 +650,7 @@ void CleanupDevice()
     if( g_SwapChain->m_pSwapChain) g_SwapChain->m_pSwapChain->Release();
     if( g_DeviceContext->m_DeviceContext) g_DeviceContext->m_DeviceContext->Release();
     if( g_pDevice->m_Device ) g_pDevice->m_Device->Release();
+#endif
 }
 
 
@@ -668,7 +674,8 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             break;
 
 		case WM_SIZE:
-		{			
+		{
+#ifdef D3D11
 			if (g_DeviceContext->m_DeviceContext != nullptr)
 			{
 				//Get new window dimensions
@@ -686,6 +693,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 				//Update CB
 				CBChangeOnResize cbChangesOnResize;
 				cbChangesOnResize.mProjection = g_Camera.Proj;
+
 				g_DeviceContext->m_DeviceContext->UpdateSubresource(g_CBChangeOnResize.m_pBuffer, 0, NULL, &cbChangesOnResize, 0, 0);
 				if (g_SwapChain->m_pSwapChain)
 				{
@@ -724,7 +732,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 
 					g_DepthStencilView.m_pDepthStencilView->Release();
 
-					g_DepthStencilView.init(DSV, g_DepthStencil.m_Desc.Format);
+					g_DepthStencilView.init(DSV, (FORMAT)g_DepthStencil.m_Desc.Format);
 
 					h = g_pDevice->m_Device->CreateDepthStencilView(g_DepthStencil.m_pTexture, &g_DepthStencilView.m_Desc, &g_DepthStencilView.m_pDepthStencilView);
 
@@ -742,7 +750,9 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 					ViewP.init(V);
 					g_DeviceContext->m_DeviceContext->RSSetViewports(1, &ViewP.m_Viewport);
 				}
-			}			
+
+			}
+#endif //D3D11
 			break;
 		}
 		case WM_KEYDOWN:
@@ -773,7 +783,9 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 				g_Camera.rotate(g_Camera.mDir);
 				CBNeverChanges cbNeverChanges;
 				cbNeverChanges.mView = g_Camera.View;
+#ifdef D3D11
 				g_DeviceContext->m_DeviceContext->UpdateSubresource(g_CBNeverChanges.m_pBuffer, 0, NULL, &cbNeverChanges, 0, 0);
+#endif
 			}
 			break;
 		}
@@ -792,6 +804,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 //--------------------------------------------------------------------------------------
 void Render()
 {
+#ifdef D3D11
     // Update our time
     static float t = 0.0f;
     if( g_pDevice->m_struc.m_DriverType == D3D_DRIVER_TYPE_REFERENCE )
@@ -864,4 +877,5 @@ void Render()
     // Present our back buffer to our front buffer
     //
 	g_SwapChain->m_pSwapChain->Present( 0, 0 );
+#endif
 }

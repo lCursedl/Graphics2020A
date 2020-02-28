@@ -21,7 +21,7 @@ class CDepthStencilView
 {
 public:
 	CDepthStencilView();
-	void init(DepthStencilViewStruct D, DXGI_FORMAT F);
+	void init(DepthStencilViewStruct D, FORMAT F);
 #ifdef D3D11
 	ID3D11DepthStencilView * m_pDepthStencilView;
 	D3D11_DEPTH_STENCIL_VIEW_DESC m_Desc;

@@ -1,10 +1,15 @@
 #pragma once
 
-#include <d3d11.h>
-
-#define D3D11
+//#define D3D11
 
 #ifdef D3D11
+#include <d3d11.h>
+#include <d3dx11.h>
+#include <d3dcompiler.h>
+#include <xnamath.h>
+#endif // D3D11
+
+#define PIDIV4           0.785398163f
 
 enum DRIVER_TYPE
 {
@@ -309,5 +314,3 @@ enum COMPARISON_FUNC
 	COMPARISON_GREATER_EQUAL = 7,
 	COMPARISON_ALWAYS = 8
 };
-
-#endif // D3D11

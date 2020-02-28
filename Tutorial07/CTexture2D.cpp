@@ -10,6 +10,7 @@ CTexture2D::CTexture2D()
 void CTexture2D::init(Texture2DStruct S)
 {
 	m_Data = S;
+#ifdef D3D11
 	ZeroMemory(&m_Desc, sizeof(m_Desc));
 
 	m_Desc.Width = m_Data.W;
@@ -23,4 +24,5 @@ void CTexture2D::init(Texture2DStruct S)
 	m_Desc.BindFlags = m_Data.flags;
 	m_Desc.CPUAccessFlags = m_Data.cpuAccessFlags;
 	m_Desc.MiscFlags = m_Data.miscFlags;
+#endif
 }

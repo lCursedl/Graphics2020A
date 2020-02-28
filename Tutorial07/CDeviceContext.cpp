@@ -2,7 +2,9 @@
 
 CDeviceContext::CDeviceContext()
 {
+#ifdef D3D11
 	m_DeviceContext = NULL;
+#endif
 }
 
 CDeviceContext * CDeviceContext::getInstance()

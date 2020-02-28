@@ -24,6 +24,9 @@
     <Filter Include="Graphics\source">
       <UniqueIdentifier>{f9e5ce42-1426-46a0-9350-ca5eb0c7dc2e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{3719059b-7189-453f-815d-f6418a6e2376}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CCamera.cpp" />
@@ -195,6 +198,9 @@
     </ClInclude>
     <ClInclude Include="CSamplerState.h">
       <Filter>Graphics\include</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui.h">
+      <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -5,7 +5,7 @@ CSwapChain::CSwapChain(){}
 
 void CSwapChain::init(SwapChainStruct s)
 {
-
+#ifdef D3D11
 	ZeroMemory(&m_sd, sizeof(m_sd));
 	m_sd.BufferCount = s.bufferCount;
 	m_sd.BufferDesc.Width = s.W;
@@ -18,6 +18,7 @@ void CSwapChain::init(SwapChainStruct s)
 	m_sd.SampleDesc.Count = s.count;
 	m_sd.SampleDesc.Quality = s.quality;
 	m_sd.Windowed = s.windowed;
+#endif
 }
 
 CSwapChain * CSwapChain::getInstance()
