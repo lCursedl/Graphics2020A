@@ -14,7 +14,7 @@ void CSwapChain::init(SwapChainStruct s)
 	m_sd.BufferDesc.RefreshRate.Numerator = s.refreshNumerator;
 	m_sd.BufferDesc.RefreshRate.Denominator = s.refreshDenominator;
 	m_sd.BufferUsage = s.bufferUsage;
-	m_sd.OutputWindow = s.outputWND;
+	m_sd.OutputWindow = (HWND)s.outputWND;
 	m_sd.SampleDesc.Count = s.count;
 	m_sd.SampleDesc.Quality = s.quality;
 	m_sd.Windowed = s.windowed;

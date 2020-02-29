@@ -10,9 +10,7 @@ struct SwapChainStruct
 	unsigned int refreshNumerator;
 	unsigned int refreshDenominator;
 	unsigned int bufferUsage;
-#ifdef D3D11
-	HWND outputWND;
-#endif
+	unsigned int outputWND;
 	unsigned int count;
 	unsigned int quality;
 	bool windowed;

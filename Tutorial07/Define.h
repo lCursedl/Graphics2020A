@@ -1,6 +1,6 @@
 #pragma once
 
-//#define D3D11
+#define D3D11
 
 #ifdef D3D11
 #include <d3d11.h>
