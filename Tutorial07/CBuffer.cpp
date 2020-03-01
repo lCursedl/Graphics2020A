@@ -18,3 +18,12 @@ void CBuffer::init(BufferStruct B)
 	m_bd.CPUAccessFlags = m_bufferstruct.cpuAccessFlags;
 #endif
 }
+
+void * CBuffer::getBuffer()
+{
+#ifdef D3D11
+	return m_pBuffer;
+#else
+	return nullptr;
+#endif	
+}

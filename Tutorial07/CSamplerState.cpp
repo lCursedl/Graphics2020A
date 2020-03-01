@@ -20,3 +20,12 @@ void CSamplerState::init(SAMPLER_DESC S)
 	m_Desc.MaxLOD = S.maxLOD;
 #endif
 }
+
+void * CSamplerState::getSampler()
+{
+#ifdef D3D11
+	return m_pSamplerLinear;
+#else
+	return nullptr;
+#endif
+}

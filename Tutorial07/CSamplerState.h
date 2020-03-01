@@ -20,6 +20,7 @@ class CSamplerState
 public:
 	CSamplerState();
 	void init(SAMPLER_DESC S);
+	void * getSampler();
 #ifdef D3D11
 	ID3D11SamplerState * m_pSamplerLinear;
 	D3D11_SAMPLER_DESC m_Desc;

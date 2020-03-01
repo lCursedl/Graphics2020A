@@ -8,3 +8,12 @@ void CVertexBuffer::init(SubresourceData s, BufferStruct b)
 	m_Data.pSysMem = s.psysMem;
 #endif
 }
+
+void * CVertexBuffer::getVB()
+{
+#ifdef D3D11
+	return m_Buffer.getBuffer();
+#else
+	return nullptr;
+#endif
+}

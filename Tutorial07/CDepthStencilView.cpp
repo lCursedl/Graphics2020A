@@ -16,3 +16,12 @@ void CDepthStencilView::init(DepthStencilViewStruct D, FORMAT F)
 	m_Desc.Texture2D.MipSlice = D.texture2D.mipSlice;
 #endif // D3D11
 }
+
+void * CDepthStencilView::getDSV()
+{
+#ifdef D3D11
+	return m_pDepthStencilView;
+#else
+	return nullptr;
+#endif // D3D11	
+}

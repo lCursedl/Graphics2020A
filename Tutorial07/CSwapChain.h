@@ -22,8 +22,8 @@ public:
 
 	void init(SwapChainStruct s);
 	static CSwapChain * getInstance();
-	void operator = (CSwapChain const&) = delete;	
-
+	void operator = (CSwapChain const&) = delete;
+	void * getSwapChain();
 #ifdef D3D11
 	IDXGISwapChain * m_pSwapChain;
 	DXGI_SWAP_CHAIN_DESC m_sd;

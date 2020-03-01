@@ -6,7 +6,7 @@ class CVertexBuffer
 public:
 
 	void init(SubresourceData s, BufferStruct b);
-
+	void * getVB();
 	CBuffer m_Buffer;
 #ifdef D3D11
 	D3D11_SUBRESOURCE_DATA m_Data;

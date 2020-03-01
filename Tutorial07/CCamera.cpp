@@ -221,7 +221,7 @@ void CCamera::rotate()
 
 void CCamera::rotate(glm::vec3 mouseDir)
 {
-	rotateUp(mouseDir);	
+	rotateUp(mouseDir);
 	rotateRight(mouseDir);
 }
 

@@ -26,3 +26,12 @@ void CTexture2D::init(Texture2DStruct S)
 	m_Desc.MiscFlags = m_Data.miscFlags;
 #endif
 }
+
+void * CTexture2D::getTexture()
+{
+#ifdef D3D11
+	return m_pTexture;
+#else
+	return nullptr;
+#endif
+}

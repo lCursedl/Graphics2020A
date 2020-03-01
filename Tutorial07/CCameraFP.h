@@ -3,8 +3,17 @@
 class CCameraFP : public CCamera
 {
 public:
-	glm::vec3 Front;
+
+	CCameraFP();
 
 	void move();
-	void updateVM();
+	void getKeyPress(WPARAM key);
+	void getKeyRelease(WPARAM key);
+	void rotateFront(glm::vec3 Dir);
+	void rotateRight(glm::vec3 Dir);
+
+	float m_maxFrontRotation;
+	float m_maxRightRotation;
+	float m_RightRotation;
+	float m_FrontRotation;
 };

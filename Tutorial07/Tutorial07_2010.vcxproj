@@ -374,6 +374,12 @@
   </ItemDefinitionGroup>
   <ItemGroup />
   <ItemGroup>
+    <ClCompile Include="amgui\imgui.cpp" />
+    <ClCompile Include="amgui\imgui_demo.cpp" />
+    <ClCompile Include="amgui\imgui_draw.cpp" />
+    <ClCompile Include="amgui\imgui_impl_dx11.cpp" />
+    <ClCompile Include="amgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="amgui\imgui_widgets.cpp" />
     <ClCompile Include="CBuffer.cpp" />
     <ClCompile Include="CCamera.cpp" />
     <ClCompile Include="CCameraFP.cpp" />
@@ -395,6 +401,14 @@
     <None Include="Tutorial07.fx" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="amgui\imconfig.h" />
+    <ClInclude Include="amgui\imgui.h" />
+    <ClInclude Include="amgui\imgui_impl_dx11.h" />
+    <ClInclude Include="amgui\imgui_impl_win32.h" />
+    <ClInclude Include="amgui\imgui_internal.h" />
+    <ClInclude Include="amgui\imstb_rectpack.h" />
+    <ClInclude Include="amgui\imstb_textedit.h" />
+    <ClInclude Include="amgui\imstb_truetype.h" />
     <ClInclude Include="CBuffer.h" />
     <ClInclude Include="CCamera.h" />
     <ClInclude Include="CCameraFP.h" />

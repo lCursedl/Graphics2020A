@@ -7,3 +7,12 @@ CPixelShader::CPixelShader()
 	m_pPixelShader = NULL;
 #endif // D3D11
 }
+
+void * CPixelShader::getPS()
+{
+#ifdef D3D11
+	return m_pPixelShader;
+#else
+	return nullptr;
+#endif // D3D11
+}

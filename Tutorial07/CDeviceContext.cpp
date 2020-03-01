@@ -19,3 +19,12 @@ CDeviceContext * CDeviceContext::getInstance()
 void CDeviceContext::init()
 {
 }
+
+void * CDeviceContext::getDeviceContext()
+{
+#ifdef D3D11
+	return m_DeviceContext;
+#else
+	return nullptr;
+#endif // D3D11	
+}

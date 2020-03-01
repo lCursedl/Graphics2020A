@@ -18,6 +18,7 @@ public:
 	CBuffer();
 	void init(BufferStruct B);
 	BufferStruct m_bufferstruct;
+	void * getBuffer();
 #ifdef D3D11
 	D3D11_BUFFER_DESC m_bd;
 	ID3D11Buffer * m_pBuffer;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <windows.h>
+#include "CBuffer.h"
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
 #include "glm/vec4.hpp"
@@ -79,12 +80,16 @@ public:
 	virtual void updateVM();
 	void updatePM();
 	virtual void move();
-	virtual void rotate();
+	void rotate();
 	void rotate(glm::vec3 mouseDir);
 	void rotateUp(glm::vec3 Dir);
-	void rotateRight(glm::vec3 Dir);
-	void rotateFront(glm::vec3 Dir);
+	virtual void rotateRight(glm::vec3 Dir);
+	virtual void rotateFront(glm::vec3 Dir);
 	void createVM();
 	void getKeyPress(WPARAM key);
 	void getKeyRelease(WPARAM key);
+
+	CBuffer m_CBNeverChanges;
+	CBuffer m_CBChangesEveryFrame;
+	CBuffer m_CBChangesOnResize;
 };

@@ -29,3 +29,12 @@ CSwapChain * CSwapChain::getInstance()
 	}
 	return m_pSCInstance;
 }
+
+void * CSwapChain::getSwapChain()
+{
+#ifdef D3D11
+	return m_pSwapChain;
+#else
+	return nullptr;
+#endif
+}

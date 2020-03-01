@@ -19,6 +19,7 @@ public:
 	static CDevice * getInstance();
 	void operator = (CDevice const&) = delete;
 	void init(DeviceStruct s);
+	void * getDevice();
 	DeviceStruct m_struc;
 #ifdef D3D11
 	ID3D11Device * m_Device;

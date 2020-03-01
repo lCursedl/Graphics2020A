@@ -17,3 +17,12 @@ CDevice::~CDevice(){}
  {
 	 m_struc = s;
  }
+
+ void * CDevice::getDevice()
+ {
+#ifdef D3D11
+	 return m_Device;
+#else
+	 return nullptr;
+#endif // D3D11
+ }
