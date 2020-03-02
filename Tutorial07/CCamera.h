@@ -1,4 +1,4 @@
-#pragma once
+ #pragma once
 
 #include <windows.h>
 #include "CBuffer.h"
@@ -6,7 +6,7 @@
 #include "glm/vec3.hpp"
 #include "glm/vec4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#define STEP 0.01f
+#define STEP 0.025f
 #define ROTATESTEP 0.25f
 
 struct CameraDesc

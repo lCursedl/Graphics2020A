@@ -22,9 +22,9 @@
 #include "CViewport.h"
 #include "CRenderTargetView.h"
 #include "CSamplerState.h"
-#include "imgui.h"
-#include"amgui/imgui_impl_dx11.h"
-#include"amgui/imgui_impl_win32.h"
+#include "amgui/imgui.h"
+#include "amgui/imgui_impl_dx11.h"
+#include "amgui/imgui_impl_win32.h"
 //--------------------------------------------------------------------------------------
 // Structures
 //--------------------------------------------------------------------------------------
@@ -111,6 +111,15 @@ CSamplerState						g_SamplerState;
 
 CCamera *							ActiveCamera = NULL;
 CCamera *							InactiveCamera = NULL;
+
+unsigned int						imguiWindowW;
+unsigned int						imguiWindowH;
+
+#ifdef D3D11
+ID3D11Device * ptrDevice = static_cast<ID3D11Device*>(g_pDevice->getDevice());
+ID3D11DeviceContext * ptrDC = static_cast<ID3D11DeviceContext*>(g_DeviceContext->getDeviceContext());
+IDXGISwapChain* ptrSC = static_cast<IDXGISwapChain*>(g_SwapChain->getSwapChain());
+#endif // D3D11
 
 //--------------------------------------------------------------------------------------
 // Forward declarations
@@ -220,24 +229,23 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
         }
         else
         {
-			ImVec2 WindowDimension(240, 240);
+			ImVec2 ImgDimension(imguiWindowW / 5, imguiWindowH / 5);
+			
 			ImGui_ImplDX11_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
-			ImGui::Begin("Change Cameras");
-
-			if (ImGui::Button("Click me"))
+			ImGui::Begin("Inactive Camera", nullptr, 8);
 			{
-				CCamera * temp = InactiveCamera;
-				InactiveCamera = ActiveCamera;
-				ActiveCamera = temp;
+				ImGui::SetNextWindowContentSize(ImgDimension);
+				ImGui::Image(InactiveSRV, ImgDimension);
+				ImGui::GetIO().FontGlobalScale;
+				if (ImGui::Button("Change"))
+				{
+					CCamera * temp = InactiveCamera;
+					InactiveCamera = ActiveCamera;
+					ActiveCamera = temp;
+				}
 			}
-			ImGui::End();
-			ImGui::Begin("DirectX11 Texture Test");
-
-			ImGui::Image(InactiveSRV, WindowDimension);
-			ImGui::GetIO().FontGlobalScale;
-
 			ImGui::End();
 			Render();
         }
@@ -327,8 +335,8 @@ HRESULT InitDevice()
 
     RECT rc;
     GetClientRect( g_hWnd, &rc );
-    unsigned int width = rc.right - rc.left;
-    unsigned int height = rc.bottom - rc.top;
+    unsigned int width = imguiWindowW = rc.right - rc.left;
+    unsigned int height = imguiWindowH = rc.bottom - rc.top;
 
 #ifdef D3D11
 	DeviceStruct T;
@@ -372,7 +380,7 @@ HRESULT InitDevice()
     {
 		g_pDevice->m_struc.m_DriverType = g_pDevice->m_struc.m_DriverTypes[driverTypeIndex];
         hr = D3D11CreateDeviceAndSwapChain( NULL, (D3D_DRIVER_TYPE)g_pDevice->m_struc.m_DriverType, NULL, g_pDevice->m_struc.m_DeviceFlags, (D3D_FEATURE_LEVEL *)g_pDevice->m_struc.m_FeatureLevels, g_pDevice->m_struc.m_numFeatureLevels,
-                                            D3D11_SDK_VERSION, &g_SwapChain->m_sd, &g_SwapChain->m_pSwapChain, &g_pDevice->m_Device, (D3D_FEATURE_LEVEL *)&featureLevel, &g_DeviceContext->m_DeviceContext );
+                                            D3D11_SDK_VERSION, &g_SwapChain->m_sd, &ptrSC, &ptrDevice, (D3D_FEATURE_LEVEL *)&featureLevel, &ptrDC );
         if( SUCCEEDED( hr ) )
             break;
     }
@@ -381,11 +389,11 @@ HRESULT InitDevice()
 
     // Create a render target view
 	CTexture2D BackBuffer;
-    hr = g_SwapChain->m_pSwapChain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), ( LPVOID* )&BackBuffer.m_pTexture );
+    hr = ptrSC->GetBuffer( 0, __uuidof( ID3D11Texture2D ), ( LPVOID* )&BackBuffer.m_pTexture );
     if( FAILED( hr ) )
         return hr;
 
-    hr = g_pDevice->m_Device->CreateRenderTargetView(BackBuffer.m_pTexture, NULL, &g_RenderTargetView.m_pRTV);
+    hr = ptrDevice->CreateRenderTargetView(BackBuffer.m_pTexture, NULL, &g_RenderTargetView.m_pRTV);
 	BackBuffer.m_pTexture->Release();
     if( FAILED( hr ) )
         return hr;
@@ -406,7 +414,7 @@ HRESULT InitDevice()
 
 	g_DepthStencil.init(DepthDesc);
 
-	hr = g_pDevice->m_Device->CreateTexture2D(&g_DepthStencil.m_Desc, NULL, &g_DepthStencil.m_pTexture);
+	hr = ptrDevice->CreateTexture2D(&g_DepthStencil.m_Desc, NULL, &g_DepthStencil.m_pTexture);
 	if (FAILED(hr))
 		return hr;
 
@@ -418,7 +426,7 @@ HRESULT InitDevice()
 
 	DepthStencilViewFree.init(DSV, (FORMAT)g_DepthStencil.m_Desc.Format);
 
-    hr = g_pDevice->m_Device->CreateDepthStencilView(g_DepthStencil.m_pTexture, &DepthStencilViewFree.m_Desc, &DepthStencilViewFree.m_pDepthStencilView );
+    hr = ptrDevice->CreateDepthStencilView(g_DepthStencil.m_pTexture, &DepthStencilViewFree.m_Desc, &DepthStencilViewFree.m_pDepthStencilView );
     if( FAILED( hr ) )
         return hr;
 
@@ -433,7 +441,7 @@ HRESULT InitDevice()
 
 	CViewport tempVP;
 	tempVP.init(vpStruct);
-	g_DeviceContext->m_DeviceContext->RSSetViewports(1, &tempVP.m_Viewport);
+	ptrDC->RSSetViewports(1, &tempVP.m_Viewport);
 
     // Compile the vertex shader
     hr = CompileShaderFromFile( L"Tutorial07.fx", "VS", "vs_4_0", &g_VertexShader.m_pVSBlob );
@@ -445,7 +453,7 @@ HRESULT InitDevice()
     }
 
     //// Create the vertex shader
-	hr = g_pDevice->m_Device->CreateVertexShader( g_VertexShader.m_pVSBlob->GetBufferPointer(), g_VertexShader.m_pVSBlob->GetBufferSize(), NULL, &g_VertexShader.m_pVertexShader );
+	hr = ptrDevice->CreateVertexShader( g_VertexShader.m_pVSBlob->GetBufferPointer(), g_VertexShader.m_pVSBlob->GetBufferSize(), NULL, &g_VertexShader.m_pVertexShader );
     if( FAILED( hr ) )
     {    
         g_VertexShader.m_pVSBlob->Release();
@@ -453,12 +461,12 @@ HRESULT InitDevice()
     }
 
 	//Create input layout from compiled VS
-	hr = CreateInputLayoutDescFromVertexShaderSignature(g_VertexShader.m_pVSBlob, g_pDevice->m_Device, &g_VertexShader.m_pInputLayout);
+	hr = CreateInputLayoutDescFromVertexShaderSignature(g_VertexShader.m_pVSBlob, ptrDevice, &g_VertexShader.m_pInputLayout);
 	if (FAILED(hr))
 		return hr;
 
     // Set the input layout
-	g_DeviceContext->m_DeviceContext->IASetInputLayout(g_VertexShader.m_pInputLayout );
+	ptrDC->IASetInputLayout(g_VertexShader.m_pInputLayout );
 
     // Compile the pixel shader
     hr = CompileShaderFromFile( L"Tutorial07.fx", "PS", "ps_4_0", &g_PixelShader.m_pPSBlob);
@@ -470,7 +478,7 @@ HRESULT InitDevice()
     }
 
     // Create the pixel shader
-    hr = g_pDevice->m_Device->CreatePixelShader(g_PixelShader.m_pPSBlob->GetBufferPointer(), g_PixelShader.m_pPSBlob->GetBufferSize(), NULL, &g_PixelShader.m_pPixelShader);
+    hr = ptrDevice->CreatePixelShader(g_PixelShader.m_pPSBlob->GetBufferPointer(), g_PixelShader.m_pPSBlob->GetBufferSize(), NULL, &g_PixelShader.m_pPixelShader);
 	g_PixelShader.m_pPSBlob->Release();
     if( FAILED( hr ) )
         return hr;
@@ -519,14 +527,14 @@ HRESULT InitDevice()
 	subrsrcData.psysMem = vertices;
 	g_VertexBuffer.init(subrsrcData, bufferstrct);
 
-    hr = g_pDevice->m_Device->CreateBuffer( &g_VertexBuffer.m_Buffer.m_bd, &g_VertexBuffer.m_Data, &g_VertexBuffer.m_Buffer.m_pBuffer );
+    hr = ptrDevice->CreateBuffer( &g_VertexBuffer.m_Buffer.m_bd, &g_VertexBuffer.m_Data, &g_VertexBuffer.m_Buffer.m_pBuffer );
     if( FAILED( hr ) )
         return hr;
 
     // Set vertex buffer
     UINT stride = sizeof( SimpleVertex );
     UINT offset = 0;
-	g_DeviceContext->m_DeviceContext->IASetVertexBuffers( 0, 1, &g_VertexBuffer.m_Buffer.m_pBuffer, &stride, &offset );
+	ptrDC->IASetVertexBuffers( 0, 1, &g_VertexBuffer.m_Buffer.m_pBuffer, &stride, &offset );
 
     // Create index buffer
     WORD indices[] =
@@ -556,15 +564,15 @@ HRESULT InitDevice()
 	bufferstrct.cpuAccessFlags = 0;
 	subrsrcData.psysMem = indices;
 	g_IndexBuffer.init(subrsrcData, bufferstrct);
-    hr = g_pDevice->m_Device->CreateBuffer( &g_IndexBuffer.m_Buffer.m_bd, &g_IndexBuffer.m_Data, &g_IndexBuffer.m_Buffer.m_pBuffer );
+    hr = ptrDevice->CreateBuffer( &g_IndexBuffer.m_Buffer.m_bd, &g_IndexBuffer.m_Data, &g_IndexBuffer.m_Buffer.m_pBuffer );
     if( FAILED( hr ) )
         return hr;
 
     // Set index buffer
-	g_DeviceContext->m_DeviceContext->IASetIndexBuffer(g_IndexBuffer.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0 );
+	ptrDC->IASetIndexBuffer(g_IndexBuffer.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0 );
 
     // Set primitive topology
-	g_DeviceContext->m_DeviceContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+	ptrDC->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 
     // Create the constant buffers
 	bufferstrct.usage = USAGE_DEFAULT;
@@ -576,13 +584,13 @@ HRESULT InitDevice()
 
 	//Free Camera
 	g_Camera.m_CBNeverChanges.init(bufferstrct);
-    hr = g_pDevice->m_Device->CreateBuffer( &g_Camera.m_CBNeverChanges.m_bd, NULL, &g_Camera.m_CBNeverChanges.m_pBuffer );
+    hr = ptrDevice->CreateBuffer( &g_Camera.m_CBNeverChanges.m_bd, NULL, &g_Camera.m_CBNeverChanges.m_pBuffer );
     if( FAILED( hr ) )
         return hr;
 
 	//FPS Camera
 	FirstPerson.m_CBNeverChanges.init(bufferstrct);
-	hr = g_pDevice->m_Device->CreateBuffer(&FirstPerson.m_CBNeverChanges.m_bd, NULL, &FirstPerson.m_CBNeverChanges.m_pBuffer);
+	hr = ptrDevice->CreateBuffer(&FirstPerson.m_CBNeverChanges.m_bd, NULL, &FirstPerson.m_CBNeverChanges.m_pBuffer);
 	if (FAILED(hr))
 		return hr;
 
@@ -590,13 +598,13 @@ HRESULT InitDevice()
 	bufferstrct.byteWidth = sizeof(CBChangeOnResize);
 	//Free Camera
 	g_Camera.m_CBChangesOnResize.init(bufferstrct);
-    hr = g_pDevice->m_Device->CreateBuffer( &g_Camera.m_CBChangesOnResize.m_bd, NULL, &g_Camera.m_CBChangesOnResize.m_pBuffer );
+    hr = ptrDevice->CreateBuffer( &g_Camera.m_CBChangesOnResize.m_bd, NULL, &g_Camera.m_CBChangesOnResize.m_pBuffer );
     if( FAILED( hr ) )
         return hr;
 
 	//FPS Camera
 	FirstPerson.m_CBChangesOnResize.init(bufferstrct);
-	hr = g_pDevice->m_Device->CreateBuffer(&FirstPerson.m_CBChangesOnResize.m_bd, NULL, &FirstPerson.m_CBChangesOnResize.m_pBuffer);
+	hr = ptrDevice->CreateBuffer(&FirstPerson.m_CBChangesOnResize.m_bd, NULL, &FirstPerson.m_CBChangesOnResize.m_pBuffer);
 	if (FAILED(hr))
 		return hr;
 
@@ -604,18 +612,18 @@ HRESULT InitDevice()
 	bufferstrct.byteWidth = sizeof(CBChangesEveryFrame);
 	//Free Camera
 	g_Camera.m_CBChangesEveryFrame.init(bufferstrct);
-    hr = g_pDevice->m_Device->CreateBuffer( &g_Camera.m_CBChangesEveryFrame.m_bd, NULL, &g_Camera.m_CBChangesEveryFrame.m_pBuffer );
+    hr = ptrDevice->CreateBuffer( &g_Camera.m_CBChangesEveryFrame.m_bd, NULL, &g_Camera.m_CBChangesEveryFrame.m_pBuffer );
     if( FAILED( hr ) )
         return hr;
 
 	//FPS Camera
 	FirstPerson.m_CBChangesEveryFrame.init(bufferstrct);
-	hr = g_pDevice->m_Device->CreateBuffer(&FirstPerson.m_CBChangesEveryFrame.m_bd, NULL, &FirstPerson.m_CBChangesEveryFrame.m_pBuffer);
+	hr = ptrDevice->CreateBuffer(&FirstPerson.m_CBChangesEveryFrame.m_bd, NULL, &FirstPerson.m_CBChangesEveryFrame.m_pBuffer);
 	if (FAILED(hr))
 		return hr;
 
     // Load the Texture 
-    hr = D3DX11CreateShaderResourceViewFromFile( g_pDevice->m_Device, L"seafloor.dds", NULL, NULL, &g_pTextureRV, NULL );
+    hr = D3DX11CreateShaderResourceViewFromFile( ptrDevice, L"seafloor.dds", NULL, NULL, &g_pTextureRV, NULL );
     if( FAILED( hr ) )
         return hr;
 
@@ -632,7 +640,7 @@ HRESULT InitDevice()
 
 	g_SamplerState.init(samplerDsc);
 
-    hr = g_pDevice->m_Device->CreateSamplerState( &g_SamplerState.m_Desc, &g_SamplerState.m_pSamplerLinear );
+    hr = ptrDevice->CreateSamplerState( &g_SamplerState.m_Desc, &g_SamplerState.m_pSamplerLinear );
     if( FAILED( hr ) )
         return hr;
 #endif
@@ -658,28 +666,28 @@ HRESULT InitDevice()
     CBNeverChanges cbNeverChanges;
 	cbNeverChanges.mView = g_Camera.View;
 #ifdef D3D11
-	g_DeviceContext->m_DeviceContext->UpdateSubresource(g_Camera.m_CBNeverChanges.m_pBuffer, 0, NULL, &cbNeverChanges, 0, 0);
+	ptrDC->UpdateSubresource(g_Camera.m_CBNeverChanges.m_pBuffer, 0, NULL, &cbNeverChanges, 0, 0);
 #endif // D3D11	
 
 	//Set FPS Camera VM
 	CBNeverChanges cbNeverChanges2;
 	cbNeverChanges2.mView = FirstPerson.View;
 #ifdef D3D11
-	g_DeviceContext->m_DeviceContext->UpdateSubresource(FirstPerson.m_CBNeverChanges.m_pBuffer, 0, NULL, &cbNeverChanges2, 0, 0);
+	ptrDC->UpdateSubresource(FirstPerson.m_CBNeverChanges.m_pBuffer, 0, NULL, &cbNeverChanges2, 0, 0);
 #endif // D3D11
 
     // Initialize Free Camera PM    
     CBChangeOnResize cbChangesOnResize;
 	cbChangesOnResize.mProjection = g_Camera.Proj;
 #ifdef D3D11
-	g_DeviceContext->m_DeviceContext->UpdateSubresource( g_Camera.m_CBChangesOnResize.m_pBuffer, 0, NULL, &cbChangesOnResize, 0, 0 );
+	ptrDC->UpdateSubresource( g_Camera.m_CBChangesOnResize.m_pBuffer, 0, NULL, &cbChangesOnResize, 0, 0 );
 #endif
 
 	//Initialize FPS Camera PM
 	CBChangeOnResize cbChangesOnResize2;
 	cbChangesOnResize2.mProjection = FirstPerson.Proj;
 #ifdef D3D11
-	g_DeviceContext->m_DeviceContext->UpdateSubresource(FirstPerson.m_CBChangesOnResize.m_pBuffer, 0, NULL, &cbChangesOnResize2, 0, 0);
+	ptrDC->UpdateSubresource(FirstPerson.m_CBChangesOnResize.m_pBuffer, 0, NULL, &cbChangesOnResize2, 0, 0);
 #endif
 
 	//Initialize texture, SRV and RTV for inactive camera
@@ -699,7 +707,7 @@ HRESULT InitDevice()
 
 	InactiveCameraTexture.init(D);
 #ifdef D3D11
-	hr = g_pDevice->m_Device->CreateTexture2D(&InactiveCameraTexture.m_Desc, NULL, &InactiveCameraTexture.m_pTexture);
+	hr = ptrDevice->CreateTexture2D(&InactiveCameraTexture.m_Desc, NULL, &InactiveCameraTexture.m_pTexture);
 	if (FAILED(hr))
 		return hr;
 #endif
@@ -712,7 +720,7 @@ HRESULT InitDevice()
 
 	SecondRTV.init(rtDesc);
 #ifdef D3D11
-	hr = g_pDevice->m_Device->CreateRenderTargetView(InactiveCameraTexture.m_pTexture, &SecondRTV.m_Desc, &SecondRTV.m_pRTV);
+	hr = ptrDevice->CreateRenderTargetView(InactiveCameraTexture.m_pTexture, &SecondRTV.m_Desc, &SecondRTV.m_pRTV);
 	if (FAILED(hr))
 		return hr;
 #endif
@@ -724,7 +732,7 @@ HRESULT InitDevice()
 	view.Texture2D.MostDetailedMip = 0;
 	view.Texture2D.MipLevels = 1;
 
-	hr = g_pDevice->m_Device->CreateShaderResourceView(InactiveCameraTexture.m_pTexture, &view, &InactiveSRV);
+	hr = ptrDevice->CreateShaderResourceView(InactiveCameraTexture.m_pTexture, &view, &InactiveSRV);
 	if (FAILED(hr))
 		return hr;
 #endif
@@ -736,7 +744,7 @@ HRESULT InitDevice()
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	ImGui_ImplWin32_Init(g_hWnd);
-	ImGui_ImplDX11_Init(g_pDevice->m_Device,g_DeviceContext->m_DeviceContext);
+	ImGui_ImplDX11_Init(ptrDevice,ptrDC);
 	ImGui::StyleColorsDark();
 
     return S_OK;
@@ -749,7 +757,7 @@ HRESULT InitDevice()
 void CleanupDevice()
 {
 #ifdef D3D11
-    if( g_DeviceContext->m_DeviceContext) g_DeviceContext->m_DeviceContext->ClearState();
+    if( ptrDC) ptrDC->ClearState();
     if( g_SamplerState.m_pSamplerLinear ) g_SamplerState.m_pSamplerLinear->Release();
     if( g_pTextureRV ) g_pTextureRV->Release();
     if( g_Camera.m_CBNeverChanges.m_pBuffer ) g_Camera.m_CBNeverChanges.m_pBuffer->Release();
@@ -763,12 +771,12 @@ void CleanupDevice()
     if( g_DepthStencil.m_pTexture) g_DepthStencil.m_pTexture->Release();
     if( DepthStencilViewFree.m_pDepthStencilView ) DepthStencilViewFree.m_pDepthStencilView->Release();
     if( g_RenderTargetView.m_pRTV ) g_RenderTargetView.m_pRTV->Release();
-    if( g_SwapChain->m_pSwapChain) g_SwapChain->m_pSwapChain->Release();
+    if( ptrSC) ptrSC->Release();
 	if (FirstPerson.m_CBNeverChanges.m_pBuffer) FirstPerson.m_CBNeverChanges.m_pBuffer->Release();
 	if (FirstPerson.m_CBChangesOnResize.m_pBuffer) FirstPerson.m_CBChangesOnResize.m_pBuffer->Release();
 	if (FirstPerson.m_CBChangesEveryFrame.m_pBuffer) FirstPerson.m_CBChangesEveryFrame.m_pBuffer->Release();
-    if( g_DeviceContext->m_DeviceContext) g_DeviceContext->m_DeviceContext->Release();
-    if( g_pDevice->m_Device ) g_pDevice->m_Device->Release();	
+    if( ptrDC) ptrDC->Release();
+    if( ptrDevice ) ptrDevice->Release();	
 #endif
 }
 
@@ -799,16 +807,16 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 		case WM_SIZE:
 		{
 #ifdef D3D11
-			if (g_DeviceContext->m_DeviceContext != nullptr)
+			if (ptrDC != nullptr)
 			{
 				//Get new window dimensions
 				RECT rc;
 				GetClientRect(hWnd, &rc);
-				UINT width = rc.right - rc.left;
-				UINT height = rc.bottom - rc.top;
+				UINT width = imguiWindowW = rc.right - rc.left;
+				UINT height = imguiWindowH = rc.bottom - rc.top;
 				//Regenerate world matrix as identity
 				g_World = glm::mat4(1.0f);
-				//Set w and h for camera
+				//Set w and h for active camera
 				ActiveCamera->setHeigth(height);
 				ActiveCamera->setWidth(width);
 				//Update projection matrix with new params
@@ -817,19 +825,21 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 				CBChangeOnResize cbChangesOnResize;
 				cbChangesOnResize.mProjection = ActiveCamera->Proj;
 
-				g_DeviceContext->m_DeviceContext->UpdateSubresource(ActiveCamera->m_CBChangesOnResize.m_pBuffer, 0, NULL, &cbChangesOnResize, 0, 0);
+				ptrDC->UpdateSubresource(ActiveCamera->m_CBChangesOnResize.m_pBuffer, 0, NULL, &cbChangesOnResize, 0, 0);
 
+				//Set w and h for inactive camera
 				InactiveCamera->setHeigth(height);
 				InactiveCamera->setWidth(width);
+				//Update projection matrix with new params
 				InactiveCamera->updatePM();
-				CBChangeOnResize cbChangesOnResize2;
-				cbChangesOnResize2.mProjection = InactiveCamera->Proj;
+				cbChangesOnResize.mProjection = InactiveCamera->Proj;
+				//Update CB
+				ptrDC->UpdateSubresource(InactiveCamera->m_CBChangesOnResize.m_pBuffer, 0, NULL, &cbChangesOnResize, 0, 0);
 
-				g_DeviceContext->m_DeviceContext->UpdateSubresource(InactiveCamera->m_CBChangesOnResize.m_pBuffer, 0, NULL, &cbChangesOnResize2, 0, 0);
-
-				if (g_SwapChain->m_pSwapChain)
+				if (ptrSC)
 				{
 					HRESULT h;
+					//Handle inactive camera first
 					//Release inactive camera texture, SRV and RTV
 					InactiveCameraTexture.m_pTexture->Release();
 					InactiveSRV->Release();
@@ -849,14 +859,14 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 					T.miscFlags = 0;
 					InactiveCameraTexture.init(T);
 
-					h = g_pDevice->m_Device->CreateTexture2D(&InactiveCameraTexture.m_Desc, NULL, &InactiveCameraTexture.m_pTexture);
+					h = ptrDevice->CreateTexture2D(&InactiveCameraTexture.m_Desc, NULL, &InactiveCameraTexture.m_pTexture);
 
 					RenderTargetViewStruct RTV;
 					RTV.format = T.format;
 					RTV.viewDimension = RTV_DIMENSION_TEXTURE2D;
 					RTV.texture1D.mipSlice = 0;
 					SecondRTV.init(RTV);
-					h = g_pDevice->m_Device->CreateRenderTargetView(InactiveCameraTexture.m_pTexture, &SecondRTV.m_Desc, &SecondRTV.m_pRTV);
+					h = ptrDevice->CreateRenderTargetView(InactiveCameraTexture.m_pTexture, &SecondRTV.m_Desc, &SecondRTV.m_pRTV);
 
 					D3D11_SHADER_RESOURCE_VIEW_DESC SRV;
 					SRV.Format = (DXGI_FORMAT)T.format;
@@ -864,18 +874,18 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 					SRV.Texture2D.MostDetailedMip = 0;
 					SRV.Texture2D.MipLevels = 1;
 
-					h = g_pDevice->m_Device->CreateShaderResourceView(InactiveCameraTexture.m_pTexture, &SRV, &InactiveSRV);
+					h = ptrDevice->CreateShaderResourceView(InactiveCameraTexture.m_pTexture, &SRV, &InactiveSRV);
 
 					//
-					g_DeviceContext->m_DeviceContext->OMSetRenderTargets(0, 0, 0);
+					ptrDC->OMSetRenderTargets(0, 0, 0);
 					g_RenderTargetView.m_pRTV->Release();
 
 					
-					h = g_SwapChain->m_pSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
+					h = ptrSC->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
 
 					CBuffer tempBack;
-					h = g_SwapChain->m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&tempBack.m_pBuffer);
-					h = g_pDevice->m_Device->CreateRenderTargetView(tempBack.m_pBuffer, NULL, &g_RenderTargetView.m_pRTV);
+					h = ptrSC->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&tempBack.m_pBuffer);
+					h = ptrDevice->CreateRenderTargetView(tempBack.m_pBuffer, NULL, &g_RenderTargetView.m_pRTV);
 					tempBack.m_pBuffer->Release();
 
 					g_DepthStencil.m_pTexture->Release();
@@ -894,7 +904,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
  
 					g_DepthStencil.init(DepthDesc);
 
-					h = g_pDevice->m_Device->CreateTexture2D(&g_DepthStencil.m_Desc, NULL, &g_DepthStencil.m_pTexture);
+					h = ptrDevice->CreateTexture2D(&g_DepthStencil.m_Desc, NULL, &g_DepthStencil.m_pTexture);
 
 					DepthStencilViewStruct DSV;
 					DSV.format = g_DepthStencil.m_Data.format;
@@ -905,9 +915,9 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 
 					DepthStencilViewFree.init(DSV, (FORMAT)g_DepthStencil.m_Desc.Format);
 
-					h = g_pDevice->m_Device->CreateDepthStencilView(g_DepthStencil.m_pTexture, &DepthStencilViewFree.m_Desc, &DepthStencilViewFree.m_pDepthStencilView);
+					h = ptrDevice->CreateDepthStencilView(g_DepthStencil.m_pTexture, &DepthStencilViewFree.m_Desc, &DepthStencilViewFree.m_pDepthStencilView);
 
-					g_DeviceContext->m_DeviceContext->OMSetRenderTargets(1, &g_RenderTargetView.m_pRTV, DepthStencilViewFree.m_pDepthStencilView);
+					ptrDC->OMSetRenderTargets(1, &g_RenderTargetView.m_pRTV, DepthStencilViewFree.m_pDepthStencilView);
 
 					ViewportStruct V;
 					V.W = width;
@@ -919,7 +929,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 
 					CViewport ViewP;
 					ViewP.init(V);
-					g_DeviceContext->m_DeviceContext->RSSetViewports(1, &ViewP.m_Viewport);
+					ptrDC->RSSetViewports(1, &ViewP.m_Viewport);
 
 
 				}
@@ -957,7 +967,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 				CBNeverChanges cbNeverChanges;
 				cbNeverChanges.mView = ActiveCamera->View;
 #ifdef D3D11
-				g_DeviceContext->m_DeviceContext->UpdateSubresource(ActiveCamera->m_CBNeverChanges.m_pBuffer, 0, NULL, &cbNeverChanges, 0, 0);
+				ptrDC->UpdateSubresource(ActiveCamera->m_CBNeverChanges.m_pBuffer, 0, NULL, &cbNeverChanges, 0, 0);
 #endif
 			}
 			break;
@@ -999,7 +1009,7 @@ void Render()
 		ActiveCamera->rotate();
 		CBNeverChanges cbNeverChanges;
 		cbNeverChanges.mView = ActiveCamera->View;
-		g_DeviceContext->m_DeviceContext->UpdateSubresource(ActiveCamera->m_CBNeverChanges.m_pBuffer, 0, NULL, &cbNeverChanges, 0, 0);
+		ptrDC->UpdateSubresource(ActiveCamera->m_CBNeverChanges.m_pBuffer, 0, NULL, &cbNeverChanges, 0, 0);
 	}
 
     // Rotate cube around the origin
@@ -1015,9 +1025,9 @@ void Render()
     float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
 
 	//Set inactive camera RTV and DSV
-	g_DeviceContext->m_DeviceContext->OMSetRenderTargets(1, &SecondRTV.m_pRTV, DepthStencilViewFree.m_pDepthStencilView);
-	g_DeviceContext->m_DeviceContext->ClearRenderTargetView(SecondRTV.m_pRTV, ClearColor);
-	g_DeviceContext->m_DeviceContext->ClearDepthStencilView(DepthStencilViewFree.m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	ptrDC->OMSetRenderTargets(1, &SecondRTV.m_pRTV, DepthStencilViewFree.m_pDepthStencilView);
+	ptrDC->ClearRenderTargetView(SecondRTV.m_pRTV, ClearColor);
+	ptrDC->ClearDepthStencilView(DepthStencilViewFree.m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	for (int i = 0; i < 32; i++){
 
@@ -1027,25 +1037,25 @@ void Render()
 		CBChangesEveryFrame cb;
 		cb.mWorld = glm::transpose(g_World);
 		cb.vMeshColor = g_MeshColor;
-		g_DeviceContext->m_DeviceContext->UpdateSubresource(InactiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
+		ptrDC->UpdateSubresource(InactiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
 
-		g_DeviceContext->m_DeviceContext->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
-		g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(0, 1, &InactiveCamera->m_CBNeverChanges.m_pBuffer);
-		g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(1, 1, &InactiveCamera->m_CBChangesOnResize.m_pBuffer);
-		g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-		g_DeviceContext->m_DeviceContext->PSSetShader(g_PixelShader.m_pPixelShader, NULL, 0);
-		g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-		g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &g_pTextureRV);
-		g_DeviceContext->m_DeviceContext->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
-		g_DeviceContext->m_DeviceContext->DrawIndexed(36, 0, 0);
+		ptrDC->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
+		ptrDC->VSSetConstantBuffers(0, 1, &InactiveCamera->m_CBNeverChanges.m_pBuffer);
+		ptrDC->VSSetConstantBuffers(1, 1, &InactiveCamera->m_CBChangesOnResize.m_pBuffer);
+		ptrDC->VSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+		ptrDC->PSSetShader(g_PixelShader.m_pPixelShader, NULL, 0);
+		ptrDC->PSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+		ptrDC->PSSetShaderResources(0, 1, &g_pTextureRV);
+		ptrDC->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
+		ptrDC->DrawIndexed(36, 0, 0);
 		ID3D11ShaderResourceView* temp = NULL;
-		g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &temp);
+		ptrDC->PSSetShaderResources(0, 1, &temp);
 	}
 
 	//Set backbuffer and main DSV
-	g_DeviceContext->m_DeviceContext->OMSetRenderTargets(1, &g_RenderTargetView.m_pRTV, DepthStencilViewFree.m_pDepthStencilView);
-	g_DeviceContext->m_DeviceContext->ClearRenderTargetView(g_RenderTargetView.m_pRTV, ClearColor);
-	g_DeviceContext->m_DeviceContext->ClearDepthStencilView( DepthStencilViewFree.m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0 );
+	ptrDC->OMSetRenderTargets(1, &g_RenderTargetView.m_pRTV, DepthStencilViewFree.m_pDepthStencilView);
+	ptrDC->ClearRenderTargetView(g_RenderTargetView.m_pRTV, ClearColor);
+	ptrDC->ClearDepthStencilView( DepthStencilViewFree.m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0 );
 
     //
     // Update variables that change once per frame
@@ -1058,19 +1068,19 @@ void Render()
 		CBChangesEveryFrame cb;
 		cb.mWorld = glm::transpose(g_World);
 		cb.vMeshColor = g_MeshColor;
-		g_DeviceContext->m_DeviceContext->UpdateSubresource(ActiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
+		ptrDC->UpdateSubresource(ActiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
 
-		g_DeviceContext->m_DeviceContext->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
-		g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(0, 1, &ActiveCamera->m_CBNeverChanges.m_pBuffer);
-		g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(1, 1, &ActiveCamera->m_CBChangesOnResize.m_pBuffer);
-		g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-		g_DeviceContext->m_DeviceContext->PSSetShader( g_PixelShader.m_pPixelShader, NULL, 0);
-		g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-		g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &InactiveSRV);
-		g_DeviceContext->m_DeviceContext->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
-		g_DeviceContext->m_DeviceContext->DrawIndexed(36, 0, 0);
+		ptrDC->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
+		ptrDC->VSSetConstantBuffers(0, 1, &ActiveCamera->m_CBNeverChanges.m_pBuffer);
+		ptrDC->VSSetConstantBuffers(1, 1, &ActiveCamera->m_CBChangesOnResize.m_pBuffer);
+		ptrDC->VSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+		ptrDC->PSSetShader( g_PixelShader.m_pPixelShader, NULL, 0);
+		ptrDC->PSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+		ptrDC->PSSetShaderResources(0, 1, &InactiveSRV);
+		ptrDC->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
+		ptrDC->DrawIndexed(36, 0, 0);
 		ID3D11ShaderResourceView* temp = NULL;
-		g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &temp);
+		ptrDC->PSSetShaderResources(0, 1, &temp);
 	}
 
     //
@@ -1078,6 +1088,6 @@ void Render()
     //
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-	g_SwapChain->m_pSwapChain->Present( 0, 0 );
+	ptrSC->Present( 0, 0 );
 #endif
 }
