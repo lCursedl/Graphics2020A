@@ -9,10 +9,12 @@ CRenderTargetView::CRenderTargetView()
 
 void CRenderTargetView::init(RenderTargetViewStruct S)
 {
+#ifdef D3D11
 	ZeroMemory(&m_Desc, sizeof(m_Desc));
 	m_Desc.Format = (DXGI_FORMAT)S.format;
 	m_Desc.ViewDimension = (D3D11_RTV_DIMENSION)S.viewDimension;
 	m_Desc.Texture2D.MipSlice = S.texture2D.mipSlice;
+#endif
 }
 
 void * CRenderTargetView::getRTV()

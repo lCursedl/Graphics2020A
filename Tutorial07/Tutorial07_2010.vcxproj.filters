@@ -88,6 +88,10 @@
     <ClCompile Include="amgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="CMesh.cpp" />
+    <ClCompile Include="CMaterial.cpp" />
+    <ClCompile Include="CSceneManager.cpp" />
+    <ClCompile Include="CGraphicsAPI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tutorial07.cpp" />
@@ -244,6 +248,11 @@
     <ClInclude Include="amgui\imstb_truetype.h">
       <Filter>imgui</Filter>
     </ClInclude>
+    <ClInclude Include="Includes.h" />
+    <ClInclude Include="CMesh.h" />
+    <ClInclude Include="CMaterial.h" />
+    <ClInclude Include="CSceneManager.h" />
+    <ClInclude Include="CGraphicsAPI.h" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

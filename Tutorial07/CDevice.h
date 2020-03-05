@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Define.h"
-
+#include "Includes.h"
 struct DeviceStruct
 {
 	DRIVER_TYPE m_DriverType;

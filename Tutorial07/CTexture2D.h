@@ -1,9 +1,8 @@
 #pragma once
 #include "Define.h"
-
+#include "Includes.h"
 struct Texture2DStruct
 {
-#ifdef D3D11
 	unsigned int W;
 	unsigned int H;
 	unsigned int mipLevels;
@@ -14,7 +13,6 @@ struct Texture2DStruct
 	unsigned int flags;
 	unsigned int cpuAccessFlags;
 	unsigned int miscFlags;
-#endif // D3D11	
 };
 
 class CTexture2D

@@ -1,13 +1,12 @@
 #pragma once
 
-#define D3D11
+#include <sstream>
+#include <fstream>
 
-#ifdef D3D11
-#include <d3d11.h>
-#include <d3dx11.h>
-#include <d3dcompiler.h>
-#include <xnamath.h>
-#endif // D3D11
+#include "glm/vec2.hpp"
+#include "glm/vec3.hpp"
+#include "glm/vec4.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 #define PIDIV4           0.785398163f
 
@@ -313,4 +312,26 @@ enum COMPARISON_FUNC
 	COMPARISON_NOT_EQUAL = 6,
 	COMPARISON_GREATER_EQUAL = 7,
 	COMPARISON_ALWAYS = 8
+};
+
+struct SimpleVertex
+{
+	glm::vec3 Pos;
+	glm::vec2 Tex;
+};
+
+struct CBNeverChanges
+{
+	glm::mat4 mView;
+};
+
+struct CBChangeOnResize
+{
+	glm::mat4 mProjection;
+};
+
+struct CBChangesEveryFrame
+{
+	glm::mat4 mWorld;
+	glm::vec4 vMeshColor;
 };

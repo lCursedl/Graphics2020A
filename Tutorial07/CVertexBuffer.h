@@ -1,5 +1,6 @@
 #pragma once
 #include "CBuffer.h"
+#include "Includes.h"
 //Class which contains a CBuffer
 class CVertexBuffer
 {

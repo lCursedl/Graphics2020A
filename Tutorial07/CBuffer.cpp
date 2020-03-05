@@ -27,3 +27,49 @@ void * CBuffer::getBuffer()
 	return nullptr;
 #endif	
 }
+
+#ifdef D3D11
+void CBuffer::createVertexBuffer(int numVertex, const aiScene * model, SimpleVertex * vertex, ID3D11Buffer *& buffer, void * Dev)
+{
+
+	ID3D11Device * tempdevice = static_cast<ID3D11Device*>(Dev);
+	D3D11_BUFFER_DESC bd;
+	D3D11_SUBRESOURCE_DATA data;
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(SimpleVertex) * numVertex;
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+	ZeroMemory(&data, sizeof(data));
+	data.pSysMem = vertex;
+	HRESULT hr = tempdevice->CreateBuffer(&bd, &data, &buffer);
+	if (FAILED(hr))
+	{
+		return;
+	}
+
+
+}
+
+void CBuffer::createIndexBuffer(int numIndex, const aiScene * model, WORD * index, ID3D11Buffer *& buffer, void * Dev)
+{
+	ID3D11Device * tempdevice = static_cast<ID3D11Device*>(Dev);
+	D3D11_BUFFER_DESC bd;
+	D3D11_SUBRESOURCE_DATA data;
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(SimpleVertex) * numIndex;
+	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+	bd.MiscFlags = 0;
+	ZeroMemory(&data, sizeof(data));
+	data.pSysMem = index;
+	data.SysMemPitch = 0;
+	data.SysMemSlicePitch = 0;
+	HRESULT hr = tempdevice->CreateBuffer(&bd, &data, &buffer);
+	if (FAILED(hr))
+	{
+		return;
+	}
+}
+#endif // D3D11

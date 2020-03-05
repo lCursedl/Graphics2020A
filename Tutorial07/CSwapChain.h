@@ -1,6 +1,6 @@
 #pragma once
 #include "Define.h"
-
+#include "Includes.h"
 struct SwapChainStruct
 {
 	unsigned int bufferCount;

@@ -25,33 +25,12 @@
 #include "amgui/imgui.h"
 #include "amgui/imgui_impl_dx11.h"
 #include "amgui/imgui_impl_win32.h"
+#include "CGraphicsAPI.h"
 //--------------------------------------------------------------------------------------
 // Structures
 //--------------------------------------------------------------------------------------
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-struct SimpleVertex
-{
-    glm::vec3 Pos;
-    glm::vec2 Tex;
-};
-
-struct CBNeverChanges
-{
-	glm::mat4 mView;
-};
-
-struct CBChangeOnResize
-{
-	glm::mat4 mProjection;
-};
-
-struct CBChangesEveryFrame
-{
-	glm::mat4 mWorld;
-	glm::vec4 vMeshColor;
-};
 
 //Lab array
 glm::vec3 Lab[32]{
@@ -114,6 +93,9 @@ CCamera *							InactiveCamera = NULL;
 
 unsigned int						imguiWindowW;
 unsigned int						imguiWindowH;
+
+CGraphicsAPI						graphicApi;
+CSceneManager						SCManager;
 
 #ifdef D3D11
 ID3D11Device * ptrDevice = static_cast<ID3D11Device*>(g_pDevice->getDevice());
@@ -229,6 +211,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
         }
         else
         {
+#ifdef D3D11
 			ImVec2 ImgDimension(imguiWindowW / 5, imguiWindowH / 5);
 			
 			ImGui_ImplDX11_NewFrame();
@@ -237,7 +220,9 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 			ImGui::Begin("Inactive Camera", nullptr, 8);
 			{
 				ImGui::SetNextWindowContentSize(ImgDimension);
+
 				ImGui::Image(InactiveSRV, ImgDimension);
+
 				ImGui::GetIO().FontGlobalScale;
 				if (ImGui::Button("Change"))
 				{
@@ -247,6 +232,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 				}
 			}
 			ImGui::End();
+#endif
 			Render();
         }
     }
@@ -735,10 +721,6 @@ HRESULT InitDevice()
 	hr = ptrDevice->CreateShaderResourceView(InactiveCameraTexture.m_pTexture, &view, &InactiveSRV);
 	if (FAILED(hr))
 		return hr;
-#endif
-	//Set active and inactive camera
-	ActiveCamera = &g_Camera;
-	InactiveCamera = &FirstPerson;
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -746,6 +728,16 @@ HRESULT InitDevice()
 	ImGui_ImplWin32_Init(g_hWnd);
 	ImGui_ImplDX11_Init(ptrDevice,ptrDC);
 	ImGui::StyleColorsDark();
+
+	g_pDevice->m_Device = ptrDevice;
+	g_DeviceContext->m_DeviceContext = ptrDC;
+	graphicApi.loadMesh("MP5.fbx", &SCManager, graphicApi.m_Model, g_DeviceContext, graphicApi.m_Importer, ptrDevice);
+
+#endif
+
+	//Set active and inactive camera
+	ActiveCamera = &g_Camera;
+	InactiveCamera = &FirstPerson;
 
     return S_OK;
 }
@@ -1029,12 +1021,36 @@ void Render()
 	ptrDC->ClearRenderTargetView(SecondRTV.m_pRTV, ClearColor);
 	ptrDC->ClearDepthStencilView(DepthStencilViewFree.m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
+	unsigned int stride = sizeof(SimpleVertex);
+	unsigned int offset = 0;
+	ptrDC->IASetVertexBuffers(0, 1, &g_VertexBuffer.m_Buffer.m_pBuffer, &stride, &offset);
+	ptrDC->IASetIndexBuffer(g_IndexBuffer.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
+
+	CBChangesEveryFrame cb;
+	g_World = glm::mat4(1.f);
+	g_World = glm::translate(g_World,ActiveCamera->getPos());
+	cb.mWorld = glm::transpose(g_World);
+	cb.vMeshColor = g_MeshColor;
+	ptrDC->UpdateSubresource(InactiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
+
+	//Draw main camera into second RT if visible
+	/*ptrDC->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
+	ptrDC->VSSetConstantBuffers(0, 1, &InactiveCamera->m_CBNeverChanges.m_pBuffer);
+	ptrDC->VSSetConstantBuffers(1, 1, &InactiveCamera->m_CBChangesOnResize.m_pBuffer);
+	ptrDC->VSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+	ptrDC->PSSetShader(g_PixelShader.m_pPixelShader, NULL, 0);
+	ptrDC->PSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+	ptrDC->PSSetShaderResources(0, 1, &g_pTextureRV);
+	ptrDC->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
+	ptrDC->DrawIndexed(36, 0, 0);
+	ID3D11ShaderResourceView* temp = NULL;
+	ptrDC->PSSetShaderResources(0, 1, &temp);*/
+
 	for (int i = 0; i < 32; i++){
 
 		g_World = glm::mat4(1.f);
 		g_World = glm::translate(g_World, Lab[i]);
-
-		CBChangesEveryFrame cb;
+		
 		cb.mWorld = glm::transpose(g_World);
 		cb.vMeshColor = g_MeshColor;
 		ptrDC->UpdateSubresource(InactiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
@@ -1052,10 +1068,40 @@ void Render()
 		ptrDC->PSSetShaderResources(0, 1, &temp);
 	}
 
+	//Draw model
+	CBChangesEveryFrame cbMesh;
+	cbMesh.mWorld =
+	{
+		1, 0, 0, ActiveCamera->getPos().x,
+		0, 1, 0, ActiveCamera->getPos().y,
+		0, 0, 1, ActiveCamera->getPos().z,
+		0, 0, 0, 1
+	};
+
+	cbMesh.vMeshColor = { 1, 0, 0, 1 };
+	ptrDC->UpdateSubresource(InactiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cbMesh, 0, 0);
+	for (int i = 0; i < SCManager.m_MeshList.size(); i++)
+	{
+		ptrDC->VSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+		ptrDC->PSSetShaderResources(0, 1, &SCManager.m_MeshList[i]->m_Materials->m_TextureDiffuse);
+		ptrDC->VSSetShaderResources(0, 1, &SCManager.m_MeshList[i]->m_Materials->m_TextureDiffuse);
+
+		unsigned int stride = sizeof(SimpleVertex);
+		unsigned int offset = 0;
+
+		ptrDC->IASetVertexBuffers(0, 1, &SCManager.m_MeshList[i]->m_VB->m_pBuffer, &stride, &offset);
+		ptrDC->IASetIndexBuffer(SCManager.m_MeshList[i]->m_IB->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
+
+		ptrDC->DrawIndexed(SCManager.m_MeshList[i]->m_IndexNum, 0, 0);
+	}
+
 	//Set backbuffer and main DSV
 	ptrDC->OMSetRenderTargets(1, &g_RenderTargetView.m_pRTV, DepthStencilViewFree.m_pDepthStencilView);
 	ptrDC->ClearRenderTargetView(g_RenderTargetView.m_pRTV, ClearColor);
 	ptrDC->ClearDepthStencilView( DepthStencilViewFree.m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0 );
+
+	ptrDC->IASetVertexBuffers(0, 1, &g_VertexBuffer.m_Buffer.m_pBuffer, &stride, &offset);
+	ptrDC->IASetIndexBuffer(g_IndexBuffer.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
 
     //
     // Update variables that change once per frame
@@ -1065,7 +1111,6 @@ void Render()
 		g_World = glm::mat4(1.f);
 		g_World = glm::translate(g_World, Lab[i]);
 
-		CBChangesEveryFrame cb;
 		cb.mWorld = glm::transpose(g_World);
 		cb.vMeshColor = g_MeshColor;
 		ptrDC->UpdateSubresource(ActiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
