@@ -16,9 +16,9 @@ public:
 	const aiScene* m_Model = new const aiScene();
 	Assimp::Importer* m_Importer = new Assimp::Importer();
 
-	bool loadMesh(const char* path, CSceneManager* SM, const aiScene* model, CDeviceContext* DC, Assimp::Importer* importer, void *dev);
+	bool loadMesh(const char* path, CSceneManager* SM, const aiScene* model, CDeviceContext* DC, Assimp::Importer* importer, CDevice *dev);
 
 private:
-	void meshRead(const aiScene* model, CMesh* mesh, int index, void * dev);
-	void readMeshTexture(const aiScene* model, CMesh* mesh, int index, void* dev);
+	void meshRead(const aiScene* model, CMesh* mesh, int index, CDevice * dev);
+	void readMeshTexture(const aiScene* model, CMesh* mesh, int index, CDevice* dev);
 };

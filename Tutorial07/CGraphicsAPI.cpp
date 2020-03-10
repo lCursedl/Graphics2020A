@@ -4,7 +4,7 @@ CGraphicsAPI::CGraphicsAPI(){}
 
 CGraphicsAPI::~CGraphicsAPI(){}
 
-bool CGraphicsAPI::loadMesh(const char * path, CSceneManager * SM, const aiScene * model, CDeviceContext * DC, Assimp::Importer * importer, void * dev)
+bool CGraphicsAPI::loadMesh(const char * path, CSceneManager * SM, const aiScene * model, CDeviceContext * DC, Assimp::Importer * importer, CDevice * dev)
 {
 	model = importer->ReadFile(path, aiProcessPreset_TargetRealtime_Fast | aiProcess_ConvertToLeftHanded | aiProcess_FindInstances
 								| aiProcess_ValidateDataStructure | aiProcess_OptimizeMeshes | aiProcess_Debone);
@@ -46,7 +46,7 @@ bool CGraphicsAPI::loadMesh(const char * path, CSceneManager * SM, const aiScene
 	return true;
 }
 
-void CGraphicsAPI::meshRead(const aiScene * model, CMesh * mesh, int index, void * dev)
+void CGraphicsAPI::meshRead(const aiScene * model, CMesh * mesh, int index, CDevice * dev)
 {
 	std::vector <std::uint32_t> indis;
 	indis.reserve(model->mMeshes[index]->mNumFaces * 3);
@@ -74,7 +74,7 @@ void CGraphicsAPI::meshRead(const aiScene * model, CMesh * mesh, int index, void
 	mesh->setVertex(meshVertex, numVertex);
 #ifdef D3D11
 	//Create VB
-	CBuffer::createVertexBuffer(numVertex, model, meshVertex, mesh->getVB()->m_pBuffer, dev);
+	CBuffer::createVertexBuffer(numVertex, model, meshVertex, mesh->getVB()->m_pBuffer, dev->m_Device);
 #endif
 
 	for (int i = 0; i < numIndex; i++)
@@ -85,11 +85,11 @@ void CGraphicsAPI::meshRead(const aiScene * model, CMesh * mesh, int index, void
 	mesh->setIndexList(meshIndex, numIndex);
 #ifdef D3D11
 	//Create IB
-	CBuffer::createIndexBuffer(numIndex, model, meshIndex, mesh->getIB()->m_pBuffer, dev);
+	CBuffer::createIndexBuffer(numIndex, model, meshIndex, mesh->getIB()->m_pBuffer, dev->m_Device);
 #endif // D3D11
 }
 
-void CGraphicsAPI::readMeshTexture(const aiScene * model, CMesh * mesh, int index, void * dev)
+void CGraphicsAPI::readMeshTexture(const aiScene * model, CMesh * mesh, int index, CDevice * dev)
 {
 	const aiMaterial* pMaterial = model->mMaterials[model->mMeshes[index]->mMaterialIndex];
 
@@ -119,7 +119,7 @@ void CGraphicsAPI::readMeshTexture(const aiScene * model, CMesh * mesh, int inde
 			dir = (LPCWSTR)wstr.c_str();
 
 #ifdef D3D11
-			D3DX11CreateShaderResourceViewFromFile(static_cast<ID3D11Device*>(dev), dir, NULL, NULL, &mesh->m_Materials->m_TextureDiffuse, NULL);
+			D3DX11CreateShaderResourceViewFromFile(dev->m_Device, dir, NULL, NULL, &mesh->m_Materials->m_TextureDiffuse, NULL);
 #endif // D3D11
 		}
 	}

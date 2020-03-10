@@ -33,8 +33,8 @@ public:
 	D3D11_BUFFER_DESC m_bd;
 	ID3D11Buffer * m_pBuffer;
 	
-	static void createVertexBuffer(int numVertex, const aiScene* model, SimpleVertex* vertex, ID3D11Buffer*& buffer, void* Dev);
-	static void createIndexBuffer(int numIndex, const aiScene* model, WORD* index, ID3D11Buffer*& buffer, void* Dev);
+	static void createVertexBuffer(int numVertex, const aiScene* model, SimpleVertex* vertex, ID3D11Buffer*& buffer, ID3D11Device* Dev);
+	static void createIndexBuffer(int numIndex, const aiScene* model, WORD* index, ID3D11Buffer*& buffer, ID3D11Device* Dev);
 
 #endif // D3D11
 };

@@ -29,10 +29,10 @@ void * CBuffer::getBuffer()
 }
 
 #ifdef D3D11
-void CBuffer::createVertexBuffer(int numVertex, const aiScene * model, SimpleVertex * vertex, ID3D11Buffer *& buffer, void * Dev)
+void CBuffer::createVertexBuffer(int numVertex, const aiScene * model, SimpleVertex * vertex, ID3D11Buffer *& buffer, ID3D11Device * Dev)
 {
 
-	ID3D11Device * tempdevice = static_cast<ID3D11Device*>(Dev);
+	//ID3D11Device * tempdevice = static_cast<ID3D11Device*>(Dev);
 	D3D11_BUFFER_DESC bd;
 	D3D11_SUBRESOURCE_DATA data;
 	ZeroMemory(&bd, sizeof(bd));
@@ -42,7 +42,7 @@ void CBuffer::createVertexBuffer(int numVertex, const aiScene * model, SimpleVer
 	bd.CPUAccessFlags = 0;
 	ZeroMemory(&data, sizeof(data));
 	data.pSysMem = vertex;
-	HRESULT hr = tempdevice->CreateBuffer(&bd, &data, &buffer);
+	HRESULT hr = Dev->CreateBuffer(&bd, &data, &buffer);
 	if (FAILED(hr))
 	{
 		return;
@@ -51,9 +51,9 @@ void CBuffer::createVertexBuffer(int numVertex, const aiScene * model, SimpleVer
 
 }
 
-void CBuffer::createIndexBuffer(int numIndex, const aiScene * model, WORD * index, ID3D11Buffer *& buffer, void * Dev)
+void CBuffer::createIndexBuffer(int numIndex, const aiScene * model, WORD * index, ID3D11Buffer *& buffer, ID3D11Device * Dev)
 {
-	ID3D11Device * tempdevice = static_cast<ID3D11Device*>(Dev);
+	//ID3D11Device * tempdevice = static_cast<ID3D11Device*>(Dev);
 	D3D11_BUFFER_DESC bd;
 	D3D11_SUBRESOURCE_DATA data;
 	ZeroMemory(&bd, sizeof(bd));
@@ -66,7 +66,7 @@ void CBuffer::createIndexBuffer(int numIndex, const aiScene * model, WORD * inde
 	data.pSysMem = index;
 	data.SysMemPitch = 0;
 	data.SysMemSlicePitch = 0;
-	HRESULT hr = tempdevice->CreateBuffer(&bd, &data, &buffer);
+	HRESULT hr = Dev->CreateBuffer(&bd, &data, &buffer);
 	if (FAILED(hr))
 	{
 		return;
