@@ -27,10 +27,14 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{3719059b-7189-453f-815d-f6418a6e2376}</UniqueIdentifier>
     </Filter>
+    <Filter Include="assimp">
+      <UniqueIdentifier>{279a5464-097e-445b-97e0-4e4196ed2898}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Camera">
+      <UniqueIdentifier>{54580c9e-fb65-43a5-8257-098d0d47fcab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CCamera.cpp" />
-    <ClCompile Include="CCameraFP.cpp" />
     <ClCompile Include="CBuffer.cpp">
       <Filter>Graphics\source</Filter>
     </ClCompile>
@@ -88,10 +92,24 @@
     <ClCompile Include="amgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="CMesh.cpp" />
-    <ClCompile Include="CMaterial.cpp" />
-    <ClCompile Include="CSceneManager.cpp" />
-    <ClCompile Include="CGraphicsAPI.cpp" />
+    <ClCompile Include="CGraphicsAPI.cpp">
+      <Filter>assimp</Filter>
+    </ClCompile>
+    <ClCompile Include="CMaterial.cpp">
+      <Filter>assimp</Filter>
+    </ClCompile>
+    <ClCompile Include="CMesh.cpp">
+      <Filter>assimp</Filter>
+    </ClCompile>
+    <ClCompile Include="CSceneManager.cpp">
+      <Filter>assimp</Filter>
+    </ClCompile>
+    <ClCompile Include="CCameraFP.cpp">
+      <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="CCamera.cpp">
+      <Filter>Camera</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tutorial07.cpp" />
@@ -108,7 +126,6 @@
     <ResourceCompile Include="Tutorial07.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-    <ClInclude Include="CCamera.h" />
     <ClInclude Include="glm\common.hpp">
       <Filter>glm</Filter>
     </ClInclude>
@@ -178,7 +195,6 @@
     <ClInclude Include="glm\vector_relational.hpp">
       <Filter>glm</Filter>
     </ClInclude>
-    <ClInclude Include="CCameraFP.h" />
     <ClInclude Include="CBuffer.h">
       <Filter>Graphics\include</Filter>
     </ClInclude>
@@ -249,10 +265,24 @@
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="Includes.h" />
-    <ClInclude Include="CMesh.h" />
-    <ClInclude Include="CMaterial.h" />
-    <ClInclude Include="CSceneManager.h" />
-    <ClInclude Include="CGraphicsAPI.h" />
+    <ClInclude Include="CGraphicsAPI.h">
+      <Filter>assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="CMaterial.h">
+      <Filter>assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="CMesh.h">
+      <Filter>assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="CSceneManager.h">
+      <Filter>assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="CCameraFP.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="CCamera.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

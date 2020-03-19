@@ -6,7 +6,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 //--------------------------------------------------------------------------------------
 
-
 #include <vector>
 #include "resource.h"
 #include "CCameraFP.h"
@@ -26,6 +25,7 @@
 #include "amgui/imgui_impl_dx11.h"
 #include "amgui/imgui_impl_win32.h"
 #include "CGraphicsAPI.h"
+
 //--------------------------------------------------------------------------------------
 // Structures
 //--------------------------------------------------------------------------------------
@@ -191,29 +191,30 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
     UNREFERENCED_PARAMETER( hPrevInstance );
     UNREFERENCED_PARAMETER( lpCmdLine );
 
-    if( FAILED( InitWindow( hInstance, nCmdShow ) ) )
-        return 0;
+#ifdef D3D11
+	if (FAILED(InitWindow(hInstance, nCmdShow)))
+		return 0;
 
-    if( FAILED( InitDevice() ) )
-    {
-        CleanupDevice();
-        return 0;
-    }
+	if (FAILED(InitDevice()))
+	{
+		CleanupDevice();
+		return 0;
+	}
 
-    // Main message loop
-    MSG msg = {0};
-    while( WM_QUIT != msg.message )
-    {
-        if( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) )
-        {
-            TranslateMessage( &msg );
-            DispatchMessage( &msg );
-        }
-        else
-        {
+	// Main message loop
+	MSG msg = { 0 };
+	while (WM_QUIT != msg.message)
+	{
+		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		else
+		{
 #ifdef D3D11
 			ImVec2 ImgDimension(imguiWindowW / 5, imguiWindowH / 5);
-			
+
 			ImGui_ImplDX11_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
@@ -234,10 +235,45 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 			ImGui::End();
 #endif
 			Render();
-        }
-    }
-    CleanupDevice();
-    return ( int )msg.wParam;
+		}
+	}
+	CleanupDevice();
+	return (int)msg.wParam;
+#else
+	GLFWwindow* window;
+
+	/* Initialize the library */
+	if (!glfwInit())
+		return -1;
+
+	/* Create a windowed mode window and its OpenGL context */
+	window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+	if (!window)
+	{
+		glfwTerminate();
+		return -1;
+	}
+
+	/* Make the window's context current */
+	glfwMakeContextCurrent(window);
+
+	/* Loop until the user closes the window */
+	while (!glfwWindowShouldClose(window))
+	{
+		/* Render here */
+		glClearColor(0.f, 0.f, 255.f, 1.f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		/* Swap front and back buffers */
+		glfwSwapBuffers(window);
+
+		/* Poll for and process events */
+		glfwPollEvents();
+	}
+
+	glfwTerminate();
+	return 0;
+#endif // D3D11    
 }
 
 
