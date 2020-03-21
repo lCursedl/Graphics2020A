@@ -8,6 +8,6 @@
 #endif // D3D11
 
 #ifdef OPENGL
+#include <glad/glad.h>
 #include <glfw/glfw3.h>
-#include <glfw/glfw3native.h>
 #endif // OPENGL

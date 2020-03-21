@@ -110,6 +110,7 @@
     <ClCompile Include="CCamera.cpp">
       <Filter>Camera</Filter>
     </ClCompile>
+    <ClCompile Include="glad.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tutorial07.cpp" />

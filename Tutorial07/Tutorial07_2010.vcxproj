@@ -895,6 +895,7 @@
     <ClCompile Include="CVertexBuffer.cpp" />
     <ClCompile Include="CVertexShader.cpp" />
     <ClCompile Include="CViewport.cpp" />
+    <ClCompile Include="glad.c" />
     <ClCompile Include="Tutorial07.cpp" />
   </ItemGroup>
   <ItemGroup>
