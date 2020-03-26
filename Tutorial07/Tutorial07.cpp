@@ -26,6 +26,7 @@
 #include "amgui/imgui_impl_win32.h"
 #include "CGraphicsAPI.h"
 #include <iostream>
+#include "stb_image.h"
 
 //--------------------------------------------------------------------------------------
 // Structures
@@ -104,51 +105,39 @@ ID3D11DeviceContext * ptrDC = static_cast<ID3D11DeviceContext*>(g_DeviceContext-
 IDXGISwapChain* ptrSC = static_cast<IDXGISwapChain*>(g_SwapChain->getSwapChain());
 #endif // D3D11
 
-static const struct
-{
-	float x, y;
-	float r, g, b;
-} vertices[3] =
-{
-	{ -0.6f, -0.4f, 1.f, 0.f, 0.f },
-	{  0.6f, -0.4f, 0.f, 1.f, 0.f },
-	{   0.f,  0.6f, 0.f, 0.f, 1.f }
-};
-
-static const char* vertex_shader_text =
-"#version 110\n"
-"uniform mat4 MVP;\n"
-"attribute vec3 vCol;\n"
-"attribute vec2 vPos;\n"
-"varying vec3 color;\n"
-"void main()\n"
-"{\n"
-"    gl_Position = MVP * vec4(vPos, 0.0, 1.0);\n"
-"    color = vCol;\n"
-"}\n";
-
-static const char* fragment_shader_text =
-"#version 110\n"
-"varying vec3 color;\n"
-"void main()\n"
-"{\n"
-"    gl_FragColor = vec4(color, 1.0);\n"
-"}\n";
-
-static void error_callback(int error, const char* description)
-{
-	fprintf(stderr, "Error: %s\n", description);
-}
-
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, GLFW_TRUE);
-}
-
 //--------------------------------------------------------------------------------------
 // Forward declarations
 //--------------------------------------------------------------------------------------
+#ifdef D3D11
+
+#elif OPENGL
+void framebuffer_size_callback(GLFWwindow* window, int width, int heigth);
+void processInput(GLFWwindow* window);
+
+const char* vertexShaderSource = "#version 330 core\n"
+"layout(location = 0) in vec3 aPos;\n"
+"layout(location = 1) in vec2 aTexCoord;\n"
+
+"out vec2 TexCoord;\n"
+"uniform mat4 model;\n"
+"uniform mat4 view;\n"
+"uniform mat4 projection;\n"
+"void main()\n"
+"{\n"
+	"gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
+	"TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
+"}\n";
+
+const char* fragmentShaderSource = "#version 330 core\n"
+"out vec4 FragColor;\n"
+"in vec2 TexCoord;\n"
+"uniform sampler2D texture1;\n"
+"void main()\n"
+"{\n"
+	"FragColor = texture(texture1, TexCoord);\n"
+"}\n;";
+#endif
+
 HRESULT InitWindow( HINSTANCE hInstance, int nCmdShow );
 HRESULT InitDevice();
 void CleanupDevice();
@@ -225,6 +214,20 @@ HRESULT CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* pShaderBlob, ID
 }
 #endif
 
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int heigth)
+{
+	glViewport(0, 0, width, heigth);
+}
+
+void processInput(GLFWwindow* window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	{
+		glfwSetWindowShouldClose(window, true);
+	}
+}
+
 //--------------------------------------------------------------------------------------
 // Entry point to the program. Initializes everything and goes into a message processing 
 // loop. Idle time is used to render the scene.
@@ -283,97 +286,324 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	CleanupDevice();
 	return (int)msg.wParam;
 #else
-	GLFWwindow* window;
-	GLuint vertex_buffer, vertex_shader, fragment_shader, program;
-	GLint mvp_location, vpos_location, vcol_location;
 
-	glfwSetErrorCallback(error_callback);
+	glfwInit();
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	if (!glfwInit())
-		exit(EXIT_FAILURE);
-
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-
-	window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
-	if (!window)
+	GLFWwindow* window = glfwCreateWindow(800, 600, "Tutorial 07", NULL, NULL);
+	if (window == NULL)
 	{
 		glfwTerminate();
-		exit(EXIT_FAILURE);
+		return -1;
 	}
-
-	glfwSetKeyCallback(window, key_callback);
-
 	glfwMakeContextCurrent(window);
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		return -1;
 	}
-	glfwSwapInterval(1);
+	glEnable(GL_DEPTH_TEST);
+	//Vertex shader
+	int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+	glCompileShader(vertexShader);
+	//VS error check
+	int success;
+	char infoLog[512];
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+	}
+	//Pixel Shader
+	int pixelShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(pixelShader, 1, &fragmentShaderSource, NULL);
+	glCompileShader(pixelShader);
+	//PS error check
+	glGetShaderiv(pixelShader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(pixelShader, 512, NULL, infoLog);
+	}
+	//Link shaders
+	int shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vertexShader);
+	glAttachShader(shaderProgram, pixelShader);
+	glLinkProgram(shaderProgram);
+	//Linking error check
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+	if (!success)
+	{
+		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+	}
+	glDeleteShader(vertexShader);
+	glDeleteShader(pixelShader);
 
-	// NOTE: OpenGL error checks have been omitted for brevity
+	//Set vertex data, buffers and vertex attributes
+	float vertex[] = {
+		// positions          // texture coords
+		 0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
+		 0.5f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
+		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, // bottom left
+		-0.5f,  0.5f, 0.0f,   0.0f, 1.0f  // top left 
+	};
 
-	glGenBuffers(1, &vertex_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	unsigned int indices[] = {
+		0, 1, 3,
+		1, 2, 3
+	};
 
-	vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
-	glCompileShader(vertex_shader);
+	float cubevertex[] = {
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-	fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
-	glCompileShader(fragment_shader);
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
-	program = glCreateProgram();
-	glAttachShader(program, vertex_shader);
-	glAttachShader(program, fragment_shader);
-	glLinkProgram(program);
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-	mvp_location = glGetUniformLocation(program, "MVP");
-	vpos_location = glGetAttribLocation(program, "vPos");
-	vcol_location = glGetAttribLocation(program, "vCol");
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-	glEnableVertexAttribArray(vpos_location);
-	glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE,
-		sizeof(vertices[0]), (void*)0);
-	glEnableVertexAttribArray(vcol_location);
-	glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
-		sizeof(vertices[0]), (void*)(sizeof(float) * 2));
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+	};
+
+	unsigned int cubeindices[] = {
+		 3,1,0,
+		2,1,3,
+
+		6,4,5,
+		7,4,6,
+
+		11,9,8,
+		10,9,11,
+
+		14,12,13,
+		15,12,14,
+
+		19,17,16,
+		18,17,19,
+
+		22,20,21,
+		23,20,22
+	};
+
+	//Vertex Buffer, Index Buffer & 
+	unsigned int VBO, VAO, EBO;
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
+	//Bind VAO first, then VBs and set them, then configure vertex attributes
+	glBindVertexArray(VAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubevertex), cubevertex, GL_STATIC_DRAW);
+	
+	/*glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);*/
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	unsigned int texture1;
+
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+	// set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	// set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// load image, create texture and generate mipmaps
+	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+	unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(data);
+
+	//Wireframe polygon draw
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	while (!glfwWindowShouldClose(window))
 	{
-		float ratio;
-		int width, height;
-		glm::mat4 m, p, mvp;
+		//Input
+		processInput(window);
+		//Render
 
-		glfwGetFramebufferSize(window, &width, &height);
-		ratio = width / (float)height;
+		//Background color
+		glClearColor(0.f, 0.f, .5f, 1.f);
+		//Set background and depth
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glViewport(0, 0, width, height);
-		glClear(GL_COLOR_BUFFER_BIT);
+		//Bind loaded texture
+		glBindTexture(GL_TEXTURE_2D, texture1);
+		//Use linked shader
+		glUseProgram(shaderProgram);
+		
+		//Create matrix for 3D rendering
+		glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+		glm::mat4 view = glm::mat4(1.0f);
+		glm::mat4 projection = glm::mat4(1.0f);
+		model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(.5f, 1.0f, 0.0f));
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+		projection = glm::perspective(glm::radians(45.0f), 800.f / 600.f, 0.1f, 100.0f);
+		// retrieve the matrix uniform locations
+		unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
+		unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
+		unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+		// pass them to the shaders (3 different ways)
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (GLfloat*)&model);
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);
 
-		m = glm::mat4{ 1.f };
-		//mat4x4_identity(m);
-		m = glm::rotate(m, (float)glfwGetTime(), glm::vec3{0, 0, 1});
-		//mat4x4_rotate_Z(m, m, (float)glfwGetTime());
-		p = glm::ortho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-		//mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-		mvp = p * m;
-		//mat4x4_mul(mvp, p, m);
-
-		glUseProgram(program);
-		glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*)&mvp);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-
+		//Bind vertex array
+		glBindVertexArray(VAO);
+		//Draw figure
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-
-	glfwDestroyWindow(window);
-
+	//Free resources
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	//glDeleteBuffers(1, &EBO);
 	glfwTerminate();
-	exit(EXIT_SUCCESS);
+	return 0;
+	/*GLFWwindow* window;
+	//GLuint vertex_buffer, vertex_shader, fragment_shader, program;
+	//GLint mvp_location, vpos_location, vcol_location;
+
+	//glfwSetErrorCallback(error_callback);
+
+	//if (!glfwInit())
+	//	exit(EXIT_FAILURE);
+
+	//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+
+	//window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
+	//if (!window)
+	//{
+	//	glfwTerminate();
+	//	exit(EXIT_FAILURE);
+	//}
+
+	//glfwSetKeyCallback(window, key_callback);
+
+	//glfwMakeContextCurrent(window);
+	//if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	//{
+	//	return -1;
+	//}
+	//glfwSwapInterval(1);
+
+	//// NOTE: OpenGL error checks have been omitted for brevity
+
+	//glGenBuffers(1, &vertex_buffer);
+	//glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	//vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+	//glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
+	//glCompileShader(vertex_shader);
+
+	//fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+	//glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
+	//glCompileShader(fragment_shader);
+
+	//program = glCreateProgram();
+	//glAttachShader(program, vertex_shader);
+	//glAttachShader(program, fragment_shader);
+	//glLinkProgram(program);
+
+	//mvp_location = glGetUniformLocation(program, "MVP");
+	//vpos_location = glGetAttribLocation(program, "vPos");
+	//vcol_location = glGetAttribLocation(program, "vCol");
+
+	//glEnableVertexAttribArray(vpos_location);
+	//glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE,
+	//	sizeof(vertices[0]), (void*)0);
+	//glEnableVertexAttribArray(vcol_location);
+	//glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
+	//	sizeof(vertices[0]), (void*)(sizeof(float) * 2));
+
+	//while (!glfwWindowShouldClose(window))
+	//{
+	//	float ratio;
+	//	int width, height;
+	//	glm::mat4 m, p, mvp;
+
+	//	glfwGetFramebufferSize(window, &width, &height);
+	//	ratio = width / (float)height;
+
+	//	glViewport(0, 0, width, height);
+	//	glClear(GL_COLOR_BUFFER_BIT);
+
+	//	m = glm::mat4{ 1.f };
+	//	//mat4x4_identity(m);
+	//	m = glm::rotate(m, (float)glfwGetTime(), glm::vec3{0, 0, 1});
+	//	//mat4x4_rotate_Z(m, m, (float)glfwGetTime());
+	//	p = glm::ortho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+	//	//mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+	//	mvp = p * m;
+	//	//mat4x4_mul(mvp, p, m);
+
+	//	glUseProgram(program);
+	//	glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*)&mvp);
+	//	glDrawArrays(GL_TRIANGLES, 0, 3);
+
+	//	glfwSwapBuffers(window);
+	//	glfwPollEvents();
+	//}
+
+	//glfwDestroyWindow(window);
+
+	//glfwTerminate();
+	//exit(EXIT_SUCCESS);*/
 #endif   
 }
 
@@ -610,34 +840,34 @@ HRESULT InitDevice()
     SimpleVertex vertices[] =
     {
         { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 0.0f, 0.0f ) },
-        { glm::vec3( 1.0f, 1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
-        { glm::vec3( 1.0f, 1.0f, 1.0f ), glm::vec2( 1.0f, 1.0f ) },
-        { glm::vec3( -1.0f, 1.0f, 1.0f ), glm::vec2( 0.0f, 1.0f ) },
+        { glm::vec3( 1.0f, 1.0f, -1.0f  ), glm::vec2( 1.0f, 0.0f ) },
+        { glm::vec3( 1.0f, 1.0f, 1.0f   ), glm::vec2( 1.0f, 1.0f ) },
+        { glm::vec3( -1.0f, 1.0f, 1.0f  ), glm::vec2( 0.0f, 1.0f ) },
 
-        { glm::vec3( -1.0f, -1.0f, -1.0f ), glm::vec2( 0.0f, 0.0f ) },
+        { glm::vec3( -1.0f, -1.0f, -1.0f), glm::vec2( 0.0f, 0.0f ) },
         { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
-        { glm::vec3( 1.0f, -1.0f, 1.0f ), glm::vec2( 1.0f, 1.0f ) },
+        { glm::vec3( 1.0f, -1.0f, 1.0f  ), glm::vec2( 1.0f, 1.0f ) },
         { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 1.0f ) },
 
         { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 0.0f ) },
-        { glm::vec3( -1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
+        { glm::vec3( -1.0f, -1.0f, -1.0f), glm::vec2( 1.0f, 0.0f ) },
         { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 1.0f, 1.0f ) },
-        { glm::vec3( -1.0f, 1.0f, 1.0f ), glm::vec2( 0.0f, 1.0f ) },
+        { glm::vec3( -1.0f, 1.0f, 1.0f  ), glm::vec2( 0.0f, 1.0f ) },
 
-        { glm::vec3( 1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 0.0f ) },
+        { glm::vec3( 1.0f, -1.0f, 1.0f  ), glm::vec2( 0.0f, 0.0f ) },
         { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
-        { glm::vec3( 1.0f, 1.0f, -1.0f ), glm::vec2( 1.0f, 1.0f ) },
-        { glm::vec3( 1.0f, 1.0f, 1.0f ), glm::vec2( 0.0f, 1.0f ) },
+        { glm::vec3( 1.0f, 1.0f, -1.0f  ), glm::vec2( 1.0f, 1.0f ) },
+        { glm::vec3( 1.0f, 1.0f, 1.0f   ), glm::vec2( 0.0f, 1.0f ) },
 
-        { glm::vec3( -1.0f, -1.0f, -1.0f ), glm::vec2( 0.0f, 0.0f ) },
+        { glm::vec3( -1.0f, -1.0f, -1.0f), glm::vec2( 0.0f, 0.0f ) },
         { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
-        { glm::vec3( 1.0f, 1.0f, -1.0f ), glm::vec2( 1.0f, 1.0f ) },
+        { glm::vec3( 1.0f, 1.0f, -1.0f  ), glm::vec2( 1.0f, 1.0f ) },
         { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 0.0f, 1.0f ) },
 
         { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 0.0f ) },
-        { glm::vec3( 1.0f, -1.0f, 1.0f ), glm::vec2( 1.0f, 0.0f ) },
-        { glm::vec3( 1.0f, 1.0f, 1.0f ), glm::vec2( 1.0f, 1.0f ) },
-        { glm::vec3( -1.0f, 1.0f, 1.0f ), glm::vec2( 0.0f, 1.0f ) },
+        { glm::vec3( 1.0f, -1.0f, 1.0f  ), glm::vec2( 1.0f, 0.0f ) },
+        { glm::vec3( 1.0f, 1.0f, 1.0f   ), glm::vec2( 1.0f, 1.0f ) },
+        { glm::vec3( -1.0f, 1.0f, 1.0f  ), glm::vec2( 0.0f, 1.0f ) },
     };
 
 	BufferStruct bufferstrct;

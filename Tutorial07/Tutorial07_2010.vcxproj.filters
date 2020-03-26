@@ -111,6 +111,7 @@
       <Filter>Camera</Filter>
     </ClCompile>
     <ClCompile Include="glad.c" />
+    <ClCompile Include="image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tutorial07.cpp" />
@@ -284,6 +285,7 @@
     <ClInclude Include="CCamera.h">
       <Filter>Camera</Filter>
     </ClInclude>
+    <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

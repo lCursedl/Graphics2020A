@@ -896,6 +896,7 @@
     <ClCompile Include="CVertexShader.cpp" />
     <ClCompile Include="CViewport.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="image.cpp" />
     <ClCompile Include="Tutorial07.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -956,6 +957,7 @@
     <ClInclude Include="imgui.h" />
     <ClInclude Include="Includes.h" />
     <CLInclude Include="resource.h" />
+    <ClInclude Include="stb_image.h" />
     <ResourceCompile Include="Tutorial07.rc" />
   </ItemGroup>
   <ItemGroup>
