@@ -112,7 +112,7 @@ IDXGISwapChain* ptrSC = static_cast<IDXGISwapChain*>(g_SwapChain->getSwapChain()
 
 #elif OPENGL
 void framebuffer_size_callback(GLFWwindow* window, int width, int heigth);
-void processInput(GLFWwindow* window);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 const char* vertexShaderSource = "#version 330 core\n"
 "layout(location = 0) in vec3 aPos;\n"
@@ -220,11 +220,58 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int heigth)
 	glViewport(0, 0, width, heigth);
 }
 
-void processInput(GLFWwindow* window)
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	//Close app
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, true);
+	}
+	//Switch camera
+	if (key == GLFW_KEY_TAB && action == GLFW_PRESS)
+	{
+		CCamera * temp = ActiveCamera;
+		ActiveCamera = InactiveCamera;
+		InactiveCamera = temp;
+	}
+	//Key presses
+	if (action == GLFW_PRESS)
+	{
+		ActiveCamera->getKeyPress(key);
+	}
+	//Key release
+	if (action == GLFW_RELEASE)
+	{
+		ActiveCamera->getKeyRelease(key);
+	}
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	if (button == GLFW_MOUSE_BUTTON_RIGHT)
+	{
+		if (action == GLFW_PRESS)
+		{
+			double xpos, ypos;
+			glfwGetCursorPos(window, &xpos, &ypos);
+			ActiveCamera->mInitPos = { xpos, ypos, 0.f };
+			ActiveCamera->mIsClicked = true;
+		}
+		else if (action == GLFW_RELEASE)
+		{
+			ActiveCamera->mIsClicked = false;
+		}
+	}
+}
+
+void mouse_move_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	if (ActiveCamera->mIsClicked)
+	{
+		ActiveCamera->mEndPos = {xpos, ypos, 0.f};
+		glfwSetCursorPos(window, ActiveCamera->mInitPos.x, ActiveCamera->mInitPos.y);
+		ActiveCamera->mDir = ActiveCamera->mInitPos - ActiveCamera->mEndPos;
+		ActiveCamera->rotate(ActiveCamera->mDir);
 	}
 }
 
@@ -298,8 +345,13 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glfwTerminate();
 		return -1;
 	}
+	//Callbacks set
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetKeyCallback(window, key_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
+	glfwSetCursorPosCallback(window, mouse_move_callback);
+
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		return -1;
@@ -467,10 +519,35 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	//Wireframe polygon draw
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+	CameraDesc MyDesc;
+	MyDesc.Pos = { 0.f, 0.f, 3.f };
+	MyDesc.LAt = { 0.f, 0.f, 0.f };
+	MyDesc.Up = { 0.f, 1.f, 0.f };
+	MyDesc.FOV = PIDIV4;
+	MyDesc.Width = 800;
+	MyDesc.Height = 600;
+	MyDesc.NearPlane = 0.01f;
+	MyDesc.FarPlane = 100.f;
+
+	g_Camera.init(MyDesc);
+	FirstPerson.init(MyDesc);
+
+	ActiveCamera = &g_Camera;
+	InactiveCamera = &FirstPerson;
+
 	while (!glfwWindowShouldClose(window))
 	{
 		//Input
-		processInput(window);
+		//processInput(window);
+		//Update
+		if (ActiveCamera->mForward || ActiveCamera->mBack || ActiveCamera->mLeft || ActiveCamera->mRight || ActiveCamera->mUp || ActiveCamera->mDown)
+		{
+			ActiveCamera->move();
+		}
+		if (ActiveCamera->mRotateLeft || ActiveCamera->mRotateRight)
+		{
+			ActiveCamera->rotate();
+		}
 		//Render
 
 		//Background color
@@ -483,19 +560,36 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		//Use linked shader
 		glUseProgram(shaderProgram);
 		
+
+
 		//Create matrix for 3D rendering
 		glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-		glm::mat4 view = glm::mat4(1.0f);
-		glm::mat4 projection = glm::mat4(1.0f);
-		model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(.5f, 1.0f, 0.0f));
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-		projection = glm::perspective(glm::radians(45.0f), 800.f / 600.f, 0.1f, 100.0f);
-		// retrieve the matrix uniform locations
+		//glm::mat4 view = glm::mat4(1.0f);
+		glm::mat4 view = glm::transpose(ActiveCamera->View);
+		//glm::mat4 projection = glm::mat4(1.0f);
+		glm::mat4 projection = ActiveCamera->Proj;
+
+		
 		unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
 		unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
 		unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+
+		//Draw laberynth
+		//for (int i = 0; i < 32; i++)
+		//{
+		//	model = glm::translate(model, Lab[i]);
+		//	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
+		//	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
+		//	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);
+
+		//	//Bind vertex array
+		//	glBindVertexArray(VAO);
+		//	//Draw figure
+		//	glDrawArrays(GL_TRIANGLES, 0, 36);
+		//}
+		
 		// pass them to the shaders (3 different ways)
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (GLfloat*)&model);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);
 
@@ -1298,10 +1392,8 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 			break;
 		}
 		case WM_KEYDOWN:
-		{
 			ActiveCamera->getKeyPress(wParam);
 			break;			
-		}
 		case WM_KEYUP:
 			ActiveCamera->getKeyRelease(wParam);
 			break;
@@ -1362,7 +1454,7 @@ void Render()
         t = ( dwTimeCur - dwTimeStart ) / 1000.0f;
     }
 
-	if (ActiveCamera->mForward || ActiveCamera->mBack || ActiveCamera->mLeft || ActiveCamera->mRight || ActiveCamera->mUp || ActiveCamera->mDown || ActiveCamera->mRotateLeft || ActiveCamera->mRotateRight)//DEBO QUITARLO
+	if (ActiveCamera->mForward || ActiveCamera->mBack || ActiveCamera->mLeft || ActiveCamera->mRight || ActiveCamera->mUp || ActiveCamera->mDown || ActiveCamera->mRotateLeft || ActiveCamera->mRotateRight)
 	{
 		ActiveCamera->move();
 		ActiveCamera->rotate();

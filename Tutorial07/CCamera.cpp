@@ -152,7 +152,7 @@ void CCamera::updateVM()
 void CCamera::updatePM()
 {
 	Proj = glm::perspectiveFovLH(Desc.FOV, Desc.Width, Desc.Height, Desc.NearPlane, Desc.FarPlane);
-	Proj = glm::transpose(Proj);
+	//Proj = glm::transpose(Proj);
 }
 
 void CCamera::move()
@@ -177,11 +177,11 @@ void CCamera::move()
 	
 	if (mUp)
 	{
-		Desc.Pos += (Desc.Up * STEP);
+		Desc.Pos += (Up * STEP);
 	}
 	if (mDown)
 	{
-		Desc.Pos += (Desc.Up * -STEP);
+		Desc.Pos += (Up * -STEP);
 	}
 
 	glm::mat4 Axis
@@ -302,7 +302,7 @@ void CCamera::getKeyPress(WPARAM key)
 	{
 		mDown = true;
 	}
-	
+#ifdef D3D11
 	if (key == VK_LEFT)
 	{
 		mRotateLeft = true;
@@ -311,6 +311,16 @@ void CCamera::getKeyPress(WPARAM key)
 	{
 		mRotateRight = true;
 	}
+#elif OPENGL
+	if (key == 263)
+	{
+		mRotateLeft = true;
+	}
+	else if (key == 262)
+	{
+		mRotateRight = true;
+	}
+#endif
 }
 
 void CCamera::getKeyRelease(WPARAM key)
@@ -339,6 +349,7 @@ void CCamera::getKeyRelease(WPARAM key)
 	{
 		mDown = false;
 	}
+#ifdef D3D11
 	if (key == VK_LEFT)
 	{
 		mRotateLeft = false;
@@ -347,6 +358,16 @@ void CCamera::getKeyRelease(WPARAM key)
 	{
 		mRotateRight = false;
 	}
+#elif OPENGL
+	if (key == 263)
+	{
+		mRotateLeft = false;
+	}
+	else if (key == 262)
+	{
+		mRotateRight = false;
+	}
+#endif
 }
 
 void CCamera::createVM()
