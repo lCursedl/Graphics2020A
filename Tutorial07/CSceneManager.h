@@ -4,6 +4,7 @@
 
 class CSceneManager
 {
+#ifdef D3D11
 public:
 	CSceneManager();
 	~CSceneManager();
@@ -17,4 +18,5 @@ public:
 	CBuffer * m_meshData;
 	std::vector<CMesh*> m_MeshList;
 	int m_ID;
+#endif
 };

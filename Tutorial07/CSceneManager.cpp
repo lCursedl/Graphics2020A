@@ -1,5 +1,6 @@
 #include "CSceneManager.h"
 
+#ifdef D3D11
 CSceneManager::CSceneManager()
 {
 }
@@ -49,3 +50,4 @@ void CSceneManager::shutdown()
 		m_MeshList[i]->Delete();
 	}
 }
+#endif // D3D11

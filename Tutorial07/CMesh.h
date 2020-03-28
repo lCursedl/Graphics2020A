@@ -8,9 +8,25 @@
 #include <vector>
 #include <Windows.h>
 
+struct Vertex
+{
+	glm::vec3 Position;
+	glm::vec3 Normal;
+	glm::vec2 TexCoords;
+	glm::vec3 Tangent;
+	glm::vec3 Bitangent;
+};
+
+struct Texture
+{
+	unsigned int id;
+	std::string type;
+	std::string path;
+};
 
 class CMesh
 {
+#ifdef D3D11
 public:
 	CMesh();
 	~CMesh();
@@ -48,4 +64,19 @@ public:
 	int					m_SceneID;
 
 	CBChangesEveryFrame	m_MeshData;
+#elif OPENGL
+public:
+	std::vector<Vertex> vertices;
+	std::vector<unsigned int> indices;
+	std::vector<Texture> textures;
+	unsigned int VAO;
+
+	CMesh(std::vector<Vertex>v, std::vector<unsigned int>i, std::vector<Texture>t);
+	void Draw(int shaderID);
+
+private:
+	unsigned int VBO, EBO;
+
+	void setupMesh();
+#endif	
 };

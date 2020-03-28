@@ -27,6 +27,10 @@
 #include "CGraphicsAPI.h"
 #include <iostream>
 #include "stb_image.h"
+#ifdef OPENGL
+#include "CModel.h"
+#endif // OPENGL
+
 
 //--------------------------------------------------------------------------------------
 // Structures
@@ -96,8 +100,8 @@ CCamera *							InactiveCamera = NULL;
 unsigned int						imguiWindowW;
 unsigned int						imguiWindowH;
 
-CGraphicsAPI						graphicApi;
-CSceneManager						SCManager;
+//CGraphicsAPI						graphicApi;
+//CSceneManager						SCManager;
 
 #ifdef D3D11
 ID3D11Device * ptrDevice = static_cast<ID3D11Device*>(g_pDevice->getDevice());
@@ -116,25 +120,26 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 const char* vertexShaderSource = "#version 330 core\n"
 "layout(location = 0) in vec3 aPos;\n"
-"layout(location = 1) in vec2 aTexCoord;\n"
+"layout(location = 1) in vec3 aNormal;\n"
+"layout(location = 2) in vec2 aTexCoords;\n"
 
-"out vec2 TexCoord;\n"
+"out vec2 TexCoords;\n"
 "uniform mat4 model;\n"
 "uniform mat4 view;\n"
 "uniform mat4 projection;\n"
 "void main()\n"
 "{\n"
 	"gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
-	"TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
+	"TexCoords = aTexCoords;\n"
 "}\n";
 
 const char* fragmentShaderSource = "#version 330 core\n"
 "out vec4 FragColor;\n"
-"in vec2 TexCoord;\n"
-"uniform sampler2D texture1;\n"
+"in vec2 TexCoords;\n"
+"uniform sampler2D texture_diffuse1;\n"
 "void main()\n"
 "{\n"
-	"FragColor = texture(texture1, TexCoord);\n"
+	"FragColor = texture(texture_diffuse1, TexCoords);\n"
 "}\n;";
 #endif
 
@@ -471,54 +476,6 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		23,20,22
 	};
 
-	//Vertex Buffer, Index Buffer & 
-	unsigned int VBO, VAO, EBO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
-	//Bind VAO first, then VBs and set them, then configure vertex attributes
-	glBindVertexArray(VAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubevertex), cubevertex, GL_STATIC_DRAW);
-	
-	/*glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);*/
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-	unsigned int texture1;
-
-	glGenTextures(1, &texture1);
-	glBindTexture(GL_TEXTURE_2D, texture1);
-	// set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	// set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	// load image, create texture and generate mipmaps
-	int width, height, nrChannels;
-	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-	unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
-	if (data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-	}
-	stbi_image_free(data);
-
-	//Wireframe polygon draw
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
 	CameraDesc MyDesc;
 	MyDesc.Pos = { 0.f, 0.f, 3.f };
 	MyDesc.LAt = { 0.f, 0.f, 0.f };
@@ -535,10 +492,10 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	ActiveCamera = &g_Camera;
 	InactiveCamera = &FirstPerson;
 
+	CModel nano("Models/Scene/Scene.fbx");
+
 	while (!glfwWindowShouldClose(window))
 	{
-		//Input
-		//processInput(window);
 		//Update
 		if (ActiveCamera->mForward || ActiveCamera->mBack || ActiveCamera->mLeft || ActiveCamera->mRight || ActiveCamera->mUp || ActiveCamera->mDown)
 		{
@@ -551,12 +508,12 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		//Render
 
 		//Background color
-		glClearColor(0.f, 0.f, .5f, 1.f);
+		glClearColor(0.f, 0.5f, 0.5f, 1.f);
 		//Set background and depth
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Bind loaded texture
-		glBindTexture(GL_TEXTURE_2D, texture1);
+		//glBindTexture(GL_TEXTURE_2D, texture1);
 		//Use linked shader
 		glUseProgram(shaderProgram);
 		
@@ -569,6 +526,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		//glm::mat4 projection = glm::mat4(1.0f);
 		glm::mat4 projection = ActiveCamera->Proj;
 
+		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
+		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
 		
 		unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
 		unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
@@ -593,17 +552,19 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);
 
+		nano.Draw(shaderProgram);
+
 		//Bind vertex array
-		glBindVertexArray(VAO);
+		//glBindVertexArray(VAO);
 		//Draw figure
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
 		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 	//Free resources
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
+	//glDeleteVertexArrays(1, &VAO);
+	//glDeleteBuffers(1, &VBO);
 	//glDeleteBuffers(1, &EBO);
 	glfwTerminate();
 	return 0;

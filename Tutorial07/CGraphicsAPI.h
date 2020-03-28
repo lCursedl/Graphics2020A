@@ -9,6 +9,7 @@
 
 class CGraphicsAPI
 {
+#ifdef D3D11
 public:
 	CGraphicsAPI();
 	~CGraphicsAPI();
@@ -21,4 +22,5 @@ public:
 private:
 	void meshRead(const aiScene* model, CMesh* mesh, int index, CDevice * dev);
 	void readMeshTexture(const aiScene* model, CMesh* mesh, int index, CDevice* dev);
+#endif // D3D11
 };

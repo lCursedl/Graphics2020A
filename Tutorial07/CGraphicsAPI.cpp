@@ -1,13 +1,13 @@
 #include "CGraphicsAPI.h"
+#ifdef D3D11
+CGraphicsAPI::CGraphicsAPI() {}
 
-CGraphicsAPI::CGraphicsAPI(){}
-
-CGraphicsAPI::~CGraphicsAPI(){}
+CGraphicsAPI::~CGraphicsAPI() {}
 
 bool CGraphicsAPI::loadMesh(const char * path, CSceneManager * SM, const aiScene * model, CDeviceContext * DC, Assimp::Importer * importer, CDevice * dev)
 {
 	model = importer->ReadFile(path, aiProcessPreset_TargetRealtime_Fast | aiProcess_ConvertToLeftHanded | aiProcess_FindInstances
-								| aiProcess_ValidateDataStructure | aiProcess_OptimizeMeshes | aiProcess_Debone);
+		| aiProcess_ValidateDataStructure | aiProcess_OptimizeMeshes | aiProcess_Debone);
 
 	if (model == nullptr)
 	{
@@ -61,7 +61,7 @@ void CGraphicsAPI::meshRead(const aiScene * model, CMesh * mesh, int index, CDev
 
 	SimpleVertex* meshVertex = new SimpleVertex[numVertex];
 	WORD* meshIndex = new WORD[numIndex];
-	
+
 	for (int i = 0; i < numVertex; i++)
 	{
 		meshVertex[i].Pos.x = model->mMeshes[index]->mVertices[i].x;
@@ -124,3 +124,4 @@ void CGraphicsAPI::readMeshTexture(const aiScene * model, CMesh * mesh, int inde
 		}
 	}
 }
+#endif // D3D11

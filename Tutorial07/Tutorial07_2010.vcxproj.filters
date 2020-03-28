@@ -112,6 +112,7 @@
     </ClCompile>
     <ClCompile Include="glad.c" />
     <ClCompile Include="image.cpp" />
+    <ClCompile Include="CModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tutorial07.cpp" />
@@ -286,6 +287,7 @@
       <Filter>Camera</Filter>
     </ClInclude>
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="CModel.h" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>
