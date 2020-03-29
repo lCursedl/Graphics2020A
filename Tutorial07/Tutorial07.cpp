@@ -22,13 +22,17 @@
 #include "CRenderTargetView.h"
 #include "CSamplerState.h"
 #include "amgui/imgui.h"
-#include "amgui/imgui_impl_dx11.h"
-#include "amgui/imgui_impl_win32.h"
+
 #include "CGraphicsAPI.h"
 #include <iostream>
 #include "stb_image.h"
 #ifdef OPENGL
+#include "amgui/imgui_impl_glfw.h"
+#include "amgui/imgui_impl_opengl3.h"
 #include "CModel.h"
+#elif D3D11
+#include "amgui/imgui_impl_dx11.h"
+#include "amgui/imgui_impl_win32.h"
 #endif // OPENGL
 
 
@@ -232,13 +236,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	{
 		glfwSetWindowShouldClose(window, true);
 	}
-	//Switch camera
-	if (key == GLFW_KEY_TAB && action == GLFW_PRESS)
-	{
-		CCamera * temp = ActiveCamera;
-		ActiveCamera = InactiveCamera;
-		InactiveCamera = temp;
-	}
 	//Key presses
 	if (action == GLFW_PRESS)
 	{
@@ -350,6 +347,12 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		glfwTerminate();
 		return -1;
 	}
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+	
 	//Callbacks set
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -361,6 +364,9 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	{
 		return -1;
 	}
+	// Setup Platform/Renderer bindings
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 130");
 	glEnable(GL_DEPTH_TEST);
 	//Vertex shader
 	int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -496,6 +502,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	while (!glfwWindowShouldClose(window))
 	{
+		glfwPollEvents();
 		//Update
 		if (ActiveCamera->mForward || ActiveCamera->mBack || ActiveCamera->mLeft || ActiveCamera->mRight || ActiveCamera->mUp || ActiveCamera->mDown)
 		{
@@ -505,20 +512,31 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		{
 			ActiveCamera->rotate();
 		}
-		//Render
 
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		{
+			ImGui::Begin("Test");
+			if (ImGui::Button("Change Camera"))
+			{
+				CCamera * temp = ActiveCamera;
+				ActiveCamera = InactiveCamera;
+				InactiveCamera = temp;
+			}
+			ImGui::Text("App average %.3f ms/frame (%.1 FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::End();
+		}
+
+		//Render
 		//Background color
 		glClearColor(0.f, 0.5f, 0.5f, 1.f);
 		//Set background and depth
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//Bind loaded texture
-		//glBindTexture(GL_TEXTURE_2D, texture1);
 		//Use linked shader
 		glUseProgram(shaderProgram);
-		
-
-
 		//Create matrix for 3D rendering
 		glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
 		//glm::mat4 view = glm::mat4(1.0f);
@@ -529,136 +547,30 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
 		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
 		
+		//Get uniforms from shader
 		unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
 		unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
 		unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-
-		//Draw laberynth
-		//for (int i = 0; i < 32; i++)
-		//{
-		//	model = glm::translate(model, Lab[i]);
-		//	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-		//	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
-		//	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);
-
-		//	//Bind vertex array
-		//	glBindVertexArray(VAO);
-		//	//Draw figure
-		//	glDrawArrays(GL_TRIANGLES, 0, 36);
-		//}
 		
 		// pass them to the shaders (3 different ways)
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);
 
+		//Draw models
 		nano.Draw(shaderProgram);
-
-		//Bind vertex array
-		//glBindVertexArray(VAO);
-		//Draw figure
-		//glDrawArrays(GL_TRIANGLES, 0, 36);
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		//Draw ImGui elements
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		glfwSwapBuffers(window);
-		glfwPollEvents();
+		
 	}
 	//Free resources
-	//glDeleteVertexArrays(1, &VAO);
-	//glDeleteBuffers(1, &VBO);
-	//glDeleteBuffers(1, &EBO);
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 	glfwTerminate();
 	return 0;
-	/*GLFWwindow* window;
-	//GLuint vertex_buffer, vertex_shader, fragment_shader, program;
-	//GLint mvp_location, vpos_location, vcol_location;
-
-	//glfwSetErrorCallback(error_callback);
-
-	//if (!glfwInit())
-	//	exit(EXIT_FAILURE);
-
-	//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-	//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-
-	//window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
-	//if (!window)
-	//{
-	//	glfwTerminate();
-	//	exit(EXIT_FAILURE);
-	//}
-
-	//glfwSetKeyCallback(window, key_callback);
-
-	//glfwMakeContextCurrent(window);
-	//if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-	//{
-	//	return -1;
-	//}
-	//glfwSwapInterval(1);
-
-	//// NOTE: OpenGL error checks have been omitted for brevity
-
-	//glGenBuffers(1, &vertex_buffer);
-	//glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	//vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	//glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
-	//glCompileShader(vertex_shader);
-
-	//fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	//glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
-	//glCompileShader(fragment_shader);
-
-	//program = glCreateProgram();
-	//glAttachShader(program, vertex_shader);
-	//glAttachShader(program, fragment_shader);
-	//glLinkProgram(program);
-
-	//mvp_location = glGetUniformLocation(program, "MVP");
-	//vpos_location = glGetAttribLocation(program, "vPos");
-	//vcol_location = glGetAttribLocation(program, "vCol");
-
-	//glEnableVertexAttribArray(vpos_location);
-	//glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE,
-	//	sizeof(vertices[0]), (void*)0);
-	//glEnableVertexAttribArray(vcol_location);
-	//glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
-	//	sizeof(vertices[0]), (void*)(sizeof(float) * 2));
-
-	//while (!glfwWindowShouldClose(window))
-	//{
-	//	float ratio;
-	//	int width, height;
-	//	glm::mat4 m, p, mvp;
-
-	//	glfwGetFramebufferSize(window, &width, &height);
-	//	ratio = width / (float)height;
-
-	//	glViewport(0, 0, width, height);
-	//	glClear(GL_COLOR_BUFFER_BIT);
-
-	//	m = glm::mat4{ 1.f };
-	//	//mat4x4_identity(m);
-	//	m = glm::rotate(m, (float)glfwGetTime(), glm::vec3{0, 0, 1});
-	//	//mat4x4_rotate_Z(m, m, (float)glfwGetTime());
-	//	p = glm::ortho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-	//	//mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-	//	mvp = p * m;
-	//	//mat4x4_mul(mvp, p, m);
-
-	//	glUseProgram(program);
-	//	glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*)&mvp);
-	//	glDrawArrays(GL_TRIANGLES, 0, 3);
-
-	//	glfwSwapBuffers(window);
-	//	glfwPollEvents();
-	//}
-
-	//glfwDestroyWindow(window);
-
-	//glfwTerminate();
-	//exit(EXIT_SUCCESS);*/
 #endif   
 }
 

@@ -113,6 +113,12 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="image.cpp" />
     <ClCompile Include="CModel.cpp" />
+    <ClCompile Include="amgui\imgui_impl_glfw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="amgui\imgui_impl_opengl3.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tutorial07.cpp" />
@@ -288,6 +294,12 @@
     </ClInclude>
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="CModel.h" />
+    <ClInclude Include="amgui\imgui_impl_glfw.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="amgui\imgui_impl_opengl3.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

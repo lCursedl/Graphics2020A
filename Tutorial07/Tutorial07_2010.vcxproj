@@ -874,6 +874,8 @@
     <ClCompile Include="amgui\imgui_demo.cpp" />
     <ClCompile Include="amgui\imgui_draw.cpp" />
     <ClCompile Include="amgui\imgui_impl_dx11.cpp" />
+    <ClCompile Include="amgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="amgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="amgui\imgui_impl_win32.cpp" />
     <ClCompile Include="amgui\imgui_widgets.cpp" />
     <ClCompile Include="CBuffer.cpp" />
@@ -907,6 +909,8 @@
     <ClInclude Include="amgui\imconfig.h" />
     <ClInclude Include="amgui\imgui.h" />
     <ClInclude Include="amgui\imgui_impl_dx11.h" />
+    <ClInclude Include="amgui\imgui_impl_glfw.h" />
+    <ClInclude Include="amgui\imgui_impl_opengl3.h" />
     <ClInclude Include="amgui\imgui_impl_win32.h" />
     <ClInclude Include="amgui\imgui_internal.h" />
     <ClInclude Include="amgui\imstb_rectpack.h" />
