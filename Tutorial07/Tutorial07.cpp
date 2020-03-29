@@ -281,10 +281,10 @@ void mouse_move_callback(GLFWwindow* window, double xpos, double ypos)
 // Entry point to the program. Initializes everything and goes into a message processing 
 // loop. Idle time is used to render the scene.
 //--------------------------------------------------------------------------------------
-int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow )
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
-    UNREFERENCED_PARAMETER( hPrevInstance );
-    UNREFERENCED_PARAMETER( lpCmdLine );
+	UNREFERENCED_PARAMETER(hPrevInstance);
+	UNREFERENCED_PARAMETER(lpCmdLine);
 
 #ifdef D3D11
 	if (FAILED(InitWindow(hInstance, nCmdShow)))
@@ -352,7 +352,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
-	
+
 	//Callbacks set
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -500,6 +500,30 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 	CModel nano("Models/Scene/Scene.fbx");
 
+	//Framebuffer configuration
+	unsigned int framebuffer;
+	glGenFramebuffers(1, &framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	//Create a color attachment texture
+	unsigned int textureColorbuffer;
+	glGenTextures(1, &textureColorbuffer);
+	glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+	//Create a RenderBufferObject for depth and stencil attachment
+	unsigned int rbo;
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+	//Check for errors
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		return -1;
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
@@ -513,39 +537,26 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 			ActiveCamera->rotate();
 		}
 
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-
-		{
-			ImGui::Begin("Test");
-			if (ImGui::Button("Change Camera"))
-			{
-				CCamera * temp = ActiveCamera;
-				ActiveCamera = InactiveCamera;
-				InactiveCamera = temp;
-			}
-			ImGui::Text("App average %.3f ms/frame (%.1 FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			ImGui::End();
-		}
-
 		//Render
-		//Background color
+		//Bind to Framebuffer and draw inactive camera
+		//glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+		//Clear FBO content and set background color
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 		glClearColor(0.f, 0.5f, 0.5f, 1.f);
-		//Set background and depth
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		
 		//Use linked shader
 		glUseProgram(shaderProgram);
 		//Create matrix for 3D rendering
 		glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
 		//glm::mat4 view = glm::mat4(1.0f);
-		glm::mat4 view = glm::transpose(ActiveCamera->View);
+		glm::mat4 view = glm::transpose(InactiveCamera->View);
 		//glm::mat4 projection = glm::mat4(1.0f);
-		glm::mat4 projection = ActiveCamera->Proj;
 
-		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
-		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+		glm::mat4 projection = glm::scale(InactiveCamera->Proj, glm::vec3(1, -1, 1));
+
+		//model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
+		//model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
 		
 		//Get uniforms from shader
 		unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
@@ -559,11 +570,42 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
 		//Draw models
 		nano.Draw(shaderProgram);
+		
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClearColor(0.f, 0.5f, 0.5f, 1.f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glUseProgram(shaderProgram);
+
+		model = glm::mat4(1.0f);
+		view = glm::transpose(ActiveCamera->View);
+		projection = ActiveCamera->Proj;
+
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);
+
+		nano.Draw(shaderProgram);
+		
 		//Draw ImGui elements
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		ImGui::Begin("Inactive Camera");
+		{
+			ImGui::Image((void*)textureColorbuffer, ImVec2(200, 150));
+			if (ImGui::Button("Change Camera"))
+			{
+				CCamera * temp = ActiveCamera;
+				ActiveCamera = InactiveCamera;
+				InactiveCamera = temp;
+			}
+			ImGui::Text("App average %.3f ms/frame (%.1 FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		}
+		ImGui::End();
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-		glfwSwapBuffers(window);
-		
+		glfwSwapBuffers(window);		
 	}
 	//Free resources
 	ImGui_ImplOpenGL3_Shutdown();
