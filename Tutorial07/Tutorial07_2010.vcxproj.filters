@@ -83,12 +83,6 @@
     <ClCompile Include="amgui\imgui_draw.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="amgui\imgui_impl_dx11.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="amgui\imgui_impl_win32.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
     <ClCompile Include="amgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
@@ -110,15 +104,21 @@
     <ClCompile Include="CCamera.cpp">
       <Filter>Camera</Filter>
     </ClCompile>
-    <ClCompile Include="glad.c" />
     <ClCompile Include="image.cpp" />
     <ClCompile Include="CModel.cpp" />
-    <ClCompile Include="amgui\imgui_impl_glfw.cpp">
+    <ClCompile Include="amgui\imgui_impl_dx11.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="amgui\imgui_impl_opengl3.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="amgui\imgui_impl_win32.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="amgui\imgui_impl_glfw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="glad.c" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tutorial07.cpp" />
@@ -255,12 +255,6 @@
     <ClInclude Include="amgui\imgui.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="amgui\imgui_impl_dx11.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="amgui\imgui_impl_win32.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
     <ClInclude Include="amgui\imgui_internal.h">
       <Filter>imgui</Filter>
     </ClInclude>
@@ -294,10 +288,16 @@
     </ClInclude>
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="CModel.h" />
-    <ClInclude Include="amgui\imgui_impl_glfw.h">
+    <ClInclude Include="amgui\imgui_impl_dx11.h">
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="amgui\imgui_impl_opengl3.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="amgui\imgui_impl_win32.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="amgui\imgui_impl_glfw.h">
       <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>

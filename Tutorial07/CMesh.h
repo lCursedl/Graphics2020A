@@ -1,13 +1,35 @@
 #pragma once
 
 #include "Define.h"
+#include "Includes.h"
+
 #include "CBuffer.h"
 #include "CDevice.h"
 #include "CDeviceContext.h"
 #include "CMaterial.h"
 #include <vector>
 #include <Windows.h>
+//#include "SafeRelease.hpp"
 
+#ifdef D3D11
+
+//using namespace DirectX;
+//
+//struct Vertex {
+//	FLOAT X, Y, Z;
+//	glm::vec2 texcoord;
+//};
+//
+//struct Texture {
+//	std::string type;
+//	std::string path;
+//	ID3D11ShaderResourceView *texture;
+//
+//	void Release() {
+//		SafeRelease(texture);
+//	}
+//};
+#elif OPENGL
 struct Vertex
 {
 	glm::vec3 Position;
@@ -23,6 +45,7 @@ struct Texture
 	std::string type;
 	std::string path;
 };
+#endif // D3D11
 
 class CMesh
 {

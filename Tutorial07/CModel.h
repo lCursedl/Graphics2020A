@@ -1,12 +1,16 @@
 #pragma once
-
+#ifdef OPENGL
 #include "stb_image.h"
+#include <map>
+#endif
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
 #include "CMesh.h"
-#include <map>
+//#include "TextureLoader.h"
+
 
 unsigned int TextureFromFile(const char *path, const std::string &directory, bool gamma = false);
 
@@ -186,5 +190,36 @@ private:
 		}
 		return textures;
 	}
+#elif D3D11
+	/*CModel::CModel() :
+		dev(nullptr),
+		devcon(nullptr),
+		meshes(),
+		directory(),
+		textures_loaded(),
+		hwnd(nullptr)
+	{}
+
+
+	CModel::~CModel(){}
+
+	bool Load(HWND hwnd, ID3D11Device* dev, ID3D11DeviceContext* devcon, std::string filename);
+	void Draw(ID3D11DeviceContext* devcon);
+	
+	void Close();
+private:
+		ID3D11Device *dev;
+		ID3D11DeviceContext *devcon;
+		std::vector<CMesh> meshes;
+		std::string directory;
+		std::vector<Texture> textures_loaded;
+		HWND hwnd;
+	
+		void processNode(aiNode* node, const aiScene* scene);
+		CMesh processMesh(aiMesh* mesh, const aiScene* scene);
+		std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, const aiScene* scene);
+		std::string determineTextureType(const aiScene* scene, aiMaterial* mat);
+		int getTextureIndex(aiString* str);
+		ID3D11ShaderResourceView* getTextureFromModel(const aiScene* scene, int textureindex);*/
 #endif
 };
