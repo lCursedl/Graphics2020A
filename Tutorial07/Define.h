@@ -10,6 +10,12 @@
 
 #define PIDIV4           0.785398163f
 
+/** \file Define.h
+*	\brief	Header with declarations.
+*
+*	Header which includes required independent structures and enums for application.
+*/
+
 enum DRIVER_TYPE
 {
 	DRIVER_TYPE_UNKNOWN = 0,
@@ -19,7 +25,9 @@ enum DRIVER_TYPE
 	DRIVER_TYPE_SOFTWARE = (DRIVER_TYPE_NULL + 1),
 	DRIVER_TYPE_WARP = (DRIVER_TYPE_SOFTWARE + 1)
 };
-
+/**	\enum DRIVER_TYPE
+*	\brief Indepentent enum equivalent to DirectX's D3D11_DRIVER_TYPE
+*/
 enum FEATURE_LEVEL
 {
 	FEATURE_LEVEL_9_1 = 0x9100,
@@ -29,6 +37,9 @@ enum FEATURE_LEVEL
 	FEATURE_LEVEL_10_1 = 0xa100,
 	FEATURE_LEVEL_11_0 = 0xb000
 };
+/**	\enum FEATURE_LEVEL
+*	\brief Indepentent enum equivalent to DirectX's D3D11_FEATURE_LEVEL
+*/
 
 enum USAGE
 {
@@ -37,7 +48,9 @@ enum USAGE
 	USAGE_DYNAMIC,
 	USAGE_STAGING
 };
-
+/**	\enum USAGE
+*	\brief Indepentent enum equivalent to DirectX's D3D11_USAGE
+*/
 enum FORMAT
 {
 	FORMAT_UNKNOWN,
@@ -142,6 +155,9 @@ enum FORMAT
 	FORMAT_BC7_UNORM_SRGB,
 	FORMAT_FORCE_UINT
 };
+/**	\enum FORMAT
+*	\brief Indepentent enum equivalent to DirectX's D3D11_FORMAT
+*/
 
 enum DSV_DIMENSION
 {
@@ -153,11 +169,16 @@ enum DSV_DIMENSION
 	DSV_DIMENSION_TEXTURE2DMS = 5,
 	DSV_DIMENSION_TEXTURE2DMSARRAY = 6
 };
-
+/**	\enum DSV_DIMENSION
+*	\brief Indepentent enum equivalent to DirectX's D3D11_DIMENSION
+*/
 struct TEX1D_DSV
 {
 	unsigned int mipSlice;
 };
+/**	\struct TEX1D_DSV
+*	\brief Indepentent structure equivalent to DirectX's D3D11_TEX1D_DSV
+*/
 
 struct TEX1D_ARRAY_DSV
 {
@@ -165,11 +186,17 @@ struct TEX1D_ARRAY_DSV
 	unsigned int firstArraySlice;
 	unsigned int arraySize;
 };
+/**	\struct TEX1D_ARRAY_DSV
+*	\brief Indepentent structure equivalent to DirectX's D3D11_TEX1D_ARRAY_DSV
+*/
 
 struct TEX2D_DSV
 {
 	unsigned int mipSlice;
 };
+/**	\struct TEX2D_DSV
+*	\brief Indepentent structure equivalent to DirectX's D3D11_TEX2D_DSV
+*/
 
 struct TEX2D_ARRAY_DSV
 {
@@ -177,23 +204,35 @@ struct TEX2D_ARRAY_DSV
 	unsigned int firstArraySlice;
 	unsigned int arraySize;
 };
+/**	\struct TEX2D_ARRAY_DSV
+*	\brief Indepentent structure equivalent to DirectX's D3D11_TEX2D_ARRAY_DSV
+*/
 
 struct TEX2DMS_DSV
 {
 	unsigned int unusedField_NothingToDefine;
 };
+/**	\struct TEX2DMS_DSV
+*	\brief Indepentent structure equivalent to DirectX's D3D11_TEX2DMS_DSV
+*/
 
 struct TEX2DMS_ARRAY_DSV
 {
 	unsigned int firstArraySize;
 	unsigned int arraySize;
 };
+/**	\struct TEX2DMS_ARRAY_DSV
+*	\brief Indepentent structure equivalent to DirectX's D3D11_TEX2DMS_ARRAY_DSV
+*/
 
 struct SAMPLEDESC
 {
 	unsigned int count;
 	unsigned int quality;
 };
+/**	\struct SAMPLEDESC
+*	\brief Indepentent structure equivalent to DirectX's D3D11_SAMPLEDESC
+*/
 
 struct SubresourceData
 {
@@ -201,6 +240,9 @@ struct SubresourceData
 	unsigned int sysMemPitch;
 	unsigned int sysMemSlicePitch;
 };
+/**	\struct SubresourceData
+*	\brief Indepentent structure equivalent to DirectX's D3D11_SUBRESOURCE_DATA
+*/
 
 enum RTV_DIMENSION
 {
@@ -214,7 +256,9 @@ enum RTV_DIMENSION
 	RTV_DIMENSION_TEXTURE2DMSARRAY = 7,
 	RTV_DIMENSION_TEXTURE3D = 8
 };
-
+/**	\enum RTV_DIMENSION
+*	\brief Indepentent enum equivalent to DirectX's D3D11_RTV_DIMENSION
+*/
 struct BUFFER_RTV
 {
 	union
@@ -228,49 +272,66 @@ struct BUFFER_RTV
 		unsigned int elementWidth;
 	};
 };
+/**	\struct BUFFER_RTV
+*	\brief Indepentent structure equivalent to DirectX's D3D11_BUFFER_RTV
+*/
 
 struct TEX1D_RTV
 {
 	unsigned int mipSlice;
 };
-
+/**	\struct TEX1D_RTV
+*	\brief Indepentent structure equivalent to DirectX's D3D11_TEX1D_RTV
+*/
 struct TEX1D_ARRAY_RTV
 {
 	unsigned int mipSlice;
 	unsigned int firstArraySlice;
 	unsigned int arraySize;
 };
-
+/**	\struct TEX1D_ARRAY_RTV
+*	\brief Indepentent structure equivalent to DirectX's D3D11_TEX1D_ARRAY_RTV
+*/
 struct TEX2D_RTV
 {
 	unsigned int mipSlice;
 };
-
+/**	\struct TEX2D_RTV
+*	\brief Indepentent structure equivalent to DirectX's D3D11_TEX2D_RTV
+*/
 struct TEX2D_ARRAY_RTV
 {
 	unsigned int mipSlice;
 	unsigned int firstArraySlice;
 	unsigned int arraySize;
 };
-
+/**	\struct TEX2D_ARRAY_RTV
+*	\brief Indepentent structure equivalent to DirectX's D3D11_TEX2D_ARRAY_RTV
+*/
 struct TEX2DMS_RTV
 {
 	unsigned int unusedField_NothingToDefine;
 };
-
+/**	\struct TEX2DMS_RTV
+*	\brief Indepentent structure equivalent to DirectX's D3D11_TEX2DMS_RTV
+*/
 struct TEX2DMS_ARRAY_RTV
 {
 	unsigned int firstArraySlice;
 	unsigned int arraySize;
 };
-
+/**	\struct TEX2DMS_ARRAY_RTV
+*	\brief Indepentent structure equivalent to DirectX's D3D11_TEX2DMS_ARRAY_RTV
+*/
 struct TEX3D_RTV
 {
 	unsigned int mipSlice;
 	unsigned int firstWSlice;
 	unsigned int wSize;
 };
-
+/**	\struct TEX3D_RTV
+*	\brief Indepentent structure equivalent to DirectX's D3D11_TEX3D_RTV
+*/
 enum FILTER
 {
 	FILTER_MIN_MAG_MIP_POINT = 0,
@@ -292,7 +353,9 @@ enum FILTER
 	FILTER_COMPARISON_MIN_MAG_MIP_LINEAR = 0x95,
 	FILTER_COMPARISON_ANISOTROPIC = 0xd5
 };
-
+/**	\enum FILTER
+*	\brief Indepentent enum equivalent to DirectX's D3D11_FILTER
+*/
 enum TEXTURE_ADDRESS_MODE
 {
 	TEXTURE_ADDRESS_WRAP = 1,
@@ -301,7 +364,9 @@ enum TEXTURE_ADDRESS_MODE
 	TEXTURE_ADDRESS_BORDER = 4,
 	TEXTURE_ADDRESS_MIRROR_ONCE = 5
 };
-
+/**	\enum TEXTURE_ADDRES_MODE
+*	\brief Indepentent enum equivalent to DirectX's D3D11_TEXTURE_ADRESS_MODE
+*/
 enum COMPARISON_FUNC
 {
 	COMPARISON_NEVER = 1,
@@ -313,25 +378,35 @@ enum COMPARISON_FUNC
 	COMPARISON_GREATER_EQUAL = 7,
 	COMPARISON_ALWAYS = 8
 };
-
+/**	\enum COMPARISON_FUNC
+*	\brief Indepentent enum equivalent to DirectX's D3D11_COMPARISON_FUNC
+*/
 struct SimpleVertex
 {
-	glm::vec3 Pos;
-	glm::vec2 Tex;
+	glm::vec3 Pos;			/**< Vector 3 for Position */
+	glm::vec2 Tex;			/**< Vector 2 for Texture coordinates */
 };
-
+/**	\struct SimpleVertex
+*	\brief Structure which defines a buffer with position and texture coords
+*/
 struct CBNeverChanges
 {
-	glm::mat4 mView;
+	glm::mat4 mView;		/**< Matrix4 for View */
 };
-
+/**	\struct CBNeverChanges
+*	\brief Structure which defines a buffer with a View matrix
+*/
 struct CBChangeOnResize
 {
-	glm::mat4 mProjection;
+	glm::mat4 mProjection;	/**< Matrix4 for Projection */
 };
-
-struct CBChangesEveryFrame
+/**	\struct CBChangeOnResize
+*	\brief Structure which defines a buffer with a Projection matrix
+*/struct CBChangesEveryFrame
 {
-	glm::mat4 mWorld;
-	glm::vec4 vMeshColor;
+	glm::mat4 mWorld;		/**< Matrix4 for World */
+	glm::vec4 vMeshColor;	/**< Vec4 for Color */
 };
+/**	\struct CBChangesEveryFrame
+*	\brief Structure which defines a World matrix and a color
+*/

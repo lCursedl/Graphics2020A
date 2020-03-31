@@ -11,3 +11,9 @@
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #endif // OPENGL
+
+/** \file Includes.h
+*	\brief	Header with library inclusions.
+*
+*	Header which includes required files, depending on the current platform.
+*/

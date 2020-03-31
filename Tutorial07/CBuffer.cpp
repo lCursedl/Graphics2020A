@@ -47,8 +47,6 @@ void CBuffer::createVertexBuffer(int numVertex, const aiScene * model, SimpleVer
 	{
 		return;
 	}
-
-
 }
 
 void CBuffer::createIndexBuffer(int numIndex, const aiScene * model, WORD * index, ID3D11Buffer *& buffer, ID3D11Device * Dev)
