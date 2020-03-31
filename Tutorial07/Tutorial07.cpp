@@ -94,6 +94,8 @@ CSwapChain *						g_SwapChain = CSwapChain::getInstance();
 CDeviceContext *					g_DeviceContext = CDeviceContext::getInstance();
 CVertexBuffer						g_VertexBuffer;
 CIndexBuffer						g_IndexBuffer;
+CVertexBuffer						g_BoardVB;
+CIndexBuffer						g_BoardIB;
 CTexture2D							g_DepthStencil;
 CDepthStencilView					DepthStencilViewFree;
 CVertexShader						g_VertexShader;
@@ -107,7 +109,7 @@ CCamera *							InactiveCamera = NULL;
 unsigned int						imguiWindowW;
 unsigned int						imguiWindowH;
 
-
+glm::vec3 boardpos(-5, 1, 0);
 
 #ifdef D3D11
 ID3D11Device * ptrDevice = static_cast<ID3D11Device*>(g_pDevice->getDevice());
@@ -945,7 +947,60 @@ HRESULT InitDevice()
 	ptrDC->IASetIndexBuffer(g_IndexBuffer.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0 );
 
     // Set primitive topology
-	ptrDC->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+	//ptrDC->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+
+	//Create billboard VertexBuffer
+	SimpleVertex boardVertex[]=
+	{
+		{glm::vec3(1.f, 1.f, 0.f),		glm::vec2(1.f, 0.f)},
+		{glm::vec3(1.f, -1.f, 0.f),		glm::vec2(1.f, 1.f)},
+		{glm::vec3(-1.f, -1.f, 0.f),	glm::vec2(0.f, 1.f)},
+		{glm::vec3(-1.f, 1.f, 0.f),		glm::vec2(0.f, 0.f)}
+
+	};
+
+	bufferstrct.usage = USAGE_DEFAULT;
+	bufferstrct.byteWidth = sizeof(SimpleVertex) * 4;
+	bufferstrct.bindFlags = 1;
+	bufferstrct.cpuAccessFlags = 0;
+
+	subrsrcData.psysMem = boardVertex;
+	g_BoardVB.init(subrsrcData, bufferstrct);
+
+	hr = ptrDevice->CreateBuffer(&g_BoardVB.m_Buffer.m_bd, &g_BoardVB.m_Data, &g_BoardVB.m_Buffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	//Set billboard VB
+	stride = sizeof(SimpleVertex);
+	offset = 0;
+	ptrDC->IASetVertexBuffers(0, 1, &g_BoardVB.m_Buffer.m_pBuffer, &stride, &offset);
+
+	//Create billboard IB
+	WORD boardIndices[] = 
+	{
+		3,1,0,
+		2,1,3
+	};
+
+	bufferstrct.usage = USAGE_DEFAULT;
+	bufferstrct.byteWidth = sizeof(WORD) * 6;
+	bufferstrct.bindFlags = 2;
+	bufferstrct.cpuAccessFlags = 0;
+	subrsrcData.psysMem = boardIndices;
+	g_BoardIB.init(subrsrcData, bufferstrct);
+	hr = ptrDevice->CreateBuffer(&g_BoardIB.m_Buffer.m_bd, &g_BoardIB.m_Data, &g_BoardIB.m_Buffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	//Set billboard IB
+	ptrDC->IASetIndexBuffer(g_BoardIB.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
+
+	ptrDC->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     // Create the constant buffers
 	bufferstrct.usage = USAGE_DEFAULT;
@@ -1143,7 +1198,9 @@ void CleanupDevice()
     if( g_Camera.m_CBChangesOnResize.m_pBuffer ) g_Camera.m_CBChangesOnResize.m_pBuffer->Release();
     if( g_Camera.m_CBChangesEveryFrame.m_pBuffer ) g_Camera.m_CBChangesEveryFrame.m_pBuffer->Release();
     if( g_VertexBuffer.m_Buffer.m_pBuffer) g_VertexBuffer.m_Buffer.m_pBuffer->Release();
+	if (g_BoardVB.m_Buffer.m_pBuffer) g_BoardVB.m_Buffer.m_pBuffer->Release();
     if( g_IndexBuffer.m_Buffer.m_pBuffer ) g_IndexBuffer.m_Buffer.m_pBuffer->Release();
+	if (g_BoardIB.m_Buffer.m_pBuffer) g_BoardIB.m_Buffer.m_pBuffer->Release();
     if( g_VertexShader.m_pInputLayout ) g_VertexShader.m_pInputLayout->Release();
     if( g_VertexShader.m_pVertexShader ) g_VertexShader.m_pVertexShader->Release();
     if( g_PixelShader.m_pPixelShader) g_PixelShader.m_pPixelShader->Release();
@@ -1406,6 +1463,7 @@ void Render()
 
 	unsigned int stride = sizeof(SimpleVertex);
 	unsigned int offset = 0;
+
 	g_DeviceContext->m_DeviceContext->IASetVertexBuffers(0, 1, &g_VertexBuffer.m_Buffer.m_pBuffer, &stride, &offset);
 	g_DeviceContext->m_DeviceContext->IASetIndexBuffer(g_IndexBuffer.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
 
@@ -1469,9 +1527,6 @@ void Render()
 		g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &SCManager.m_MeshList[i]->m_Materials->m_TextureDiffuse);
 		g_DeviceContext->m_DeviceContext->VSSetShaderResources(0, 1, &SCManager.m_MeshList[i]->m_Materials->m_TextureDiffuse);
 
-		unsigned int stride = sizeof(SimpleVertex);
-		unsigned int offset = 0;
-
 		g_DeviceContext->m_DeviceContext->IASetVertexBuffers(0, 1, &SCManager.m_MeshList[i]->m_VB->m_pBuffer, &stride, &offset);
 		g_DeviceContext->m_DeviceContext->IASetIndexBuffer(SCManager.m_MeshList[i]->m_IB->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
 
@@ -1489,6 +1544,7 @@ void Render()
     //
     // Update variables that change once per frame
     //
+
 	for (int i = 0; i < 32; i++){
 		
 		g_World = glm::mat4(1.f);
@@ -1510,6 +1566,34 @@ void Render()
 		ID3D11ShaderResourceView* temp = NULL;
 		g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &temp);
 	}
+	//Draw billboard
+
+	g_DeviceContext->m_DeviceContext->IASetVertexBuffers(0, 1, &g_BoardVB.m_Buffer.m_pBuffer, &stride, &offset);
+	g_DeviceContext->m_DeviceContext->IASetIndexBuffer(g_BoardIB.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
+
+	glm::vec3 boardLook = glm::normalize(ActiveCamera->getPos() - boardpos);
+	glm::vec3 boardRight = glm::cross(glm::normalize(ActiveCamera->Up), boardLook);
+	glm::vec3 boardUp = glm::cross(boardLook, boardRight);
+
+	glm::mat4 boarMat(boardRight.x, boardRight.y, boardRight.z, 0, boardUp.x, boardUp.y, boardUp.z, 0, boardLook.x, boardLook.y, boardLook.z, 0, boardpos.x, boardpos.y, boardpos.z, 1);
+
+	g_World = boarMat;
+
+	cb.mWorld = glm::transpose(g_World);
+	cb.vMeshColor = g_MeshColor;
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(ActiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
+
+	g_DeviceContext->m_DeviceContext->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
+	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(0, 1, &ActiveCamera->m_CBNeverChanges.m_pBuffer);
+	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(1, 1, &ActiveCamera->m_CBChangesOnResize.m_pBuffer);
+	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+	g_DeviceContext->m_DeviceContext->PSSetShader(g_PixelShader.m_pPixelShader, NULL, 0);
+	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+	g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &InactiveSRV);
+	g_DeviceContext->m_DeviceContext->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
+	g_DeviceContext->m_DeviceContext->DrawIndexed(6, 0, 0);
+	ID3D11ShaderResourceView* temp = NULL;
+	g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &temp);
 
     //
     // Present our back buffer to our front buffer
