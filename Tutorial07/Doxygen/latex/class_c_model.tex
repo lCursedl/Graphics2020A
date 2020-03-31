@@ -1,0 +1,174 @@
+\hypertarget{class_c_model}{}\doxysection{C\+Model Class Reference}
+\label{class_c_model}\index{CModel@{CModel}}
+
+
+Class which contains data for Model, Mesh and \mbox{\hyperlink{struct_texture}{Texture}} loading and use.  
+
+
+
+
+{\ttfamily \#include $<$C\+Model.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_c_model_a8285bbe12685797070e4ef4e531c7f3d}{C\+Model}} (std\+::string const \&path)
+\begin{DoxyCompactList}\small\item\em \mbox{\hyperlink{class_c_model}{C\+Model}} constructor, calls \mbox{\hyperlink{class_c_model_a2abacf226a491f2f08e695840b7bd164}{load\+Model(std\+::string const \&path)}} function. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_c_model_acb86a8ae3f9ef87c3f34632cdec21f75}{Draw}} (int shader)
+\begin{DoxyCompactList}\small\item\em Draws the model and it\textquotesingle{}s meshes. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ \mbox{\hyperlink{struct_texture}{Texture}} $>$ \mbox{\hyperlink{class_c_model_a4fecdb1eb9cbec7222e4823482586ca5}{textures\+\_\+loaded}}
+\item 
+std\+::vector$<$ \mbox{\hyperlink{class_c_mesh}{C\+Mesh}} $>$ \mbox{\hyperlink{class_c_model_a8aaf180f4a58cc6eff8a7798100e86f5}{meshes}}
+\item 
+std\+::string \mbox{\hyperlink{class_c_model_a9baff8a09b48cd261e687b08ed656894}{directory}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{class_c_model_a2abacf226a491f2f08e695840b7bd164}{load\+Model}} (std\+::string const \&path)
+\begin{DoxyCompactList}\small\item\em Loads supported model and stores the meshes in the vector. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_c_model_aa18108dfb830f4fad9d64b5846eac24f}{process\+Node}} (ai\+Node $\ast$node, const ai\+Scene $\ast$scene)
+\begin{DoxyCompactList}\small\item\em Processes a node recursively and then each individual mesh and its children, if any. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{class_c_mesh}{C\+Mesh}} \mbox{\hyperlink{class_c_model_a21cd69912eeaf6811a4e4b1e2bc36e86}{process\+Mesh}} (ai\+Mesh $\ast$mesh, const ai\+Scene $\ast$scene)
+\begin{DoxyCompactList}\small\item\em Processes a Mesh, storing its vertices, indices, text coords and materials. \end{DoxyCompactList}\item 
+std\+::vector$<$ \mbox{\hyperlink{struct_texture}{Texture}} $>$ \mbox{\hyperlink{class_c_model_a094599510105e60b2afb8323c4c2138b}{load\+Material\+Textures}} (ai\+Material $\ast$mat, ai\+Texture\+Type type, std\+::string type\+Name)
+\begin{DoxyCompactList}\small\item\em Checks all material textures and loads them if they aren\textquotesingle{}t loaded yet. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Class which contains data for Model, Mesh and \mbox{\hyperlink{struct_texture}{Texture}} loading and use. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{class_c_model_a8285bbe12685797070e4ef4e531c7f3d}\label{class_c_model_a8285bbe12685797070e4ef4e531c7f3d}} 
+\index{CModel@{CModel}!CModel@{CModel}}
+\index{CModel@{CModel}!CModel@{CModel}}
+\doxysubsubsection{\texorpdfstring{CModel()}{CModel()}}
+{\footnotesize\ttfamily C\+Model\+::\+C\+Model (\begin{DoxyParamCaption}\item[{std\+::string const \&}]{path }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+\mbox{\hyperlink{class_c_model}{C\+Model}} constructor, calls \mbox{\hyperlink{class_c_model_a2abacf226a491f2f08e695840b7bd164}{load\+Model(std\+::string const \&path)}} function. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em path} & string which defines the model\textquotesingle{}s path \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_c_model_acb86a8ae3f9ef87c3f34632cdec21f75}\label{class_c_model_acb86a8ae3f9ef87c3f34632cdec21f75}} 
+\index{CModel@{CModel}!Draw@{Draw}}
+\index{Draw@{Draw}!CModel@{CModel}}
+\doxysubsubsection{\texorpdfstring{Draw()}{Draw()}}
+{\footnotesize\ttfamily void C\+Model\+::\+Draw (\begin{DoxyParamCaption}\item[{int}]{shader }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Draws the model and it\textquotesingle{}s meshes. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em shader} & int which specifies the shader program to use \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_c_model_a094599510105e60b2afb8323c4c2138b}\label{class_c_model_a094599510105e60b2afb8323c4c2138b}} 
+\index{CModel@{CModel}!loadMaterialTextures@{loadMaterialTextures}}
+\index{loadMaterialTextures@{loadMaterialTextures}!CModel@{CModel}}
+\doxysubsubsection{\texorpdfstring{loadMaterialTextures()}{loadMaterialTextures()}}
+{\footnotesize\ttfamily std\+::vector$<$ \mbox{\hyperlink{struct_texture}{Texture}} $>$ C\+Model\+::load\+Material\+Textures (\begin{DoxyParamCaption}\item[{ai\+Material $\ast$}]{mat,  }\item[{ai\+Texture\+Type}]{type,  }\item[{std\+::string}]{type\+Name }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+
+
+Checks all material textures and loads them if they aren\textquotesingle{}t loaded yet. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em mat} & ai\+Material pointer which contains the meshes materials \\
+\hline
+\mbox{\texttt{ in}}  & {\em type} & ai\+Texture\+Type which defines the texture type \\
+\hline
+\mbox{\texttt{ in}}  & {\em type\+Name} & string which defines the name of texture type \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+a vector of texture struct 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_c_model_a2abacf226a491f2f08e695840b7bd164}\label{class_c_model_a2abacf226a491f2f08e695840b7bd164}} 
+\index{CModel@{CModel}!loadModel@{loadModel}}
+\index{loadModel@{loadModel}!CModel@{CModel}}
+\doxysubsubsection{\texorpdfstring{loadModel()}{loadModel()}}
+{\footnotesize\ttfamily void C\+Model\+::load\+Model (\begin{DoxyParamCaption}\item[{std\+::string const \&}]{path }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+
+
+Loads supported model and stores the meshes in the vector. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em path} & string with Model path \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_c_model_a21cd69912eeaf6811a4e4b1e2bc36e86}\label{class_c_model_a21cd69912eeaf6811a4e4b1e2bc36e86}} 
+\index{CModel@{CModel}!processMesh@{processMesh}}
+\index{processMesh@{processMesh}!CModel@{CModel}}
+\doxysubsubsection{\texorpdfstring{processMesh()}{processMesh()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{class_c_mesh}{C\+Mesh}} C\+Model\+::process\+Mesh (\begin{DoxyParamCaption}\item[{ai\+Mesh $\ast$}]{mesh,  }\item[{const ai\+Scene $\ast$}]{scene }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+
+
+Processes a Mesh, storing its vertices, indices, text coords and materials. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em mesh} & ai\+Mesh pointer from where the mesh info comes \\
+\hline
+\mbox{\texttt{ in}}  & {\em scene} & ai\+Scene pointer from where to process info \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_c_model_aa18108dfb830f4fad9d64b5846eac24f}\label{class_c_model_aa18108dfb830f4fad9d64b5846eac24f}} 
+\index{CModel@{CModel}!processNode@{processNode}}
+\index{processNode@{processNode}!CModel@{CModel}}
+\doxysubsubsection{\texorpdfstring{processNode()}{processNode()}}
+{\footnotesize\ttfamily void C\+Model\+::process\+Node (\begin{DoxyParamCaption}\item[{ai\+Node $\ast$}]{node,  }\item[{const ai\+Scene $\ast$}]{scene }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [private]}}
+
+
+
+Processes a node recursively and then each individual mesh and its children, if any. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em node} & ai\+Node pointer which stores meshes \\
+\hline
+\mbox{\texttt{ in}}  & {\em scene} & ai\+Scene pointer from where to process info \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{class_c_model_a9baff8a09b48cd261e687b08ed656894}\label{class_c_model_a9baff8a09b48cd261e687b08ed656894}} 
+\index{CModel@{CModel}!directory@{directory}}
+\index{directory@{directory}!CModel@{CModel}}
+\doxysubsubsection{\texorpdfstring{directory}{directory}}
+{\footnotesize\ttfamily std\+::string C\+Model\+::directory}
+
+string which stores the Model\textquotesingle{}s path \mbox{\Hypertarget{class_c_model_a8aaf180f4a58cc6eff8a7798100e86f5}\label{class_c_model_a8aaf180f4a58cc6eff8a7798100e86f5}} 
+\index{CModel@{CModel}!meshes@{meshes}}
+\index{meshes@{meshes}!CModel@{CModel}}
+\doxysubsubsection{\texorpdfstring{meshes}{meshes}}
+{\footnotesize\ttfamily std\+::vector$<$\mbox{\hyperlink{class_c_mesh}{C\+Mesh}}$>$ C\+Model\+::meshes}
+
+vector$<$\+C\+Mesh$>$ which contains the Model\textquotesingle{}s Meshes \mbox{\Hypertarget{class_c_model_a4fecdb1eb9cbec7222e4823482586ca5}\label{class_c_model_a4fecdb1eb9cbec7222e4823482586ca5}} 
+\index{CModel@{CModel}!textures\_loaded@{textures\_loaded}}
+\index{textures\_loaded@{textures\_loaded}!CModel@{CModel}}
+\doxysubsubsection{\texorpdfstring{textures\_loaded}{textures\_loaded}}
+{\footnotesize\ttfamily std\+::vector$<$\mbox{\hyperlink{struct_texture}{Texture}}$>$ C\+Model\+::textures\+\_\+loaded}
+
+vector$<$\+Texture$>$ which contains loaded textures for the Model 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Model.\+h\end{DoxyCompactItemize}

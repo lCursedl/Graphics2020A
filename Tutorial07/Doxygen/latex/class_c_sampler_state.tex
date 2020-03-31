@@ -1,0 +1,80 @@
+\hypertarget{class_c_sampler_state}{}\doxysection{C\+Sampler\+State Class Reference}
+\label{class_c_sampler_state}\index{CSamplerState@{CSamplerState}}
+
+
+Class which contains data for Sampler\+State use.  
+
+
+
+
+{\ttfamily \#include $<$C\+Sampler\+State.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{class_c_sampler_state_a8db311c39301ef2251e5b82a2cd12aed}{init}} (\mbox{\hyperlink{struct_s_a_m_p_l_e_r___d_e_s_c}{S\+A\+M\+P\+L\+E\+R\+\_\+\+D\+E\+SC}} S)
+\begin{DoxyCompactList}\small\item\em Receives a \mbox{\hyperlink{struct_buffer_struct}{Buffer\+Struct}} to copy its values. \end{DoxyCompactList}\item 
+void $\ast$ \mbox{\hyperlink{class_c_sampler_state_acb8f00919290a9ec064429e535cfaafc}{get\+Sampler}} ()
+\begin{DoxyCompactList}\small\item\em Function to get a void pointer to object. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+I\+D3\+D11\+Sampler\+State $\ast$ \mbox{\hyperlink{class_c_sampler_state_aff15b6167236bbf24fd24518133ef973}{m\+\_\+p\+Sampler\+Linear}}
+\item 
+D3\+D11\+\_\+\+S\+A\+M\+P\+L\+E\+R\+\_\+\+D\+E\+SC \mbox{\hyperlink{class_c_sampler_state_aa398c1102f3a6517a6d1985a8c641366}{m\+\_\+\+Desc}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Class which contains data for Sampler\+State use. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_c_sampler_state_acb8f00919290a9ec064429e535cfaafc}\label{class_c_sampler_state_acb8f00919290a9ec064429e535cfaafc}} 
+\index{CSamplerState@{CSamplerState}!getSampler@{getSampler}}
+\index{getSampler@{getSampler}!CSamplerState@{CSamplerState}}
+\doxysubsubsection{\texorpdfstring{getSampler()}{getSampler()}}
+{\footnotesize\ttfamily void $\ast$ C\+Sampler\+State\+::get\+Sampler (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Function to get a void pointer to object. 
+
+\begin{DoxyReturn}{Returns}
+void pointer to object. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_c_sampler_state_a8db311c39301ef2251e5b82a2cd12aed}\label{class_c_sampler_state_a8db311c39301ef2251e5b82a2cd12aed}} 
+\index{CSamplerState@{CSamplerState}!init@{init}}
+\index{init@{init}!CSamplerState@{CSamplerState}}
+\doxysubsubsection{\texorpdfstring{init()}{init()}}
+{\footnotesize\ttfamily void C\+Sampler\+State\+::init (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{struct_s_a_m_p_l_e_r___d_e_s_c}{S\+A\+M\+P\+L\+E\+R\+\_\+\+D\+E\+SC}}}]{S }\end{DoxyParamCaption})}
+
+
+
+Receives a \mbox{\hyperlink{struct_buffer_struct}{Buffer\+Struct}} to copy its values. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em S} & \mbox{\hyperlink{struct_s_a_m_p_l_e_r___d_e_s_c}{S\+A\+M\+P\+L\+E\+R\+\_\+\+D\+E\+SC}} with the desired information. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{class_c_sampler_state_aa398c1102f3a6517a6d1985a8c641366}\label{class_c_sampler_state_aa398c1102f3a6517a6d1985a8c641366}} 
+\index{CSamplerState@{CSamplerState}!m\_Desc@{m\_Desc}}
+\index{m\_Desc@{m\_Desc}!CSamplerState@{CSamplerState}}
+\doxysubsubsection{\texorpdfstring{m\_Desc}{m\_Desc}}
+{\footnotesize\ttfamily D3\+D11\+\_\+\+S\+A\+M\+P\+L\+E\+R\+\_\+\+D\+E\+SC C\+Sampler\+State\+::m\+\_\+\+Desc}
+
+DirectX structure to store data \mbox{\Hypertarget{class_c_sampler_state_aff15b6167236bbf24fd24518133ef973}\label{class_c_sampler_state_aff15b6167236bbf24fd24518133ef973}} 
+\index{CSamplerState@{CSamplerState}!m\_pSamplerLinear@{m\_pSamplerLinear}}
+\index{m\_pSamplerLinear@{m\_pSamplerLinear}!CSamplerState@{CSamplerState}}
+\doxysubsubsection{\texorpdfstring{m\_pSamplerLinear}{m\_pSamplerLinear}}
+{\footnotesize\ttfamily I\+D3\+D11\+Sampler\+State$\ast$ C\+Sampler\+State\+::m\+\_\+p\+Sampler\+Linear}
+
+Pointer to a DirectX Sampler\+State 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Sampler\+State.\+h\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Sampler\+State.\+cpp\end{DoxyCompactItemize}

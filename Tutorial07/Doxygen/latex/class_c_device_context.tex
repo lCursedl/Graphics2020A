@@ -1,0 +1,93 @@
+\hypertarget{class_c_device_context}{}\doxysection{C\+Device\+Context Class Reference}
+\label{class_c_device_context}\index{CDeviceContext@{CDeviceContext}}
+
+
+Class which contains a Singleton for a DirectX Device Context implementation.  
+
+
+
+
+{\ttfamily \#include $<$C\+Device\+Context.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_c_device_context_a64a13921bddc35b8e286e53833c37247}\label{class_c_device_context_a64a13921bddc35b8e286e53833c37247}} 
+void {\bfseries operator=} (\mbox{\hyperlink{class_c_device_context}{C\+Device\+Context}} const \&)=delete
+\item 
+\mbox{\Hypertarget{class_c_device_context_a0f25a7d29b744ec6c00e07ae86a744d7}\label{class_c_device_context_a0f25a7d29b744ec6c00e07ae86a744d7}} 
+void {\bfseries init} ()
+\item 
+void $\ast$ \mbox{\hyperlink{class_c_device_context_ab59e386be001a897b46dcb08245a1aa1}{get\+Device\+Context}} ()
+\begin{DoxyCompactList}\small\item\em Function to get a void pointer to instance. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{class_c_device_context}{C\+Device\+Context}} $\ast$ \mbox{\hyperlink{class_c_device_context_a2c86b335c65cff0b2e0a15154265b3dd}{get\+Instance}} ()
+\begin{DoxyCompactList}\small\item\em Function to get instance object. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+I\+D3\+D11\+Device\+Context $\ast$ \mbox{\hyperlink{class_c_device_context_ab490a232783bb92010486a1c454fc92a}{m\+\_\+\+Device\+Context}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{class_c_device_context}{C\+Device\+Context}} $\ast$ \mbox{\hyperlink{class_c_device_context_acdb8d94497de1a8f7b85e29f80232fee}{m\+\_\+\+D\+C\+Instance}} = nullptr
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Class which contains a Singleton for a DirectX Device Context implementation. 
+
+Instance can be initialized using a pointer for the class and setting it to N\+U\+LL. Then when needed, make a pointer of the class and assign its value given by \mbox{\hyperlink{class_c_device_context_a2c86b335c65cff0b2e0a15154265b3dd}{get\+Instance()}}. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_c_device_context_ab59e386be001a897b46dcb08245a1aa1}\label{class_c_device_context_ab59e386be001a897b46dcb08245a1aa1}} 
+\index{CDeviceContext@{CDeviceContext}!getDeviceContext@{getDeviceContext}}
+\index{getDeviceContext@{getDeviceContext}!CDeviceContext@{CDeviceContext}}
+\doxysubsubsection{\texorpdfstring{getDeviceContext()}{getDeviceContext()}}
+{\footnotesize\ttfamily void $\ast$ C\+Device\+Context\+::get\+Device\+Context (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Function to get a void pointer to instance. 
+
+\begin{DoxyReturn}{Returns}
+void pointer to instance. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_c_device_context_a2c86b335c65cff0b2e0a15154265b3dd}\label{class_c_device_context_a2c86b335c65cff0b2e0a15154265b3dd}} 
+\index{CDeviceContext@{CDeviceContext}!getInstance@{getInstance}}
+\index{getInstance@{getInstance}!CDeviceContext@{CDeviceContext}}
+\doxysubsubsection{\texorpdfstring{getInstance()}{getInstance()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{class_c_device_context}{C\+Device\+Context}} $\ast$ C\+Device\+Context\+::get\+Instance (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Function to get instance object. 
+
+\begin{DoxyReturn}{Returns}
+a pointer to the instance. 
+\end{DoxyReturn}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{class_c_device_context_acdb8d94497de1a8f7b85e29f80232fee}\label{class_c_device_context_acdb8d94497de1a8f7b85e29f80232fee}} 
+\index{CDeviceContext@{CDeviceContext}!m\_DCInstance@{m\_DCInstance}}
+\index{m\_DCInstance@{m\_DCInstance}!CDeviceContext@{CDeviceContext}}
+\doxysubsubsection{\texorpdfstring{m\_DCInstance}{m\_DCInstance}}
+{\footnotesize\ttfamily \mbox{\hyperlink{class_c_device_context}{C\+Device\+Context}} $\ast$ C\+Device\+Context\+::m\+\_\+\+D\+C\+Instance = nullptr\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [private]}}
+
+Pointer to the instance which is used for the Singleton \mbox{\Hypertarget{class_c_device_context_ab490a232783bb92010486a1c454fc92a}\label{class_c_device_context_ab490a232783bb92010486a1c454fc92a}} 
+\index{CDeviceContext@{CDeviceContext}!m\_DeviceContext@{m\_DeviceContext}}
+\index{m\_DeviceContext@{m\_DeviceContext}!CDeviceContext@{CDeviceContext}}
+\doxysubsubsection{\texorpdfstring{m\_DeviceContext}{m\_DeviceContext}}
+{\footnotesize\ttfamily I\+D3\+D11\+Device\+Context$\ast$ C\+Device\+Context\+::m\+\_\+\+Device\+Context}
+
+Pointer to a DirectX Device Context 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Device\+Context.\+h\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Device\+Context.\+cpp\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/Tutorial07.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,105 @@
+\hypertarget{class_c_scene_manager}{}\doxysection{C\+Scene\+Manager Class Reference}
+\label{class_c_scene_manager}\index{CSceneManager@{CSceneManager}}
+
+
+Class which contains data for Scene creation and Mesh management.  
+
+
+
+
+{\ttfamily \#include $<$C\+Scene\+Manager.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{class_c_scene_manager_a8f4f98c7823adca554e59357c0fe6b48}{add\+Mesh}} (\mbox{\hyperlink{class_c_mesh}{C\+Mesh}} $\ast$M)
+\begin{DoxyCompactList}\small\item\em Adds the specified Mesh to the Scene. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{class_c_mesh}{C\+Mesh}} $\ast$\& \mbox{\hyperlink{class_c_scene_manager_ab9d3dadeaa32c3061041d6a9872ef1cb}{get\+Mesh}} (int ID)
+\begin{DoxyCompactList}\small\item\em Gets a specified Mesh from the Scene. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_c_scene_manager_a8bd1764cba21b54deaa5982d143d585b}{render}} (\mbox{\hyperlink{class_c_device_context}{C\+Device\+Context}} $\ast$DC)
+\begin{DoxyCompactList}\small\item\em Renders the Scene. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_c_scene_manager_a9efd19113364915c477a2ded7d60adee}\label{class_c_scene_manager_a9efd19113364915c477a2ded7d60adee}} 
+void \mbox{\hyperlink{class_c_scene_manager_a9efd19113364915c477a2ded7d60adee}{shutdown}} ()
+\begin{DoxyCompactList}\small\item\em Navigates the vector of Meshes and calls their Delete() function. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ \mbox{\hyperlink{class_c_mesh}{C\+Mesh}} $\ast$ $>$ \mbox{\hyperlink{class_c_scene_manager_aaf05688ff0df0ff767a978c0c934ddd2}{m\+\_\+\+Mesh\+List}}
+\item 
+int \mbox{\hyperlink{class_c_scene_manager_a0773f023784cded00331be5d2a775f7f}{m\+\_\+\+ID}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Class which contains data for Scene creation and Mesh management. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_c_scene_manager_a8f4f98c7823adca554e59357c0fe6b48}\label{class_c_scene_manager_a8f4f98c7823adca554e59357c0fe6b48}} 
+\index{CSceneManager@{CSceneManager}!addMesh@{addMesh}}
+\index{addMesh@{addMesh}!CSceneManager@{CSceneManager}}
+\doxysubsubsection{\texorpdfstring{addMesh()}{addMesh()}}
+{\footnotesize\ttfamily void C\+Scene\+Manager\+::add\+Mesh (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_mesh}{C\+Mesh}} $\ast$}]{M }\end{DoxyParamCaption})}
+
+
+
+Adds the specified Mesh to the Scene. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em M} & \mbox{\hyperlink{class_c_mesh}{C\+Mesh}} pointer with the Mesh to add \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_c_scene_manager_ab9d3dadeaa32c3061041d6a9872ef1cb}\label{class_c_scene_manager_ab9d3dadeaa32c3061041d6a9872ef1cb}} 
+\index{CSceneManager@{CSceneManager}!getMesh@{getMesh}}
+\index{getMesh@{getMesh}!CSceneManager@{CSceneManager}}
+\doxysubsubsection{\texorpdfstring{getMesh()}{getMesh()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{class_c_mesh}{C\+Mesh}} $\ast$\& C\+Scene\+Manager\+::get\+Mesh (\begin{DoxyParamCaption}\item[{int}]{ID }\end{DoxyParamCaption})}
+
+
+
+Gets a specified Mesh from the Scene. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em ID} & ID from the Mesh to retrieve \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+a pointer to the required Mesh 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_c_scene_manager_a8bd1764cba21b54deaa5982d143d585b}\label{class_c_scene_manager_a8bd1764cba21b54deaa5982d143d585b}} 
+\index{CSceneManager@{CSceneManager}!render@{render}}
+\index{render@{render}!CSceneManager@{CSceneManager}}
+\doxysubsubsection{\texorpdfstring{render()}{render()}}
+{\footnotesize\ttfamily void C\+Scene\+Manager\+::render (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{class_c_device_context}{C\+Device\+Context}} $\ast$}]{DC }\end{DoxyParamCaption})}
+
+
+
+Renders the Scene. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em DC} & \mbox{\hyperlink{class_c_device_context}{C\+Device\+Context}} pointer for drawing operations \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{class_c_scene_manager_a0773f023784cded00331be5d2a775f7f}\label{class_c_scene_manager_a0773f023784cded00331be5d2a775f7f}} 
+\index{CSceneManager@{CSceneManager}!m\_ID@{m\_ID}}
+\index{m\_ID@{m\_ID}!CSceneManager@{CSceneManager}}
+\doxysubsubsection{\texorpdfstring{m\_ID}{m\_ID}}
+{\footnotesize\ttfamily int C\+Scene\+Manager\+::m\+\_\+\+ID}
+
+int which defines the Scene ID \mbox{\Hypertarget{class_c_scene_manager_aaf05688ff0df0ff767a978c0c934ddd2}\label{class_c_scene_manager_aaf05688ff0df0ff767a978c0c934ddd2}} 
+\index{CSceneManager@{CSceneManager}!m\_MeshList@{m\_MeshList}}
+\index{m\_MeshList@{m\_MeshList}!CSceneManager@{CSceneManager}}
+\doxysubsubsection{\texorpdfstring{m\_MeshList}{m\_MeshList}}
+{\footnotesize\ttfamily std\+::vector$<$\mbox{\hyperlink{class_c_mesh}{C\+Mesh}}$\ast$$>$ C\+Scene\+Manager\+::m\+\_\+\+Mesh\+List}
+
+vector$<$\+C\+Mesh$\ast$$>$ which contains pointers to the Scene Meshes 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Scene\+Manager.\+h\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Scene\+Manager.\+cpp\end{DoxyCompactItemize}

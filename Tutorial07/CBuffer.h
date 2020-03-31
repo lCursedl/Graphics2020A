@@ -11,15 +11,15 @@
 
 struct BufferStruct
 {
-	unsigned int byteWidth;				/**< unsigned int variable */
-	USAGE usage;						/**< USAGE which defines the buffer usage */
-	unsigned int bindFlags;				/**< unsigned int which defines the flags of the buffer*/
-	unsigned int cpuAccessFlags;		/**< unsigned int variable */
-	unsigned int miscFlags;				/**< unsigned int variable */
-	unsigned int structureByteStride;	/**< unsigned int variable */
+	unsigned int byteWidth;				/**< unsigned int which defines size of the buffer in bytes */
+	USAGE usage;						/**< USAGE which identifies how the buffer is expected to be read from and written to */
+	unsigned int bindFlags;				/**< unsigned int which defines how the buffer will be bound to the pipeline*/
+	unsigned int cpuAccessFlags;		/**< unsigned int which defines CPU access flags or 0 if no CPU access is necessary. Flags can be combined with a logical OR */
+	unsigned int miscFlags;				/**< unsigned int which defines miscellaneous flags or 0 if unused. Flags can be combined with a logical OR */
+	unsigned int structureByteStride;	/**< unsigned int which defines the size of each element in the buffer structure (in bytes) when the buffer represents a structured buffer */
 };
 /**	\struct BufferStruct
-*	\brief Structure which defines the required attributes to initialize a Buffer
+*	\brief Structure which defines the required attributes to initialize a CBuffer
 */
 class CBuffer
 {

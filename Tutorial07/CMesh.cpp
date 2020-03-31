@@ -34,11 +34,7 @@ void CMesh::init()
 	m_IB = new CBuffer();
 }
 
-void CMesh::update()
-{
-}
-
-void CMesh::render(CDeviceContext * DC, CBuffer * bufferData, CDevice * D)
+void CMesh::render(CDeviceContext * DC)
 {
 	m_MeshData.mWorld =
 	{
@@ -125,7 +121,7 @@ void CMesh::setIndexList(WORD * I, int num)
 	m_MyIndex = I;
 }
 
-WORD *& CMesh::getIndexList(SimpleVertex * V, int num)
+WORD *& CMesh::getIndexList()
 {
 	return m_MyIndex;
 }

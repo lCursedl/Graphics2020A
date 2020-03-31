@@ -1,0 +1,82 @@
+\hypertarget{class_c_depth_stencil_view}{}\doxysection{C\+Depth\+Stencil\+View Class Reference}
+\label{class_c_depth_stencil_view}\index{CDepthStencilView@{CDepthStencilView}}
+
+
+Class which contains data for Depth Stencil View creation/usage.  
+
+
+
+
+{\ttfamily \#include $<$C\+Depth\+Stencil\+View.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{class_c_depth_stencil_view_a411bccf7bdd16f32949e8059f7a9cf87}{init}} (\mbox{\hyperlink{struct_depth_stencil_view_struct}{Depth\+Stencil\+View\+Struct}} D, \mbox{\hyperlink{_define_8h_abe88e3e98b0f663c259c1f5a699c6d92}{F\+O\+R\+M\+AT}} F)
+\begin{DoxyCompactList}\small\item\em Receives a \mbox{\hyperlink{struct_depth_stencil_view_struct}{Depth\+Stencil\+View\+Struct}} and F\+O\+R\+M\+AT to copy its values. \end{DoxyCompactList}\item 
+void $\ast$ \mbox{\hyperlink{class_c_depth_stencil_view_a359b118e710c45066f36779c9f66b345}{get\+D\+SV}} ()
+\begin{DoxyCompactList}\small\item\em Function to get a void pointer to object. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+I\+D3\+D11\+Depth\+Stencil\+View $\ast$ \mbox{\hyperlink{class_c_depth_stencil_view_a09bd8e2f5d7328d106a31a4b1713f3af}{m\+\_\+p\+Depth\+Stencil\+View}}
+\item 
+D3\+D11\+\_\+\+D\+E\+P\+T\+H\+\_\+\+S\+T\+E\+N\+C\+I\+L\+\_\+\+V\+I\+E\+W\+\_\+\+D\+E\+SC \mbox{\hyperlink{class_c_depth_stencil_view_a4734c89a7c8677763408ea92f284ebee}{m\+\_\+\+Desc}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Class which contains data for Depth Stencil View creation/usage. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_c_depth_stencil_view_a359b118e710c45066f36779c9f66b345}\label{class_c_depth_stencil_view_a359b118e710c45066f36779c9f66b345}} 
+\index{CDepthStencilView@{CDepthStencilView}!getDSV@{getDSV}}
+\index{getDSV@{getDSV}!CDepthStencilView@{CDepthStencilView}}
+\doxysubsubsection{\texorpdfstring{getDSV()}{getDSV()}}
+{\footnotesize\ttfamily void $\ast$ C\+Depth\+Stencil\+View\+::get\+D\+SV (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Function to get a void pointer to object. 
+
+\begin{DoxyReturn}{Returns}
+void pointer to object. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_c_depth_stencil_view_a411bccf7bdd16f32949e8059f7a9cf87}\label{class_c_depth_stencil_view_a411bccf7bdd16f32949e8059f7a9cf87}} 
+\index{CDepthStencilView@{CDepthStencilView}!init@{init}}
+\index{init@{init}!CDepthStencilView@{CDepthStencilView}}
+\doxysubsubsection{\texorpdfstring{init()}{init()}}
+{\footnotesize\ttfamily void C\+Depth\+Stencil\+View\+::init (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{struct_depth_stencil_view_struct}{Depth\+Stencil\+View\+Struct}}}]{D,  }\item[{\mbox{\hyperlink{_define_8h_abe88e3e98b0f663c259c1f5a699c6d92}{F\+O\+R\+M\+AT}} F}]{B }\end{DoxyParamCaption})}
+
+
+
+Receives a \mbox{\hyperlink{struct_depth_stencil_view_struct}{Depth\+Stencil\+View\+Struct}} and F\+O\+R\+M\+AT to copy its values. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em D} & \mbox{\hyperlink{struct_depth_stencil_view_struct}{Depth\+Stencil\+View\+Struct}} with the desired information. \\
+\hline
+\mbox{\texttt{ in}}  & {\em F} & F\+O\+R\+M\+AT with the desired format information \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{class_c_depth_stencil_view_a4734c89a7c8677763408ea92f284ebee}\label{class_c_depth_stencil_view_a4734c89a7c8677763408ea92f284ebee}} 
+\index{CDepthStencilView@{CDepthStencilView}!m\_Desc@{m\_Desc}}
+\index{m\_Desc@{m\_Desc}!CDepthStencilView@{CDepthStencilView}}
+\doxysubsubsection{\texorpdfstring{m\_Desc}{m\_Desc}}
+{\footnotesize\ttfamily D3\+D11\+\_\+\+D\+E\+P\+T\+H\+\_\+\+S\+T\+E\+N\+C\+I\+L\+\_\+\+V\+I\+E\+W\+\_\+\+D\+E\+SC C\+Depth\+Stencil\+View\+::m\+\_\+\+Desc}
+
+DirectX structure to store data \mbox{\Hypertarget{class_c_depth_stencil_view_a09bd8e2f5d7328d106a31a4b1713f3af}\label{class_c_depth_stencil_view_a09bd8e2f5d7328d106a31a4b1713f3af}} 
+\index{CDepthStencilView@{CDepthStencilView}!m\_pDepthStencilView@{m\_pDepthStencilView}}
+\index{m\_pDepthStencilView@{m\_pDepthStencilView}!CDepthStencilView@{CDepthStencilView}}
+\doxysubsubsection{\texorpdfstring{m\_pDepthStencilView}{m\_pDepthStencilView}}
+{\footnotesize\ttfamily I\+D3\+D11\+Depth\+Stencil\+View$\ast$ C\+Depth\+Stencil\+View\+::m\+\_\+p\+Depth\+Stencil\+View}
+
+Pointer to a DirectX Depth\+Stencil\+View 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Depth\+Stencil\+View.\+h\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Depth\+Stencil\+View.\+cpp\end{DoxyCompactItemize}

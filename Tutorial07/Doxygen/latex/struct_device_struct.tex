@@ -1,0 +1,66 @@
+\hypertarget{struct_device_struct}{}\doxysection{Device\+Struct Struct Reference}
+\label{struct_device_struct}\index{DeviceStruct@{DeviceStruct}}
+
+
+Structure which defines the required attributes to initialize a \mbox{\hyperlink{class_c_device}{C\+Device}}.  
+
+
+
+
+{\ttfamily \#include $<$C\+Device.\+h$>$}
+
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{_define_8h_aee55da3bbca2fdf35f53d8debdda1cd7}{D\+R\+I\+V\+E\+R\+\_\+\+T\+Y\+PE}} \mbox{\hyperlink{struct_device_struct_a0d31cdb1ad21cc1ccb89e69ee82f5f4e}{m\+\_\+\+Driver\+Type}}
+\item 
+\mbox{\hyperlink{_define_8h_aee55da3bbca2fdf35f53d8debdda1cd7}{D\+R\+I\+V\+E\+R\+\_\+\+T\+Y\+PE}} \mbox{\hyperlink{struct_device_struct_ada251a4952c9c462146bcfc41627f11f}{m\+\_\+\+Driver\+Types}} \mbox{[}3\mbox{]}
+\item 
+unsigned int \mbox{\hyperlink{struct_device_struct_a9ee1b243e2820e0eddebf6c566349786}{m\+\_\+\+Device\+Flags}}
+\item 
+\mbox{\hyperlink{_define_8h_a31fb397470a9b498e46d63bd3cf5643d}{F\+E\+A\+T\+U\+R\+E\+\_\+\+L\+E\+V\+EL}} \mbox{\hyperlink{struct_device_struct_af7d53b2b9806aa4423574618c2695435}{m\+\_\+\+Feature\+Levels}} \mbox{[}3\mbox{]}
+\item 
+unsigned int \mbox{\hyperlink{struct_device_struct_add5e26a934dd512ad0cfacb9fced21ce}{m\+\_\+num\+Feature\+Levels}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Structure which defines the required attributes to initialize a \mbox{\hyperlink{class_c_device}{C\+Device}}. 
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{struct_device_struct_a9ee1b243e2820e0eddebf6c566349786}\label{struct_device_struct_a9ee1b243e2820e0eddebf6c566349786}} 
+\index{DeviceStruct@{DeviceStruct}!m\_DeviceFlags@{m\_DeviceFlags}}
+\index{m\_DeviceFlags@{m\_DeviceFlags}!DeviceStruct@{DeviceStruct}}
+\doxysubsubsection{\texorpdfstring{m\_DeviceFlags}{m\_DeviceFlags}}
+{\footnotesize\ttfamily unsigned int Device\+Struct\+::m\+\_\+\+Device\+Flags}
+
+unsigned int which defines the runtime layers to enable \mbox{\Hypertarget{struct_device_struct_a0d31cdb1ad21cc1ccb89e69ee82f5f4e}\label{struct_device_struct_a0d31cdb1ad21cc1ccb89e69ee82f5f4e}} 
+\index{DeviceStruct@{DeviceStruct}!m\_DriverType@{m\_DriverType}}
+\index{m\_DriverType@{m\_DriverType}!DeviceStruct@{DeviceStruct}}
+\doxysubsubsection{\texorpdfstring{m\_DriverType}{m\_DriverType}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_define_8h_aee55da3bbca2fdf35f53d8debdda1cd7}{D\+R\+I\+V\+E\+R\+\_\+\+T\+Y\+PE}} Device\+Struct\+::m\+\_\+\+Driver\+Type}
+
+D\+R\+I\+V\+E\+R\+\_\+\+T\+Y\+PE which defines the driver type to create \mbox{\Hypertarget{struct_device_struct_ada251a4952c9c462146bcfc41627f11f}\label{struct_device_struct_ada251a4952c9c462146bcfc41627f11f}} 
+\index{DeviceStruct@{DeviceStruct}!m\_DriverTypes@{m\_DriverTypes}}
+\index{m\_DriverTypes@{m\_DriverTypes}!DeviceStruct@{DeviceStruct}}
+\doxysubsubsection{\texorpdfstring{m\_DriverTypes}{m\_DriverTypes}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_define_8h_aee55da3bbca2fdf35f53d8debdda1cd7}{D\+R\+I\+V\+E\+R\+\_\+\+T\+Y\+PE}} Device\+Struct\+::m\+\_\+\+Driver\+Types\mbox{[}3\mbox{]}}
+
+D\+R\+I\+V\+E\+R\+\_\+\+T\+Y\+PE array of 3 elements \mbox{\Hypertarget{struct_device_struct_af7d53b2b9806aa4423574618c2695435}\label{struct_device_struct_af7d53b2b9806aa4423574618c2695435}} 
+\index{DeviceStruct@{DeviceStruct}!m\_FeatureLevels@{m\_FeatureLevels}}
+\index{m\_FeatureLevels@{m\_FeatureLevels}!DeviceStruct@{DeviceStruct}}
+\doxysubsubsection{\texorpdfstring{m\_FeatureLevels}{m\_FeatureLevels}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_define_8h_a31fb397470a9b498e46d63bd3cf5643d}{F\+E\+A\+T\+U\+R\+E\+\_\+\+L\+E\+V\+EL}} Device\+Struct\+::m\+\_\+\+Feature\+Levels\mbox{[}3\mbox{]}}
+
+F\+E\+A\+T\+U\+R\+E\+\_\+\+L\+E\+V\+EL array of 3 elements which determine the order of feature levels to attempt to create \mbox{\Hypertarget{struct_device_struct_add5e26a934dd512ad0cfacb9fced21ce}\label{struct_device_struct_add5e26a934dd512ad0cfacb9fced21ce}} 
+\index{DeviceStruct@{DeviceStruct}!m\_numFeatureLevels@{m\_numFeatureLevels}}
+\index{m\_numFeatureLevels@{m\_numFeatureLevels}!DeviceStruct@{DeviceStruct}}
+\doxysubsubsection{\texorpdfstring{m\_numFeatureLevels}{m\_numFeatureLevels}}
+{\footnotesize\ttfamily unsigned int Device\+Struct\+::m\+\_\+num\+Feature\+Levels}
+
+unsigned int which defines the amount of elements in m\+\_\+\+Feature\+Levels\mbox{[}\mbox{]} ~\newline
+ 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Device.\+h\end{DoxyCompactItemize}

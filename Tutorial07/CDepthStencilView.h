@@ -3,21 +3,21 @@
 #include "Includes.h"
 struct DepthStencilViewStruct
 {
-	FORMAT format;									/**< FORMAT variable */
-	DSV_DIMENSION viewDimension;					/**< DSV_DIMENSION variable */
-	unsigned int flags;								/**< unsigned int DepthstencilView flags */
+	FORMAT format;									/**< FORMAT resource data format */
+	DSV_DIMENSION viewDimension;					/**< DSV_DIMENSION which specifies how the DSV will be accessed */
+	unsigned int flags;								/**< unsigned int which defines wheter the texture is read only */
 	union
 	{
-		TEX1D_DSV textureID;						/**< TEX1D_DSV variable */
-		TEX1D_ARRAY_DSV texture1DArray;				/**< TEX1D_ARRAY_DSV variable */
-		TEX2D_DSV texture2D;						/**< TEX2D_DSV variable */
-		TEX2D_ARRAY_DSV texture2DArray;				/**< TEX2D_ARRAY_DSV variable */
-		TEX2DMS_DSV texture2DMS;					/**< TEX2DMS_DSV variable */
-		TEX2DMS_ARRAY_DSV texture2DMSArray;			/**< TEX2DMS_ARRAY_DSV variable */
+		TEX1D_DSV textureID;						/**< TEX1D_DSV 1D texture subresource */
+		TEX1D_ARRAY_DSV texture1DArray;				/**< TEX1D_ARRAY_DSV array of 1D texture subresources */
+		TEX2D_DSV texture2D;						/**< TEX2D_DSV 2D texture subresource */
+		TEX2D_ARRAY_DSV texture2DArray;				/**< TEX2D_ARRAY_DSV array of 2D texture subresources */
+		TEX2DMS_DSV texture2DMS;					/**< TEX2DMS_DSV multisampled 2D texture */
+		TEX2DMS_ARRAY_DSV texture2DMSArray;			/**< TEX2DMS_ARRAY_DSV array of 2D multisampled textures */
 	};
 };
 /**	\struct DepthStencilViewStruct
-*	\brief Structure which defines the required attributes to initialize a Depth Stencil View
+*	\brief Structure which defines the required attributes to initialize a CDepthStencilView
 */
 
 class CDepthStencilView

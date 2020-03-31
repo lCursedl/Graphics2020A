@@ -4,9 +4,9 @@ CGraphicsAPI::CGraphicsAPI() {}
 
 CGraphicsAPI::~CGraphicsAPI() {}
 
-bool CGraphicsAPI::loadMesh(const char * path, CSceneManager * SM, const aiScene * model, CDeviceContext * DC, Assimp::Importer * importer, CDevice * dev)
+bool CGraphicsAPI::loadMesh(const char * path, CSceneManager * SM, const aiScene * model, CDeviceContext * DC, CDevice * dev)
 {
-	model = importer->ReadFile(path, aiProcessPreset_TargetRealtime_Fast | aiProcess_ConvertToLeftHanded | aiProcess_FindInstances
+	model = m_Importer->ReadFile(path, aiProcessPreset_TargetRealtime_Fast | aiProcess_ConvertToLeftHanded | aiProcess_FindInstances
 		| aiProcess_ValidateDataStructure | aiProcess_OptimizeMeshes | aiProcess_Debone);
 
 	if (model == nullptr)

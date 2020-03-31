@@ -1,0 +1,143 @@
+\hypertarget{class_c_buffer}{}\doxysection{C\+Buffer Class Reference}
+\label{class_c_buffer}\index{CBuffer@{CBuffer}}
+
+
+Class which contains basic data for buffers.  
+
+
+
+
+{\ttfamily \#include $<$C\+Buffer.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{class_c_buffer_a514c5c4871e1aae62f80d71d4c203321}{init}} (\mbox{\hyperlink{struct_buffer_struct}{Buffer\+Struct}} B)
+\begin{DoxyCompactList}\small\item\em Receives a \mbox{\hyperlink{struct_buffer_struct}{Buffer\+Struct}} to copy its values. \end{DoxyCompactList}\item 
+void $\ast$ \mbox{\hyperlink{class_c_buffer_a1c4403eef20e7d0e4a78d7dded4f9296}{get\+Buffer}} ()
+\begin{DoxyCompactList}\small\item\em Function to get a void pointer to object. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static void \mbox{\hyperlink{class_c_buffer_aeea7223e79616be45b2b921495e20e8c}{create\+Vertex\+Buffer}} (int num\+Vertex, const ai\+Scene $\ast$model, \mbox{\hyperlink{struct_simple_vertex}{Simple\+Vertex}} $\ast$vertex, I\+D3\+D11\+Buffer $\ast$\&buffer, I\+D3\+D11\+Device $\ast$Dev)
+\begin{DoxyCompactList}\small\item\em Function for creating a VB for model loading. \end{DoxyCompactList}\item 
+static void \mbox{\hyperlink{class_c_buffer_a664df03f69d40d506c0b929d6bb5ae61}{create\+Index\+Buffer}} (int num\+Index, const ai\+Scene $\ast$model, W\+O\+RD $\ast$index, I\+D3\+D11\+Buffer $\ast$\&buffer, I\+D3\+D11\+Device $\ast$Dev)
+\begin{DoxyCompactList}\small\item\em Function for creating a IB for model loading. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{struct_buffer_struct}{Buffer\+Struct}} \mbox{\hyperlink{class_c_buffer_aceb7749946ab4d47c1817815a38b85da}{m\+\_\+bufferstruct}}
+\item 
+D3\+D11\+\_\+\+B\+U\+F\+F\+E\+R\+\_\+\+D\+E\+SC \mbox{\hyperlink{class_c_buffer_af5a258b7a6d02c89e28805d5ae8fc983}{m\+\_\+bd}}
+\item 
+I\+D3\+D11\+Buffer $\ast$ \mbox{\hyperlink{class_c_buffer_a037082998b869041a667fbd1119fe562}{m\+\_\+p\+Buffer}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Class which contains basic data for buffers. 
+
+Can be used for all buffers except \mbox{\hyperlink{struct_vertex}{Vertex}} and Index buffers. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_c_buffer_a664df03f69d40d506c0b929d6bb5ae61}\label{class_c_buffer_a664df03f69d40d506c0b929d6bb5ae61}} 
+\index{CBuffer@{CBuffer}!createIndexBuffer@{createIndexBuffer}}
+\index{createIndexBuffer@{createIndexBuffer}!CBuffer@{CBuffer}}
+\doxysubsubsection{\texorpdfstring{createIndexBuffer()}{createIndexBuffer()}}
+{\footnotesize\ttfamily static void C\+Buffer\+::create\+Index\+Buffer (\begin{DoxyParamCaption}\item[{int}]{num\+Index,  }\item[{const ai\+Scene $\ast$}]{model,  }\item[{W\+O\+RD $\ast$}]{index,  }\item[{I\+D3\+D11\+Buffer $\ast$\&}]{buffer,  }\item[{I\+D3\+D11\+Device $\ast$}]{Dev }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Function for creating a IB for model loading. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em num\+Index} & int with index amount. \\
+\hline
+\mbox{\texttt{ in}}  & {\em model} & ai\+Scene$\ast$ with model info. \\
+\hline
+\mbox{\texttt{ in}}  & {\em index} & W\+O\+R\+D$\ast$ which has stored data. \\
+\hline
+\mbox{\texttt{ in}}  & {\em buffer} & I\+D3\+D11\+Buffer$\ast$ where the processed data will be stored. \\
+\hline
+\mbox{\texttt{ in}}  & {\em Dev} & I\+D3\+D11\+Buffer double pointer which creates the buffer. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_c_buffer_aeea7223e79616be45b2b921495e20e8c}\label{class_c_buffer_aeea7223e79616be45b2b921495e20e8c}} 
+\index{CBuffer@{CBuffer}!createVertexBuffer@{createVertexBuffer}}
+\index{createVertexBuffer@{createVertexBuffer}!CBuffer@{CBuffer}}
+\doxysubsubsection{\texorpdfstring{createVertexBuffer()}{createVertexBuffer()}}
+{\footnotesize\ttfamily static void C\+Buffer\+::create\+Vertex\+Buffer (\begin{DoxyParamCaption}\item[{int}]{num\+Vertex,  }\item[{const ai\+Scene $\ast$}]{model,  }\item[{\mbox{\hyperlink{struct_simple_vertex}{Simple\+Vertex}} $\ast$}]{vertex,  }\item[{I\+D3\+D11\+Buffer $\ast$\&}]{buffer,  }\item[{I\+D3\+D11\+Device $\ast$}]{Dev }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Function for creating a VB for model loading. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em num\+Vertex} & int with vertex amount. \\
+\hline
+\mbox{\texttt{ in}}  & {\em model} & ai\+Scene$\ast$ with model info. \\
+\hline
+\mbox{\texttt{ in}}  & {\em vertex} & Simple\+Vertex$\ast$ which has stored data. \\
+\hline
+\mbox{\texttt{ in}}  & {\em buffer} & I\+D3\+D11\+Buffer$\ast$ where the processed data will be stored. \\
+\hline
+\mbox{\texttt{ in}}  & {\em Dev} & I\+D3\+D11\+Buffer double pointer which creates the buffer. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_c_buffer_a1c4403eef20e7d0e4a78d7dded4f9296}\label{class_c_buffer_a1c4403eef20e7d0e4a78d7dded4f9296}} 
+\index{CBuffer@{CBuffer}!getBuffer@{getBuffer}}
+\index{getBuffer@{getBuffer}!CBuffer@{CBuffer}}
+\doxysubsubsection{\texorpdfstring{getBuffer()}{getBuffer()}}
+{\footnotesize\ttfamily void $\ast$ C\+Buffer\+::get\+Buffer (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Function to get a void pointer to object. 
+
+\begin{DoxyReturn}{Returns}
+void pointer to object. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_c_buffer_a514c5c4871e1aae62f80d71d4c203321}\label{class_c_buffer_a514c5c4871e1aae62f80d71d4c203321}} 
+\index{CBuffer@{CBuffer}!init@{init}}
+\index{init@{init}!CBuffer@{CBuffer}}
+\doxysubsubsection{\texorpdfstring{init()}{init()}}
+{\footnotesize\ttfamily void C\+Buffer\+::init (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{struct_buffer_struct}{Buffer\+Struct}}}]{B }\end{DoxyParamCaption})}
+
+
+
+Receives a \mbox{\hyperlink{struct_buffer_struct}{Buffer\+Struct}} to copy its values. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em B} & \mbox{\hyperlink{struct_buffer_struct}{Buffer\+Struct}} with the desired information. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{class_c_buffer_af5a258b7a6d02c89e28805d5ae8fc983}\label{class_c_buffer_af5a258b7a6d02c89e28805d5ae8fc983}} 
+\index{CBuffer@{CBuffer}!m\_bd@{m\_bd}}
+\index{m\_bd@{m\_bd}!CBuffer@{CBuffer}}
+\doxysubsubsection{\texorpdfstring{m\_bd}{m\_bd}}
+{\footnotesize\ttfamily D3\+D11\+\_\+\+B\+U\+F\+F\+E\+R\+\_\+\+D\+E\+SC C\+Buffer\+::m\+\_\+bd}
+
+DirectX structure to store data \mbox{\Hypertarget{class_c_buffer_aceb7749946ab4d47c1817815a38b85da}\label{class_c_buffer_aceb7749946ab4d47c1817815a38b85da}} 
+\index{CBuffer@{CBuffer}!m\_bufferstruct@{m\_bufferstruct}}
+\index{m\_bufferstruct@{m\_bufferstruct}!CBuffer@{CBuffer}}
+\doxysubsubsection{\texorpdfstring{m\_bufferstruct}{m\_bufferstruct}}
+{\footnotesize\ttfamily \mbox{\hyperlink{struct_buffer_struct}{Buffer\+Struct}} C\+Buffer\+::m\+\_\+bufferstruct}
+
+Local variable which stores the information received from \mbox{\hyperlink{class_c_buffer_a514c5c4871e1aae62f80d71d4c203321}{init(\+Buffer\+Struct B)}} \mbox{\Hypertarget{class_c_buffer_a037082998b869041a667fbd1119fe562}\label{class_c_buffer_a037082998b869041a667fbd1119fe562}} 
+\index{CBuffer@{CBuffer}!m\_pBuffer@{m\_pBuffer}}
+\index{m\_pBuffer@{m\_pBuffer}!CBuffer@{CBuffer}}
+\doxysubsubsection{\texorpdfstring{m\_pBuffer}{m\_pBuffer}}
+{\footnotesize\ttfamily I\+D3\+D11\+Buffer$\ast$ C\+Buffer\+::m\+\_\+p\+Buffer}
+
+Pointer to a DirectX Buffer 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Buffer.\+h\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Buffer.\+cpp\end{DoxyCompactItemize}

@@ -11,35 +11,47 @@
 #include "CMesh.h"
 
 
-unsigned int TextureFromFile(const char *path, const std::string &directory, bool gamma = false);
+unsigned int TextureFromFile(const char *path, const std::string &directory);
+/** \fn unsigned int TextureFromFile(const char *path, const std::string &directory, bool gamma = false)
+	*	\brief Creates a texture from a given path
+	*	@param[in] path const char pointer which defines the texture's path
+	*	@param[in] directory string reference where the model is located
+	*	\return the ID of the texture loaded
+	*/
 
 class CModel
 {
 #ifdef OPENGL
 public:
 	/*  Model Data */
-	std::vector<Texture> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
-	std::vector<CMesh> meshes;
-	std::string directory;
-	bool gammaCorrection;
+	std::vector<Texture> textures_loaded;	/**< vector<Texture> which contains loaded textures for the Model */
+	std::vector<CMesh> meshes;				/**< vector<CMesh> which contains the Model's Meshes */
+	std::string directory;					/**< string which stores the Model's path */
 
 	/*  Functions   */
-	// constructor, expects a filepath to a 3D model.
-	CModel(std::string const &path, bool gamma = false) : gammaCorrection(gamma)
+
+	CModel(std::string const &path)
 	{
 		loadModel(path);
 	}
+	/** \fn CModel(std::string const &path, bool gamma)
+	*	\brief CModel constructor, calls loadModel(std::string const &path) function
+	*	@param[in] path string which defines the model's path
+	*/
 
-	// draws the model, and thus all its meshes
 	void Draw(int shader)
 	{
 		for (unsigned int i = 0; i < meshes.size(); i++)
 			meshes[i].Draw(shader);
 	}
+	/** \fn void Draw(int shader)
+	*	\brief Draws the model and it's meshes
+	*	@param[in] shader int which specifies the shader program to use
+	*/
 
 private:
 	/*  Functions   */
-	// loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
+	
 	void loadModel(std::string const &path)
 	{
 		// read file via ASSIMP
@@ -57,8 +69,11 @@ private:
 		// process ASSIMP's root node recursively
 		processNode(scene->mRootNode, scene);
 	}
+	/** \fn void loadModel(std::string const &path)
+	*	\brief Loads supported model and stores the meshes in the vector
+	*	@param[in] path string with Model path
+	*/
 
-	// processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
 	void processNode(aiNode *node, const aiScene *scene)
 	{
 		// process each mesh located at the current node
@@ -76,6 +91,11 @@ private:
 		}
 
 	}
+	/** \fn void processNode(aiNode *node, const aiScene *scene)
+	*	\brief Processes a node recursively and then each individual mesh and its children, if any
+	*	@param[in] node aiNode pointer which stores meshes
+	*	@param[in] scene aiScene pointer from where to process info
+	*/
 
 	CMesh processMesh(aiMesh *mesh, const aiScene *scene)
 	{
@@ -156,9 +176,12 @@ private:
 		// return a mesh object created from the extracted mesh data
 		return CMesh(vertices, indices, textures);
 	}
+	/** \fn CMesh processMesh(aiMesh *mesh, const aiScene *scene)
+	*	\brief Processes a Mesh, storing its vertices, indices, text coords and materials
+	*	@param[in] mesh aiMesh pointer from where the mesh info comes
+	*	@param[in] scene aiScene pointer from where to process info
+	*/
 
-	// checks all material textures of a given type and loads the textures if they're not loaded yet.
-	// the required info is returned as a Texture struct.
 	std::vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName)
 	{
 		std::vector<Texture> textures;
@@ -189,5 +212,15 @@ private:
 		}
 		return textures;
 	}
+	/** \fn std::vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName)
+	*	\brief Checks all material textures and loads them if they aren't loaded yet
+	*	@param[in] mat aiMaterial pointer which contains the meshes materials
+	*	@param[in] type aiTextureType which defines the texture type
+	*	@param[in] typeName string which defines the name of texture type
+	*	\return a vector of texture struct
+	*/
 #endif
 };
+/** \class CModel
+*	\brief Class which contains data for Model, Mesh and Texture loading and use.
+*/

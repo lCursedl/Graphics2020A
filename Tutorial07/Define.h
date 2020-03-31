@@ -236,9 +236,9 @@ struct SAMPLEDESC
 
 struct SubresourceData
 {
-	const void * psysMem;
-	unsigned int sysMemPitch;
-	unsigned int sysMemSlicePitch;
+	const void * psysMem;			/**< const void* which defines a pointer to the initialization data */
+	unsigned int sysMemPitch;		/**< unsigned int which defines the distance in bytes from the begginning of one line of a texture to the next one */
+	unsigned int sysMemSlicePitch;	/**< unsigned int which defines the distance in bytes from the beginning of one depth level to the next */
 };
 /**	\struct SubresourceData
 *	\brief Indepentent structure equivalent to DirectX's D3D11_SUBRESOURCE_DATA

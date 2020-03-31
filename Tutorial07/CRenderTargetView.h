@@ -3,20 +3,23 @@
 #include "Includes.h"
 struct RenderTargetViewStruct
 {
-	FORMAT format;								/**< FORMAT variable */
-	RTV_DIMENSION viewDimension;				/**< RTV_DIMENSION variable */
+	FORMAT format;								/**< FORMAT which defines the data format */
+	RTV_DIMENSION viewDimension;				/**< RTV_DIMENSION which defines the resource type */
 	union
 	{
-		BUFFER_RTV buffer;						/**< BUFFER_RTV variable */
-		TEX1D_RTV texture1D;					/**< TEX1D_RTV variable */
-		TEX1D_ARRAY_RTV texture1DArray;			/**< TEX1D_ARRAY_RTV variable */
-		TEX2D_RTV texture2D;					/**< TEX2D_RTV variable */
-		TEX2D_ARRAY_RTV texture2DArray;			/**< TEX2D_ARRAY_RTV variable */
-		TEX2DMS_RTV texture2DMS;				/**< TEX2DMS_RTV variable */
-		TEX2DMS_ARRAY_RTV texture2DMSArray;		/**< TEX2DMS_ARRAY_RTV variable */
-		TEX3D_RTV texture3D;					/**< TEX3D_RTV variable */
+		BUFFER_RTV buffer;						/**< BUFFER_RTV specifies which buffer elements can be accessed */
+		TEX1D_RTV texture1D;					/**< TEX1D_RTV specifies the subresources in a 1D texture that can be accessed */
+		TEX1D_ARRAY_RTV texture1DArray;			/**< TEX1D_ARRAY_RTV specifies the subresources ina 1D texture array that can be accessed */
+		TEX2D_RTV texture2D;					/**< TEX2D_RTV specifies the subresources in a 2D texture that can be accessed */
+		TEX2D_ARRAY_RTV texture2DArray;			/**< TEX2D_ARRAY_RTV specifies the subresources in a 2D texture array that can be accessed */
+		TEX2DMS_RTV texture2DMS;				/**< TEX2DMS_RTV specifies the subresource from a multisampled 2D texture */
+		TEX2DMS_ARRAY_RTV texture2DMSArray;		/**< TEX2DMS_ARRAY_RTV specifies the subresources in a multisampled 2D texture array */
+		TEX3D_RTV texture3D;					/**< TEX3D_RTV specifies subresources in a 3D texture */
 	};
 };
+/**	\struct RenderTargetViewStruct
+*	\brief Structure which defines the required attributes to initialize a CRenderTargetView
+*/
 
 class CRenderTargetView
 {
@@ -38,3 +41,6 @@ public:
 	D3D11_RENDER_TARGET_VIEW_DESC m_Desc;		/**< DirectX structure to store data */
 #endif // D3D11
 };
+/** \class CRenderTargetView
+*	\brief Class which contains data for RenderTargetView usage.
+*/

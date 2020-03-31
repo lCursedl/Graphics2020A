@@ -1,0 +1,164 @@
+\hypertarget{class_c_camera_f_p}{}\doxysection{C\+Camera\+FP Class Reference}
+\label{class_c_camera_f_p}\index{CCameraFP@{CCameraFP}}
+
+
+Class which inherits of \mbox{\hyperlink{class_c_camera}{C\+Camera}}, designed for First Person.  
+
+
+
+
+{\ttfamily \#include $<$C\+Camera\+F\+P.\+h$>$}
+
+Inheritance diagram for C\+Camera\+FP\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_c_camera_f_p}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{class_c_camera_f_p_a2fe5a59b0ffdb1d9203e0847eab19df5}{move}} ()
+\begin{DoxyCompactList}\small\item\em Modifies Pos depending in which direction the Camera is moving. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_c_camera_f_p_a23eb987e7d29064b0c838213db2f02fc}{get\+Key\+Press}} (W\+P\+A\+R\+AM key)
+\begin{DoxyCompactList}\small\item\em Process the pressed key value received and determine corresponding action. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_c_camera_f_p_a2d73acbb9790a7abe2ea265c441a296e}{get\+Key\+Release}} (W\+P\+A\+R\+AM key)
+\begin{DoxyCompactList}\small\item\em Process the released key value received and determine corresponding action. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_c_camera_f_p_a26ec510e6c9eb2537258d9e07a445da6}{rotate\+Front}} (glm\+::vec3 Dir)
+\begin{DoxyCompactList}\small\item\em Rotates the Camera from its Front vector depending on a direction. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_c_camera_f_p_a9e8c2e7c5f7ca73701c9e46b57db1b75}{rotate\+Right}} (glm\+::vec3 Dir)
+\begin{DoxyCompactList}\small\item\em Rotates the Camera from its Right vector depending on a direction. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+float \mbox{\hyperlink{class_c_camera_f_p_ae875ab1a4ad24958b486ae48b284aecd}{m\+\_\+max\+Front\+Rotation}}
+\item 
+float \mbox{\hyperlink{class_c_camera_f_p_a9eeb320de07c6411148eee712516976e}{m\+\_\+max\+Right\+Rotation}}
+\item 
+float \mbox{\hyperlink{class_c_camera_f_p_a556a3c5a5a9b48821af06954a5a22f98}{m\+\_\+\+Right\+Rotation}}
+\item 
+float \mbox{\hyperlink{class_c_camera_f_p_aad4c2871a998c19775408bbee0a15664}{m\+\_\+\+Front\+Rotation}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Class which inherits of \mbox{\hyperlink{class_c_camera}{C\+Camera}}, designed for First Person. 
+
+Rotations and movement are limited. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_c_camera_f_p_a23eb987e7d29064b0c838213db2f02fc}\label{class_c_camera_f_p_a23eb987e7d29064b0c838213db2f02fc}} 
+\index{CCameraFP@{CCameraFP}!getKeyPress@{getKeyPress}}
+\index{getKeyPress@{getKeyPress}!CCameraFP@{CCameraFP}}
+\doxysubsubsection{\texorpdfstring{getKeyPress()}{getKeyPress()}}
+{\footnotesize\ttfamily void C\+Camera\+F\+P\+::get\+Key\+Press (\begin{DoxyParamCaption}\item[{W\+P\+A\+R\+AM}]{key }\end{DoxyParamCaption})}
+
+
+
+Process the pressed key value received and determine corresponding action. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em key} & W\+P\+A\+R\+AM value of key pressed\\
+\hline
+\end{DoxyParams}
+Detects W, A, S, D, Left Arrow \& Right Arrow keys. \mbox{\Hypertarget{class_c_camera_f_p_a2d73acbb9790a7abe2ea265c441a296e}\label{class_c_camera_f_p_a2d73acbb9790a7abe2ea265c441a296e}} 
+\index{CCameraFP@{CCameraFP}!getKeyRelease@{getKeyRelease}}
+\index{getKeyRelease@{getKeyRelease}!CCameraFP@{CCameraFP}}
+\doxysubsubsection{\texorpdfstring{getKeyRelease()}{getKeyRelease()}}
+{\footnotesize\ttfamily void C\+Camera\+F\+P\+::get\+Key\+Release (\begin{DoxyParamCaption}\item[{W\+P\+A\+R\+AM}]{key }\end{DoxyParamCaption})}
+
+
+
+Process the released key value received and determine corresponding action. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em key} & W\+P\+A\+R\+AM value of key released\\
+\hline
+\end{DoxyParams}
+Detects W, A, S, D, Left Arrow \& Right Arrow keys. \mbox{\Hypertarget{class_c_camera_f_p_a2fe5a59b0ffdb1d9203e0847eab19df5}\label{class_c_camera_f_p_a2fe5a59b0ffdb1d9203e0847eab19df5}} 
+\index{CCameraFP@{CCameraFP}!move@{move}}
+\index{move@{move}!CCameraFP@{CCameraFP}}
+\doxysubsubsection{\texorpdfstring{move()}{move()}}
+{\footnotesize\ttfamily void C\+Camera\+F\+P\+::move (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+Modifies Pos depending in which direction the Camera is moving. 
+
+Can move Left, Right, Forward, Backward 
+
+Reimplemented from \mbox{\hyperlink{class_c_camera_ae6b6b446fd9d7ca98308666d4ca6906f}{C\+Camera}}.
+
+\mbox{\Hypertarget{class_c_camera_f_p_a26ec510e6c9eb2537258d9e07a445da6}\label{class_c_camera_f_p_a26ec510e6c9eb2537258d9e07a445da6}} 
+\index{CCameraFP@{CCameraFP}!rotateFront@{rotateFront}}
+\index{rotateFront@{rotateFront}!CCameraFP@{CCameraFP}}
+\doxysubsubsection{\texorpdfstring{rotateFront()}{rotateFront()}}
+{\footnotesize\ttfamily void C\+Camera\+F\+P\+::rotate\+Front (\begin{DoxyParamCaption}\item[{glm\+::vec3}]{Dir }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+Rotates the Camera from its Front vector depending on a direction. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Dir} & Vec3 with Direction value\\
+\hline
+\end{DoxyParams}
+Rotation is dictaded by m\+\_\+max\+Front\+Rotation. 
+
+Reimplemented from \mbox{\hyperlink{class_c_camera_aef3d2461709664933c9f8a7cbd135241}{C\+Camera}}.
+
+\mbox{\Hypertarget{class_c_camera_f_p_a9e8c2e7c5f7ca73701c9e46b57db1b75}\label{class_c_camera_f_p_a9e8c2e7c5f7ca73701c9e46b57db1b75}} 
+\index{CCameraFP@{CCameraFP}!rotateRight@{rotateRight}}
+\index{rotateRight@{rotateRight}!CCameraFP@{CCameraFP}}
+\doxysubsubsection{\texorpdfstring{rotateRight()}{rotateRight()}}
+{\footnotesize\ttfamily void C\+Camera\+F\+P\+::rotate\+Right (\begin{DoxyParamCaption}\item[{glm\+::vec3}]{Dir }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+Rotates the Camera from its Right vector depending on a direction. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Dir} & Vec3 with Direction Value\\
+\hline
+\end{DoxyParams}
+Rotation is dictaded by m\+\_\+max\+Right\+Rotation. 
+
+Reimplemented from \mbox{\hyperlink{class_c_camera_aab9c153c34e682cf62438650018cddda}{C\+Camera}}.
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{class_c_camera_f_p_aad4c2871a998c19775408bbee0a15664}\label{class_c_camera_f_p_aad4c2871a998c19775408bbee0a15664}} 
+\index{CCameraFP@{CCameraFP}!m\_FrontRotation@{m\_FrontRotation}}
+\index{m\_FrontRotation@{m\_FrontRotation}!CCameraFP@{CCameraFP}}
+\doxysubsubsection{\texorpdfstring{m\_FrontRotation}{m\_FrontRotation}}
+{\footnotesize\ttfamily float C\+Camera\+F\+P\+::m\+\_\+\+Front\+Rotation}
+
+float which stores the current rotation amount in the Camera\textquotesingle{}s Front vector \mbox{\Hypertarget{class_c_camera_f_p_ae875ab1a4ad24958b486ae48b284aecd}\label{class_c_camera_f_p_ae875ab1a4ad24958b486ae48b284aecd}} 
+\index{CCameraFP@{CCameraFP}!m\_maxFrontRotation@{m\_maxFrontRotation}}
+\index{m\_maxFrontRotation@{m\_maxFrontRotation}!CCameraFP@{CCameraFP}}
+\doxysubsubsection{\texorpdfstring{m\_maxFrontRotation}{m\_maxFrontRotation}}
+{\footnotesize\ttfamily float C\+Camera\+F\+P\+::m\+\_\+max\+Front\+Rotation}
+
+float which stores how much can the Camera rotate in its Front vector \mbox{\Hypertarget{class_c_camera_f_p_a9eeb320de07c6411148eee712516976e}\label{class_c_camera_f_p_a9eeb320de07c6411148eee712516976e}} 
+\index{CCameraFP@{CCameraFP}!m\_maxRightRotation@{m\_maxRightRotation}}
+\index{m\_maxRightRotation@{m\_maxRightRotation}!CCameraFP@{CCameraFP}}
+\doxysubsubsection{\texorpdfstring{m\_maxRightRotation}{m\_maxRightRotation}}
+{\footnotesize\ttfamily float C\+Camera\+F\+P\+::m\+\_\+max\+Right\+Rotation}
+
+float which stores how much can the Camera rotate in its Right vector \mbox{\Hypertarget{class_c_camera_f_p_a556a3c5a5a9b48821af06954a5a22f98}\label{class_c_camera_f_p_a556a3c5a5a9b48821af06954a5a22f98}} 
+\index{CCameraFP@{CCameraFP}!m\_RightRotation@{m\_RightRotation}}
+\index{m\_RightRotation@{m\_RightRotation}!CCameraFP@{CCameraFP}}
+\doxysubsubsection{\texorpdfstring{m\_RightRotation}{m\_RightRotation}}
+{\footnotesize\ttfamily float C\+Camera\+F\+P\+::m\+\_\+\+Right\+Rotation}
+
+float which stores the current rotation amount in the Camera\textquotesingle{}s Right vector 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Camera\+F\+P.\+h\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Camera\+F\+P.\+cpp\end{DoxyCompactItemize}

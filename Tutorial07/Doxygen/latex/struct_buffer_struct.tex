@@ -1,0 +1,73 @@
+\hypertarget{struct_buffer_struct}{}\doxysection{Buffer\+Struct Struct Reference}
+\label{struct_buffer_struct}\index{BufferStruct@{BufferStruct}}
+
+
+Structure which defines the required attributes to initialize a \mbox{\hyperlink{class_c_buffer}{C\+Buffer}}.  
+
+
+
+
+{\ttfamily \#include $<$C\+Buffer.\+h$>$}
+
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+unsigned int \mbox{\hyperlink{struct_buffer_struct_a3aa0dc406cd61be6fd63c24363bf6b29}{byte\+Width}}
+\item 
+\mbox{\hyperlink{_define_8h_a8e0c4313420bae072cbf2809ddf74ac1}{U\+S\+A\+GE}} \mbox{\hyperlink{struct_buffer_struct_a2044ca51ceaa84a98ec7d057ed9d9d7e}{usage}}
+\item 
+unsigned int \mbox{\hyperlink{struct_buffer_struct_aaf427e6c6d8ccaa6fb3fb66cb89208b4}{bind\+Flags}}
+\item 
+unsigned int \mbox{\hyperlink{struct_buffer_struct_a0d1f5ef3b7545adc60633eb19107a77a}{cpu\+Access\+Flags}}
+\item 
+unsigned int \mbox{\hyperlink{struct_buffer_struct_a745b3d916a3bf489992c20278970d61c}{misc\+Flags}}
+\item 
+unsigned int \mbox{\hyperlink{struct_buffer_struct_abb5de2f3b700c7f1a877eebdcda38e23}{structure\+Byte\+Stride}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Structure which defines the required attributes to initialize a \mbox{\hyperlink{class_c_buffer}{C\+Buffer}}. 
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{struct_buffer_struct_aaf427e6c6d8ccaa6fb3fb66cb89208b4}\label{struct_buffer_struct_aaf427e6c6d8ccaa6fb3fb66cb89208b4}} 
+\index{BufferStruct@{BufferStruct}!bindFlags@{bindFlags}}
+\index{bindFlags@{bindFlags}!BufferStruct@{BufferStruct}}
+\doxysubsubsection{\texorpdfstring{bindFlags}{bindFlags}}
+{\footnotesize\ttfamily unsigned int Buffer\+Struct\+::bind\+Flags}
+
+unsigned int which defines how the buffer will be bound to the pipeline \mbox{\Hypertarget{struct_buffer_struct_a3aa0dc406cd61be6fd63c24363bf6b29}\label{struct_buffer_struct_a3aa0dc406cd61be6fd63c24363bf6b29}} 
+\index{BufferStruct@{BufferStruct}!byteWidth@{byteWidth}}
+\index{byteWidth@{byteWidth}!BufferStruct@{BufferStruct}}
+\doxysubsubsection{\texorpdfstring{byteWidth}{byteWidth}}
+{\footnotesize\ttfamily unsigned int Buffer\+Struct\+::byte\+Width}
+
+unsigned int which defines size of the buffer in bytes \mbox{\Hypertarget{struct_buffer_struct_a0d1f5ef3b7545adc60633eb19107a77a}\label{struct_buffer_struct_a0d1f5ef3b7545adc60633eb19107a77a}} 
+\index{BufferStruct@{BufferStruct}!cpuAccessFlags@{cpuAccessFlags}}
+\index{cpuAccessFlags@{cpuAccessFlags}!BufferStruct@{BufferStruct}}
+\doxysubsubsection{\texorpdfstring{cpuAccessFlags}{cpuAccessFlags}}
+{\footnotesize\ttfamily unsigned int Buffer\+Struct\+::cpu\+Access\+Flags}
+
+unsigned int which defines C\+PU access flags or 0 if no C\+PU access is necessary. Flags can be combined with a logical OR \mbox{\Hypertarget{struct_buffer_struct_a745b3d916a3bf489992c20278970d61c}\label{struct_buffer_struct_a745b3d916a3bf489992c20278970d61c}} 
+\index{BufferStruct@{BufferStruct}!miscFlags@{miscFlags}}
+\index{miscFlags@{miscFlags}!BufferStruct@{BufferStruct}}
+\doxysubsubsection{\texorpdfstring{miscFlags}{miscFlags}}
+{\footnotesize\ttfamily unsigned int Buffer\+Struct\+::misc\+Flags}
+
+unsigned int which defines miscellaneous flags or 0 if unused. Flags can be combined with a logical OR \mbox{\Hypertarget{struct_buffer_struct_abb5de2f3b700c7f1a877eebdcda38e23}\label{struct_buffer_struct_abb5de2f3b700c7f1a877eebdcda38e23}} 
+\index{BufferStruct@{BufferStruct}!structureByteStride@{structureByteStride}}
+\index{structureByteStride@{structureByteStride}!BufferStruct@{BufferStruct}}
+\doxysubsubsection{\texorpdfstring{structureByteStride}{structureByteStride}}
+{\footnotesize\ttfamily unsigned int Buffer\+Struct\+::structure\+Byte\+Stride}
+
+unsigned int which defines the size of each element in the buffer structure (in bytes) when the buffer represents a structured buffer \mbox{\Hypertarget{struct_buffer_struct_a2044ca51ceaa84a98ec7d057ed9d9d7e}\label{struct_buffer_struct_a2044ca51ceaa84a98ec7d057ed9d9d7e}} 
+\index{BufferStruct@{BufferStruct}!usage@{usage}}
+\index{usage@{usage}!BufferStruct@{BufferStruct}}
+\doxysubsubsection{\texorpdfstring{usage}{usage}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_define_8h_a8e0c4313420bae072cbf2809ddf74ac1}{U\+S\+A\+GE}} Buffer\+Struct\+::usage}
+
+U\+S\+A\+GE which identifies how the buffer is expected to be read from and written to 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Buffer.\+h\end{DoxyCompactItemize}

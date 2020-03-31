@@ -1,0 +1,88 @@
+\hypertarget{class_c_texture2_d}{}\doxysection{C\+Texture2D Class Reference}
+\label{class_c_texture2_d}\index{CTexture2D@{CTexture2D}}
+
+
+Class which contains basic data for 2D texture creation/use.  
+
+
+
+
+{\ttfamily \#include $<$C\+Texture2\+D.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{class_c_texture2_d_a8b37fb43b5e4bb96d4382a9faf686eef}{init}} (\mbox{\hyperlink{struct_texture2_d_struct}{Texture2\+D\+Struct}} S)
+\begin{DoxyCompactList}\small\item\em Receives a \mbox{\hyperlink{struct_texture2_d_struct}{Texture2\+D\+Struct}} to copy its values. \end{DoxyCompactList}\item 
+void $\ast$ \mbox{\hyperlink{class_c_texture2_d_a1dfbb44375c5e8747157ee766583ee48}{get\+Texture}} ()
+\begin{DoxyCompactList}\small\item\em Function to get a void pointer to object. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{struct_texture2_d_struct}{Texture2\+D\+Struct}} \mbox{\hyperlink{class_c_texture2_d_afbb8da4454da2298c908548fce838870}{m\+\_\+\+Data}}
+\item 
+I\+D3\+D11\+Texture2D $\ast$ \mbox{\hyperlink{class_c_texture2_d_a981a58f1de385aac450a702c34269db2}{m\+\_\+p\+Texture}}
+\item 
+D3\+D11\+\_\+\+T\+E\+X\+T\+U\+R\+E2\+D\+\_\+\+D\+E\+SC \mbox{\hyperlink{class_c_texture2_d_a91b07e72bf5e6cb17700534085489e9b}{m\+\_\+\+Desc}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Class which contains basic data for 2D texture creation/use. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_c_texture2_d_a1dfbb44375c5e8747157ee766583ee48}\label{class_c_texture2_d_a1dfbb44375c5e8747157ee766583ee48}} 
+\index{CTexture2D@{CTexture2D}!getTexture@{getTexture}}
+\index{getTexture@{getTexture}!CTexture2D@{CTexture2D}}
+\doxysubsubsection{\texorpdfstring{getTexture()}{getTexture()}}
+{\footnotesize\ttfamily void $\ast$ C\+Texture2\+D\+::get\+Texture (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Function to get a void pointer to object. 
+
+\begin{DoxyReturn}{Returns}
+void pointer to object. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_c_texture2_d_a8b37fb43b5e4bb96d4382a9faf686eef}\label{class_c_texture2_d_a8b37fb43b5e4bb96d4382a9faf686eef}} 
+\index{CTexture2D@{CTexture2D}!init@{init}}
+\index{init@{init}!CTexture2D@{CTexture2D}}
+\doxysubsubsection{\texorpdfstring{init()}{init()}}
+{\footnotesize\ttfamily void C\+Texture2\+D\+::init (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{struct_texture2_d_struct}{Texture2\+D\+Struct}}}]{S }\end{DoxyParamCaption})}
+
+
+
+Receives a \mbox{\hyperlink{struct_texture2_d_struct}{Texture2\+D\+Struct}} to copy its values. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em S} & \mbox{\hyperlink{struct_texture2_d_struct}{Texture2\+D\+Struct}} with the desired information. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{class_c_texture2_d_afbb8da4454da2298c908548fce838870}\label{class_c_texture2_d_afbb8da4454da2298c908548fce838870}} 
+\index{CTexture2D@{CTexture2D}!m\_Data@{m\_Data}}
+\index{m\_Data@{m\_Data}!CTexture2D@{CTexture2D}}
+\doxysubsubsection{\texorpdfstring{m\_Data}{m\_Data}}
+{\footnotesize\ttfamily \mbox{\hyperlink{struct_texture2_d_struct}{Texture2\+D\+Struct}} C\+Texture2\+D\+::m\+\_\+\+Data}
+
+Local variable which stores the information received from \mbox{\hyperlink{class_c_texture2_d_a8b37fb43b5e4bb96d4382a9faf686eef}{init(\+Texture2\+D\+Struct S)}} \mbox{\Hypertarget{class_c_texture2_d_a91b07e72bf5e6cb17700534085489e9b}\label{class_c_texture2_d_a91b07e72bf5e6cb17700534085489e9b}} 
+\index{CTexture2D@{CTexture2D}!m\_Desc@{m\_Desc}}
+\index{m\_Desc@{m\_Desc}!CTexture2D@{CTexture2D}}
+\doxysubsubsection{\texorpdfstring{m\_Desc}{m\_Desc}}
+{\footnotesize\ttfamily D3\+D11\+\_\+\+T\+E\+X\+T\+U\+R\+E2\+D\+\_\+\+D\+E\+SC C\+Texture2\+D\+::m\+\_\+\+Desc}
+
+DirectX structure to store data \mbox{\Hypertarget{class_c_texture2_d_a981a58f1de385aac450a702c34269db2}\label{class_c_texture2_d_a981a58f1de385aac450a702c34269db2}} 
+\index{CTexture2D@{CTexture2D}!m\_pTexture@{m\_pTexture}}
+\index{m\_pTexture@{m\_pTexture}!CTexture2D@{CTexture2D}}
+\doxysubsubsection{\texorpdfstring{m\_pTexture}{m\_pTexture}}
+{\footnotesize\ttfamily I\+D3\+D11\+Texture2D$\ast$ C\+Texture2\+D\+::m\+\_\+p\+Texture}
+
+Pointer to a DirectX 2D \mbox{\hyperlink{struct_texture}{Texture}} 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Texture2\+D.\+h\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Texture2\+D.\+cpp\end{DoxyCompactItemize}

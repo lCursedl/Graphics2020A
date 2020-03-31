@@ -3,14 +3,14 @@
 #include "Includes.h"
 struct DeviceStruct
 {
-	DRIVER_TYPE m_DriverType;			/**< DRIVER_TYPE variable */
+	DRIVER_TYPE m_DriverType;			/**< DRIVER_TYPE which defines the driver type to create */
 	DRIVER_TYPE m_DriverTypes[3];		/**< DRIVER_TYPE array of 3 elements */
-	unsigned int m_DeviceFlags;			/**< unsigned int which defines the flags for the Device*/
-	FEATURE_LEVEL m_FeatureLevels[3];	/**< FEATURE_LEVEL array of 3 elements */
-	unsigned int m_numFeatureLevels;	/**< unsigned int which defines the amount of Feature Levels  */
+	unsigned int m_DeviceFlags;			/**< unsigned int which defines the runtime layers to enable*/
+	FEATURE_LEVEL m_FeatureLevels[3];	/**< FEATURE_LEVEL array of 3 elements which determine the order of feature levels to attempt to create */
+	unsigned int m_numFeatureLevels;	/**< unsigned int which defines the amount of elements in m_FeatureLevels[]  */
 };
 /**	\struct DeviceStruct
-*	\brief Structure which defines the required attributes to initialize a Device
+*	\brief Structure which defines the required attributes to initialize a CDevice
 */
 
 class CDevice

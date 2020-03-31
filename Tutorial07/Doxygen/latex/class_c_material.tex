@@ -1,0 +1,88 @@
+\hypertarget{class_c_material}{}\doxysection{C\+Material Class Reference}
+\label{class_c_material}\index{CMaterial@{CMaterial}}
+
+
+Class which contains data for material creation/usage in a mesh.  
+
+
+
+
+{\ttfamily \#include $<$C\+Material.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_c_material_af350809ff7a7352bcf99e8167d7cdd53}\label{class_c_material_af350809ff7a7352bcf99e8167d7cdd53}} 
+void \mbox{\hyperlink{class_c_material_af350809ff7a7352bcf99e8167d7cdd53}{shutdown}} ()
+\begin{DoxyCompactList}\small\item\em Releases allocated resources. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::string \mbox{\hyperlink{class_c_material_adc759989caf7ec0b3386c0ca5e20dde4}{m\+\_\+\+Normal}}
+\item 
+bool \mbox{\hyperlink{class_c_material_a2e380785e49eda5cff1986a427132093}{m\+\_\+\+Has\+Normal}}
+\item 
+bool \mbox{\hyperlink{class_c_material_af3950d668b1d35228f60a3c2eda56020}{m\+\_\+\+Has\+Diffuse}}
+\item 
+std\+::string \mbox{\hyperlink{class_c_material_a85576af68cae4071ec65a174521b1095}{m\+\_\+\+Texture\+Dir}}
+\item 
+std\+::string \mbox{\hyperlink{class_c_material_a1cb2e24032417b87e1419798e9e16fd6}{m\+\_\+\+Diffuse}}
+\item 
+I\+D3\+D11\+Shader\+Resource\+View $\ast$ \mbox{\hyperlink{class_c_material_a943234a3f2d7e3b4dc0f5318271b89be}{m\+\_\+\+Texture\+Diffuse}}
+\item 
+I\+D3\+D11\+Shader\+Resource\+View $\ast$ \mbox{\hyperlink{class_c_material_a1f418f5ddc2768655e60514cc811bc2a}{m\+\_\+\+Texture\+Normal}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Class which contains data for material creation/usage in a mesh. 
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{class_c_material_a1cb2e24032417b87e1419798e9e16fd6}\label{class_c_material_a1cb2e24032417b87e1419798e9e16fd6}} 
+\index{CMaterial@{CMaterial}!m\_Diffuse@{m\_Diffuse}}
+\index{m\_Diffuse@{m\_Diffuse}!CMaterial@{CMaterial}}
+\doxysubsubsection{\texorpdfstring{m\_Diffuse}{m\_Diffuse}}
+{\footnotesize\ttfamily std\+::string C\+Material\+::m\+\_\+\+Diffuse}
+
+string with diffuse texture name \mbox{\Hypertarget{class_c_material_af3950d668b1d35228f60a3c2eda56020}\label{class_c_material_af3950d668b1d35228f60a3c2eda56020}} 
+\index{CMaterial@{CMaterial}!m\_HasDiffuse@{m\_HasDiffuse}}
+\index{m\_HasDiffuse@{m\_HasDiffuse}!CMaterial@{CMaterial}}
+\doxysubsubsection{\texorpdfstring{m\_HasDiffuse}{m\_HasDiffuse}}
+{\footnotesize\ttfamily bool C\+Material\+::m\+\_\+\+Has\+Diffuse}
+
+bool which defines if material has diffuse texture \mbox{\Hypertarget{class_c_material_a2e380785e49eda5cff1986a427132093}\label{class_c_material_a2e380785e49eda5cff1986a427132093}} 
+\index{CMaterial@{CMaterial}!m\_HasNormal@{m\_HasNormal}}
+\index{m\_HasNormal@{m\_HasNormal}!CMaterial@{CMaterial}}
+\doxysubsubsection{\texorpdfstring{m\_HasNormal}{m\_HasNormal}}
+{\footnotesize\ttfamily bool C\+Material\+::m\+\_\+\+Has\+Normal}
+
+bool which defines if material has normal texture \mbox{\Hypertarget{class_c_material_adc759989caf7ec0b3386c0ca5e20dde4}\label{class_c_material_adc759989caf7ec0b3386c0ca5e20dde4}} 
+\index{CMaterial@{CMaterial}!m\_Normal@{m\_Normal}}
+\index{m\_Normal@{m\_Normal}!CMaterial@{CMaterial}}
+\doxysubsubsection{\texorpdfstring{m\_Normal}{m\_Normal}}
+{\footnotesize\ttfamily std\+::string C\+Material\+::m\+\_\+\+Normal}
+
+string with normal texture name \mbox{\Hypertarget{class_c_material_a943234a3f2d7e3b4dc0f5318271b89be}\label{class_c_material_a943234a3f2d7e3b4dc0f5318271b89be}} 
+\index{CMaterial@{CMaterial}!m\_TextureDiffuse@{m\_TextureDiffuse}}
+\index{m\_TextureDiffuse@{m\_TextureDiffuse}!CMaterial@{CMaterial}}
+\doxysubsubsection{\texorpdfstring{m\_TextureDiffuse}{m\_TextureDiffuse}}
+{\footnotesize\ttfamily I\+D3\+D11\+Shader\+Resource\+View$\ast$ C\+Material\+::m\+\_\+\+Texture\+Diffuse}
+
+DirectX resource for diffuse texture \mbox{\Hypertarget{class_c_material_a85576af68cae4071ec65a174521b1095}\label{class_c_material_a85576af68cae4071ec65a174521b1095}} 
+\index{CMaterial@{CMaterial}!m\_TextureDir@{m\_TextureDir}}
+\index{m\_TextureDir@{m\_TextureDir}!CMaterial@{CMaterial}}
+\doxysubsubsection{\texorpdfstring{m\_TextureDir}{m\_TextureDir}}
+{\footnotesize\ttfamily std\+::string C\+Material\+::m\+\_\+\+Texture\+Dir}
+
+string with texture path \mbox{\Hypertarget{class_c_material_a1f418f5ddc2768655e60514cc811bc2a}\label{class_c_material_a1f418f5ddc2768655e60514cc811bc2a}} 
+\index{CMaterial@{CMaterial}!m\_TextureNormal@{m\_TextureNormal}}
+\index{m\_TextureNormal@{m\_TextureNormal}!CMaterial@{CMaterial}}
+\doxysubsubsection{\texorpdfstring{m\_TextureNormal}{m\_TextureNormal}}
+{\footnotesize\ttfamily I\+D3\+D11\+Shader\+Resource\+View$\ast$ C\+Material\+::m\+\_\+\+Texture\+Normal}
+
+DirectX resource for normal texture 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Material.\+h\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Material.\+cpp\end{DoxyCompactItemize}

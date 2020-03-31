@@ -1,0 +1,118 @@
+\hypertarget{class_c_graphics_a_p_i}{}\doxysection{C\+Graphics\+A\+PI Class Reference}
+\label{class_c_graphics_a_p_i}\index{CGraphicsAPI@{CGraphicsAPI}}
+
+
+Class which manages model loading and Scene creation/usage.  
+
+
+
+
+{\ttfamily \#include $<$C\+Graphics\+A\+P\+I.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \mbox{\hyperlink{class_c_graphics_a_p_i_a1c456eb960a4fca903a4916abf78887d}{load\+Mesh}} (const char $\ast$path, \mbox{\hyperlink{class_c_scene_manager}{C\+Scene\+Manager}} $\ast$SM, const ai\+Scene $\ast$model, \mbox{\hyperlink{class_c_device_context}{C\+Device\+Context}} $\ast$DC, \mbox{\hyperlink{class_c_device}{C\+Device}} $\ast$dev)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+const ai\+Scene $\ast$ \mbox{\hyperlink{class_c_graphics_a_p_i_a1a37d6b3518a7d8c7a6937844b5ec250}{m\+\_\+\+Model}} = new const ai\+Scene()
+\item 
+Assimp\+::\+Importer $\ast$ \mbox{\hyperlink{class_c_graphics_a_p_i_a5ba15851a4eac2b19619d96aa6f91320}{m\+\_\+\+Importer}} = new Assimp\+::\+Importer()
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{class_c_graphics_a_p_i_adea10b2d35f2e96b729f50168ba9f7d3}{mesh\+Read}} (const ai\+Scene $\ast$model, \mbox{\hyperlink{class_c_mesh}{C\+Mesh}} $\ast$mesh, int index, \mbox{\hyperlink{class_c_device}{C\+Device}} $\ast$dev)
+\begin{DoxyCompactList}\small\item\em Reads the model info and creates the data for the Mesh. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_c_graphics_a_p_i_abcb4a51cac1f3c4507f92aded73e0eb7}{read\+Mesh\+Texture}} (const ai\+Scene $\ast$model, \mbox{\hyperlink{class_c_mesh}{C\+Mesh}} $\ast$mesh, int index, \mbox{\hyperlink{class_c_device}{C\+Device}} $\ast$dev)
+\begin{DoxyCompactList}\small\item\em Reads the model material info and creates the data for the Mesh. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Class which manages model loading and Scene creation/usage. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_c_graphics_a_p_i_a1c456eb960a4fca903a4916abf78887d}\label{class_c_graphics_a_p_i_a1c456eb960a4fca903a4916abf78887d}} 
+\index{CGraphicsAPI@{CGraphicsAPI}!loadMesh@{loadMesh}}
+\index{loadMesh@{loadMesh}!CGraphicsAPI@{CGraphicsAPI}}
+\doxysubsubsection{\texorpdfstring{loadMesh()}{loadMesh()}}
+{\footnotesize\ttfamily bool C\+Graphics\+A\+P\+I\+::load\+Mesh (\begin{DoxyParamCaption}\item[{const char $\ast$}]{path,  }\item[{\mbox{\hyperlink{class_c_scene_manager}{C\+Scene\+Manager}} $\ast$}]{SM,  }\item[{const ai\+Scene $\ast$}]{model,  }\item[{\mbox{\hyperlink{class_c_device_context}{C\+Device\+Context}} $\ast$}]{DC,  }\item[{\mbox{\hyperlink{class_c_device}{C\+Device}} $\ast$}]{dev }\end{DoxyParamCaption})}
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em path} & \\
+\hline
+\mbox{\texttt{ in}}  & {\em SM} & \\
+\hline
+\mbox{\texttt{ in}}  & {\em model} & \\
+\hline
+\mbox{\texttt{ in}}  & {\em DC} & \\
+\hline
+\mbox{\texttt{ in}}  & {\em dev} & \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_c_graphics_a_p_i_adea10b2d35f2e96b729f50168ba9f7d3}\label{class_c_graphics_a_p_i_adea10b2d35f2e96b729f50168ba9f7d3}} 
+\index{CGraphicsAPI@{CGraphicsAPI}!meshRead@{meshRead}}
+\index{meshRead@{meshRead}!CGraphicsAPI@{CGraphicsAPI}}
+\doxysubsubsection{\texorpdfstring{meshRead()}{meshRead()}}
+{\footnotesize\ttfamily void C\+Graphics\+A\+P\+I\+::mesh\+Read (\begin{DoxyParamCaption}\item[{const ai\+Scene $\ast$}]{model,  }\item[{\mbox{\hyperlink{class_c_mesh}{C\+Mesh}} $\ast$}]{mesh,  }\item[{int}]{index,  }\item[{\mbox{\hyperlink{class_c_device}{C\+Device}} $\ast$}]{dev }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Reads the model info and creates the data for the Mesh. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em model} & ai\+Scene pointer from where info is obtained \\
+\hline
+\mbox{\texttt{ in}}  & {\em mesh} & \mbox{\hyperlink{class_c_mesh}{C\+Mesh}} pointer which contains a Mesh from the model \\
+\hline
+\mbox{\texttt{ in}}  & {\em index} & int number to identify the Mesh \\
+\hline
+\mbox{\texttt{ in}}  & {\em dev} & \mbox{\hyperlink{class_c_device}{C\+Device}} pointer for VB \& IB creation \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{class_c_graphics_a_p_i_abcb4a51cac1f3c4507f92aded73e0eb7}\label{class_c_graphics_a_p_i_abcb4a51cac1f3c4507f92aded73e0eb7}} 
+\index{CGraphicsAPI@{CGraphicsAPI}!readMeshTexture@{readMeshTexture}}
+\index{readMeshTexture@{readMeshTexture}!CGraphicsAPI@{CGraphicsAPI}}
+\doxysubsubsection{\texorpdfstring{readMeshTexture()}{readMeshTexture()}}
+{\footnotesize\ttfamily void C\+Graphics\+A\+P\+I\+::read\+Mesh\+Texture (\begin{DoxyParamCaption}\item[{const ai\+Scene $\ast$}]{model,  }\item[{\mbox{\hyperlink{class_c_mesh}{C\+Mesh}} $\ast$}]{mesh,  }\item[{int}]{index,  }\item[{\mbox{\hyperlink{class_c_device}{C\+Device}} $\ast$}]{dev }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Reads the model material info and creates the data for the Mesh. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em model} & ai\+Scene pointer from where info is obtained \\
+\hline
+\mbox{\texttt{ in}}  & {\em mesh} & \mbox{\hyperlink{class_c_mesh}{C\+Mesh}} pointer which contains a Mesh from the model \\
+\hline
+\mbox{\texttt{ in}}  & {\em index} & int number to identify the Mesh \\
+\hline
+\mbox{\texttt{ in}}  & {\em dev} & \mbox{\hyperlink{class_c_device}{C\+Device}} pointer for Shader\+Resource creation \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{class_c_graphics_a_p_i_a5ba15851a4eac2b19619d96aa6f91320}\label{class_c_graphics_a_p_i_a5ba15851a4eac2b19619d96aa6f91320}} 
+\index{CGraphicsAPI@{CGraphicsAPI}!m\_Importer@{m\_Importer}}
+\index{m\_Importer@{m\_Importer}!CGraphicsAPI@{CGraphicsAPI}}
+\doxysubsubsection{\texorpdfstring{m\_Importer}{m\_Importer}}
+{\footnotesize\ttfamily Assimp\+::\+Importer$\ast$ C\+Graphics\+A\+P\+I\+::m\+\_\+\+Importer = new Assimp\+::\+Importer()}
+
+Importer pointer for Model loading operations \mbox{\Hypertarget{class_c_graphics_a_p_i_a1a37d6b3518a7d8c7a6937844b5ec250}\label{class_c_graphics_a_p_i_a1a37d6b3518a7d8c7a6937844b5ec250}} 
+\index{CGraphicsAPI@{CGraphicsAPI}!m\_Model@{m\_Model}}
+\index{m\_Model@{m\_Model}!CGraphicsAPI@{CGraphicsAPI}}
+\doxysubsubsection{\texorpdfstring{m\_Model}{m\_Model}}
+{\footnotesize\ttfamily const ai\+Scene$\ast$ C\+Graphics\+A\+P\+I\+::m\+\_\+\+Model = new const ai\+Scene()}
+
+ai\+Scenete pointer for the Model 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Graphics\+A\+P\+I.\+h\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Graphics\+A\+P\+I.\+cpp\end{DoxyCompactItemize}

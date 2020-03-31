@@ -36,7 +36,6 @@
 #elif D3D11
 #include "amgui/imgui_impl_dx11.h"
 #include "amgui/imgui_impl_win32.h"
-#include "CModel.h"
 #endif // OPENGL
 
 
@@ -126,11 +125,11 @@ unsigned int rbo;
 //--------------------------------------------------------------------------------------
 // Forward declarations
 //--------------------------------------------------------------------------------------
+LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 #ifdef D3D11
 HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
 HRESULT InitDevice();
 void CleanupDevice();
-LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 void Render();
 
 #elif OPENGL
@@ -585,12 +584,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 		nano.Draw(shaderProgram);
 		glBindVertexArray(VAO);
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
 		model = boarMat;
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-		
-		/*unsigned int location = glGetUniformLocation(shaderProgram, "texture_diffuse1");
-		glUniform1i(location, 0);*/
 
 		glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
 
@@ -1122,7 +1118,7 @@ HRESULT InitDevice()
 
 	g_pDevice->m_Device = ptrDevice;
 	g_DeviceContext->m_DeviceContext = ptrDC;
-	graphicApi.loadMesh("Models/Scene/Reflect.fbx", &SCManager, graphicApi.m_Model, g_DeviceContext, graphicApi.m_Importer, g_pDevice);
+	graphicApi.loadMesh("MP5.fbx", &SCManager, graphicApi.m_Model, g_DeviceContext, g_pDevice);
 
 #endif
 

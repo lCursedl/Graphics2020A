@@ -11,7 +11,7 @@ struct ViewportStruct
 	float maxDepth;					/**< float which defines the maxmimum depth */
 };
 /**	\struct ViewportStruct
-*	\brief Structure which defines the required attributes to initialize a Viewport
+*	\brief Structure which defines the required attributes to initialize a CViewport
 */
 
 class CViewport
@@ -28,6 +28,6 @@ public:
 	D3D11_VIEWPORT m_Viewport;		/**< Viewport object of Directx */
 #endif // D3D11
 };
-/** \class CBuffer
+/** \class CViewport
 *	\brief Class which contains data for Viewport usage.
 */

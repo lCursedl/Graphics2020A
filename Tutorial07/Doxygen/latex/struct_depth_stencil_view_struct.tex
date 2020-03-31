@@ -1,0 +1,98 @@
+\hypertarget{struct_depth_stencil_view_struct}{}\doxysection{Depth\+Stencil\+View\+Struct Struct Reference}
+\label{struct_depth_stencil_view_struct}\index{DepthStencilViewStruct@{DepthStencilViewStruct}}
+
+
+Structure which defines the required attributes to initialize a \mbox{\hyperlink{class_c_depth_stencil_view}{C\+Depth\+Stencil\+View}}.  
+
+
+
+
+{\ttfamily \#include $<$C\+Depth\+Stencil\+View.\+h$>$}
+
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{_define_8h_abe88e3e98b0f663c259c1f5a699c6d92}{F\+O\+R\+M\+AT}} \mbox{\hyperlink{struct_depth_stencil_view_struct_ac9d1202d415da97190ea8cbcb0675602}{format}}
+\item 
+\mbox{\hyperlink{_define_8h_ad4ca40fa34431bbd718db0ce26be1237}{D\+S\+V\+\_\+\+D\+I\+M\+E\+N\+S\+I\+ON}} \mbox{\hyperlink{struct_depth_stencil_view_struct_a9eeef75740b44a81b100384e74fc912e}{view\+Dimension}}
+\item 
+unsigned int \mbox{\hyperlink{struct_depth_stencil_view_struct_a1806575423c94b947c6980bfeffec37e}{flags}}
+\item 
+\mbox{\Hypertarget{struct_depth_stencil_view_struct_a1353548b9d84b9104d046ae31072be96}\label{struct_depth_stencil_view_struct_a1353548b9d84b9104d046ae31072be96}} 
+\begin{tabbing}
+xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=\kill
+union \{\\
+\>\mbox{\hyperlink{struct_t_e_x1_d___d_s_v}{TEX1D\_DSV}} \mbox{\hyperlink{struct_depth_stencil_view_struct_a4c9e41d268f40535144cca6c31ced6c4}{textureID}}\\
+\>\mbox{\hyperlink{struct_t_e_x1_d___a_r_r_a_y___d_s_v}{TEX1D\_ARRAY\_DSV}} \mbox{\hyperlink{struct_depth_stencil_view_struct_a1c144483299a441e3292cdf6f2c91d4d}{texture1DArray}}\\
+\>\mbox{\hyperlink{struct_t_e_x2_d___d_s_v}{TEX2D\_DSV}} \mbox{\hyperlink{struct_depth_stencil_view_struct_ab2b5bcc6b62c435b008b1db976fe910e}{texture2D}}\\
+\>\mbox{\hyperlink{struct_t_e_x2_d___a_r_r_a_y___d_s_v}{TEX2D\_ARRAY\_DSV}} \mbox{\hyperlink{struct_depth_stencil_view_struct_a8a6a25f6d398a23da9f599f95dfc6c80}{texture2DArray}}\\
+\>\mbox{\hyperlink{struct_t_e_x2_d_m_s___d_s_v}{TEX2DMS\_DSV}} \mbox{\hyperlink{struct_depth_stencil_view_struct_aa540766b3e6f3f286c07eb7bb5eeb139}{texture2DMS}}\\
+\>\mbox{\hyperlink{struct_t_e_x2_d_m_s___a_r_r_a_y___d_s_v}{TEX2DMS\_ARRAY\_DSV}} \mbox{\hyperlink{struct_depth_stencil_view_struct_af9d8c66e15e2f8f8ca925d94f79c13f1}{texture2DMSArray}}\\
+\}; \\
+
+\end{tabbing}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Structure which defines the required attributes to initialize a \mbox{\hyperlink{class_c_depth_stencil_view}{C\+Depth\+Stencil\+View}}. 
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{struct_depth_stencil_view_struct_a1806575423c94b947c6980bfeffec37e}\label{struct_depth_stencil_view_struct_a1806575423c94b947c6980bfeffec37e}} 
+\index{DepthStencilViewStruct@{DepthStencilViewStruct}!flags@{flags}}
+\index{flags@{flags}!DepthStencilViewStruct@{DepthStencilViewStruct}}
+\doxysubsubsection{\texorpdfstring{flags}{flags}}
+{\footnotesize\ttfamily unsigned int Depth\+Stencil\+View\+Struct\+::flags}
+
+unsigned int which defines wheter the texture is read only \mbox{\Hypertarget{struct_depth_stencil_view_struct_ac9d1202d415da97190ea8cbcb0675602}\label{struct_depth_stencil_view_struct_ac9d1202d415da97190ea8cbcb0675602}} 
+\index{DepthStencilViewStruct@{DepthStencilViewStruct}!format@{format}}
+\index{format@{format}!DepthStencilViewStruct@{DepthStencilViewStruct}}
+\doxysubsubsection{\texorpdfstring{format}{format}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_define_8h_abe88e3e98b0f663c259c1f5a699c6d92}{F\+O\+R\+M\+AT}} Depth\+Stencil\+View\+Struct\+::format}
+
+F\+O\+R\+M\+AT resource data format \mbox{\Hypertarget{struct_depth_stencil_view_struct_a1c144483299a441e3292cdf6f2c91d4d}\label{struct_depth_stencil_view_struct_a1c144483299a441e3292cdf6f2c91d4d}} 
+\index{DepthStencilViewStruct@{DepthStencilViewStruct}!texture1DArray@{texture1DArray}}
+\index{texture1DArray@{texture1DArray}!DepthStencilViewStruct@{DepthStencilViewStruct}}
+\doxysubsubsection{\texorpdfstring{texture1DArray}{texture1DArray}}
+{\footnotesize\ttfamily \mbox{\hyperlink{struct_t_e_x1_d___a_r_r_a_y___d_s_v}{T\+E\+X1\+D\+\_\+\+A\+R\+R\+A\+Y\+\_\+\+D\+SV}} Depth\+Stencil\+View\+Struct\+::texture1\+D\+Array}
+
+\mbox{\hyperlink{struct_t_e_x1_d___a_r_r_a_y___d_s_v}{T\+E\+X1\+D\+\_\+\+A\+R\+R\+A\+Y\+\_\+\+D\+SV}} array of 1D texture subresources \mbox{\Hypertarget{struct_depth_stencil_view_struct_ab2b5bcc6b62c435b008b1db976fe910e}\label{struct_depth_stencil_view_struct_ab2b5bcc6b62c435b008b1db976fe910e}} 
+\index{DepthStencilViewStruct@{DepthStencilViewStruct}!texture2D@{texture2D}}
+\index{texture2D@{texture2D}!DepthStencilViewStruct@{DepthStencilViewStruct}}
+\doxysubsubsection{\texorpdfstring{texture2D}{texture2D}}
+{\footnotesize\ttfamily \mbox{\hyperlink{struct_t_e_x2_d___d_s_v}{T\+E\+X2\+D\+\_\+\+D\+SV}} Depth\+Stencil\+View\+Struct\+::texture2D}
+
+\mbox{\hyperlink{struct_t_e_x2_d___d_s_v}{T\+E\+X2\+D\+\_\+\+D\+SV}} 2D texture subresource \mbox{\Hypertarget{struct_depth_stencil_view_struct_a8a6a25f6d398a23da9f599f95dfc6c80}\label{struct_depth_stencil_view_struct_a8a6a25f6d398a23da9f599f95dfc6c80}} 
+\index{DepthStencilViewStruct@{DepthStencilViewStruct}!texture2DArray@{texture2DArray}}
+\index{texture2DArray@{texture2DArray}!DepthStencilViewStruct@{DepthStencilViewStruct}}
+\doxysubsubsection{\texorpdfstring{texture2DArray}{texture2DArray}}
+{\footnotesize\ttfamily \mbox{\hyperlink{struct_t_e_x2_d___a_r_r_a_y___d_s_v}{T\+E\+X2\+D\+\_\+\+A\+R\+R\+A\+Y\+\_\+\+D\+SV}} Depth\+Stencil\+View\+Struct\+::texture2\+D\+Array}
+
+\mbox{\hyperlink{struct_t_e_x2_d___a_r_r_a_y___d_s_v}{T\+E\+X2\+D\+\_\+\+A\+R\+R\+A\+Y\+\_\+\+D\+SV}} array of 2D texture subresources \mbox{\Hypertarget{struct_depth_stencil_view_struct_aa540766b3e6f3f286c07eb7bb5eeb139}\label{struct_depth_stencil_view_struct_aa540766b3e6f3f286c07eb7bb5eeb139}} 
+\index{DepthStencilViewStruct@{DepthStencilViewStruct}!texture2DMS@{texture2DMS}}
+\index{texture2DMS@{texture2DMS}!DepthStencilViewStruct@{DepthStencilViewStruct}}
+\doxysubsubsection{\texorpdfstring{texture2DMS}{texture2DMS}}
+{\footnotesize\ttfamily \mbox{\hyperlink{struct_t_e_x2_d_m_s___d_s_v}{T\+E\+X2\+D\+M\+S\+\_\+\+D\+SV}} Depth\+Stencil\+View\+Struct\+::texture2\+D\+MS}
+
+\mbox{\hyperlink{struct_t_e_x2_d_m_s___d_s_v}{T\+E\+X2\+D\+M\+S\+\_\+\+D\+SV}} multisampled 2D texture \mbox{\Hypertarget{struct_depth_stencil_view_struct_af9d8c66e15e2f8f8ca925d94f79c13f1}\label{struct_depth_stencil_view_struct_af9d8c66e15e2f8f8ca925d94f79c13f1}} 
+\index{DepthStencilViewStruct@{DepthStencilViewStruct}!texture2DMSArray@{texture2DMSArray}}
+\index{texture2DMSArray@{texture2DMSArray}!DepthStencilViewStruct@{DepthStencilViewStruct}}
+\doxysubsubsection{\texorpdfstring{texture2DMSArray}{texture2DMSArray}}
+{\footnotesize\ttfamily \mbox{\hyperlink{struct_t_e_x2_d_m_s___a_r_r_a_y___d_s_v}{T\+E\+X2\+D\+M\+S\+\_\+\+A\+R\+R\+A\+Y\+\_\+\+D\+SV}} Depth\+Stencil\+View\+Struct\+::texture2\+D\+M\+S\+Array}
+
+\mbox{\hyperlink{struct_t_e_x2_d_m_s___a_r_r_a_y___d_s_v}{T\+E\+X2\+D\+M\+S\+\_\+\+A\+R\+R\+A\+Y\+\_\+\+D\+SV}} array of 2D multisampled textures \mbox{\Hypertarget{struct_depth_stencil_view_struct_a4c9e41d268f40535144cca6c31ced6c4}\label{struct_depth_stencil_view_struct_a4c9e41d268f40535144cca6c31ced6c4}} 
+\index{DepthStencilViewStruct@{DepthStencilViewStruct}!textureID@{textureID}}
+\index{textureID@{textureID}!DepthStencilViewStruct@{DepthStencilViewStruct}}
+\doxysubsubsection{\texorpdfstring{textureID}{textureID}}
+{\footnotesize\ttfamily \mbox{\hyperlink{struct_t_e_x1_d___d_s_v}{T\+E\+X1\+D\+\_\+\+D\+SV}} Depth\+Stencil\+View\+Struct\+::texture\+ID}
+
+\mbox{\hyperlink{struct_t_e_x1_d___d_s_v}{T\+E\+X1\+D\+\_\+\+D\+SV}} 1D texture subresource \mbox{\Hypertarget{struct_depth_stencil_view_struct_a9eeef75740b44a81b100384e74fc912e}\label{struct_depth_stencil_view_struct_a9eeef75740b44a81b100384e74fc912e}} 
+\index{DepthStencilViewStruct@{DepthStencilViewStruct}!viewDimension@{viewDimension}}
+\index{viewDimension@{viewDimension}!DepthStencilViewStruct@{DepthStencilViewStruct}}
+\doxysubsubsection{\texorpdfstring{viewDimension}{viewDimension}}
+{\footnotesize\ttfamily \mbox{\hyperlink{_define_8h_ad4ca40fa34431bbd718db0ce26be1237}{D\+S\+V\+\_\+\+D\+I\+M\+E\+N\+S\+I\+ON}} Depth\+Stencil\+View\+Struct\+::view\+Dimension}
+
+D\+S\+V\+\_\+\+D\+I\+M\+E\+N\+S\+I\+ON which specifies how the D\+SV will be accessed 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Depth\+Stencil\+View.\+h\end{DoxyCompactItemize}

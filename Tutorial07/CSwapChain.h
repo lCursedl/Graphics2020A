@@ -3,20 +3,20 @@
 #include "Includes.h"
 struct SwapChainStruct
 {
-	unsigned int bufferCount;			/**< unsigned int which defines the number of buffers */
-	unsigned int W;						/**< unsigned int which defines the width */
-	unsigned int H;						/**< unsigned int which defines the height */
-	FORMAT format;						/**< FORMAT variable */
+	unsigned int bufferCount;			/**< unsigned int which defines the number of buffers in the SwapChain */
+	unsigned int W;						/**< unsigned int which defines the resolution width */
+	unsigned int H;						/**< unsigned int which defines the resolution height */
+	FORMAT format;						/**< FORMAT which defines the displaying format */
 	unsigned int refreshNumerator;		/**< unsigned int for calculating refresh rate */
 	unsigned int refreshDenominator;	/**< unsigned int for calculating refresh rate */
-	unsigned int bufferUsage;			/**< unsigned int for defining usage */
+	unsigned int bufferUsage;			/**< unsigned int which defines the surface usage and CPU access options for the back buffer */
 	unsigned int outputWND;				/**< unsigned int which saves the output window reference */
-	unsigned int count;					/**< unsigned int variable */
-	unsigned int quality;				/**< unsigned int variable */
+	unsigned int count;					/**< unsigned int which defines the number of multisamples per pixel */
+	unsigned int quality;				/**< unsigned int which defines the image quality level */
 	bool windowed;						/**< bool which defines if window is or not windowed */
 };
 /**	\struct SwapChainStruct
-*	\brief Structure which defines the required attributes to initialize a Swap Chain
+*	\brief Structure which defines the required attributes to initialize a CSwapChain
 */
 
 class CSwapChain

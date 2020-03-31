@@ -27,19 +27,11 @@ CMesh *& CSceneManager::getMesh(int ID)
 	}
 }
 
-void CSceneManager::update()
+void CSceneManager::render(CDeviceContext * DC)
 {
 	for (int i = 0; i < m_MeshList.size(); i++)
 	{
-		m_MeshList[i]->update();
-	}
-}
-
-void CSceneManager::render(CDeviceContext * DC, CBuffer * B, CDevice * D)
-{
-	for (int i = 0; i < m_MeshList.size(); i++)
-	{
-		m_MeshList[i]->render(DC, B, D);
+		m_MeshList[i]->render(DC);
 	}
 }
 

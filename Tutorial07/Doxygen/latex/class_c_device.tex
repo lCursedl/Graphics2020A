@@ -1,0 +1,115 @@
+\hypertarget{class_c_device}{}\doxysection{C\+Device Class Reference}
+\label{class_c_device}\index{CDevice@{CDevice}}
+
+
+Class which contains a Singleton for a DirectX Device implementation.  
+
+
+
+
+{\ttfamily \#include $<$C\+Device.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_c_device_a99602578628155af86289236d70cebfb}\label{class_c_device_a99602578628155af86289236d70cebfb}} 
+void {\bfseries operator=} (\mbox{\hyperlink{class_c_device}{C\+Device}} const \&)=delete
+\item 
+void \mbox{\hyperlink{class_c_device_a398c0767c61e5598c3399f51bd4a3970}{init}} (\mbox{\hyperlink{struct_device_struct}{Device\+Struct}} s)
+\begin{DoxyCompactList}\small\item\em Receives a \mbox{\hyperlink{struct_device_struct}{Device\+Struct}} to copy its values. \end{DoxyCompactList}\item 
+void $\ast$ \mbox{\hyperlink{class_c_device_ae608f96105e97b427a22c14577821db7}{get\+Device}} ()
+\begin{DoxyCompactList}\small\item\em Function to get a void pointer to instance. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{class_c_device}{C\+Device}} $\ast$ \mbox{\hyperlink{class_c_device_a5e000c61a11d95a26d3f9b8ccf9ee1f0}{get\+Instance}} ()
+\begin{DoxyCompactList}\small\item\em Function to get instance object. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{struct_device_struct}{Device\+Struct}} \mbox{\hyperlink{class_c_device_a39ccba0bdc511d14435efffc82d75125}{m\+\_\+struc}}
+\item 
+I\+D3\+D11\+Device $\ast$ \mbox{\hyperlink{class_c_device_af4ac3b7c84af951fe1e7d2e5df201eea}{m\+\_\+\+Device}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{class_c_device}{C\+Device}} $\ast$ \mbox{\hyperlink{class_c_device_ad291230463d0f19b389bc2cdd1ba54bf}{m\+\_\+\+Device\+Instance}} = nullptr
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Class which contains a Singleton for a DirectX Device implementation. 
+
+Instance can be initialized using a pointer for the class and setting it to N\+U\+LL. Then when needed, make a pointer of the class and assign its value given by \mbox{\hyperlink{class_c_device_a5e000c61a11d95a26d3f9b8ccf9ee1f0}{get\+Instance()}}. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_c_device_ae608f96105e97b427a22c14577821db7}\label{class_c_device_ae608f96105e97b427a22c14577821db7}} 
+\index{CDevice@{CDevice}!getDevice@{getDevice}}
+\index{getDevice@{getDevice}!CDevice@{CDevice}}
+\doxysubsubsection{\texorpdfstring{getDevice()}{getDevice()}}
+{\footnotesize\ttfamily void $\ast$ C\+Device\+::get\+Device (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Function to get a void pointer to instance. 
+
+\begin{DoxyReturn}{Returns}
+void pointer to instance. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_c_device_a5e000c61a11d95a26d3f9b8ccf9ee1f0}\label{class_c_device_a5e000c61a11d95a26d3f9b8ccf9ee1f0}} 
+\index{CDevice@{CDevice}!getInstance@{getInstance}}
+\index{getInstance@{getInstance}!CDevice@{CDevice}}
+\doxysubsubsection{\texorpdfstring{getInstance()}{getInstance()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{class_c_device}{C\+Device}} $\ast$ C\+Device\+::get\+Instance (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Function to get instance object. 
+
+\begin{DoxyReturn}{Returns}
+a pointer to the instance. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_c_device_a398c0767c61e5598c3399f51bd4a3970}\label{class_c_device_a398c0767c61e5598c3399f51bd4a3970}} 
+\index{CDevice@{CDevice}!init@{init}}
+\index{init@{init}!CDevice@{CDevice}}
+\doxysubsubsection{\texorpdfstring{init()}{init()}}
+{\footnotesize\ttfamily void C\+Device\+::init (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{struct_device_struct}{Device\+Struct}}}]{s }\end{DoxyParamCaption})}
+
+
+
+Receives a \mbox{\hyperlink{struct_device_struct}{Device\+Struct}} to copy its values. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em s} & \mbox{\hyperlink{struct_device_struct}{Device\+Struct}} with the desired information. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{class_c_device_af4ac3b7c84af951fe1e7d2e5df201eea}\label{class_c_device_af4ac3b7c84af951fe1e7d2e5df201eea}} 
+\index{CDevice@{CDevice}!m\_Device@{m\_Device}}
+\index{m\_Device@{m\_Device}!CDevice@{CDevice}}
+\doxysubsubsection{\texorpdfstring{m\_Device}{m\_Device}}
+{\footnotesize\ttfamily I\+D3\+D11\+Device$\ast$ C\+Device\+::m\+\_\+\+Device}
+
+Pointer to a DirectX Device \mbox{\Hypertarget{class_c_device_ad291230463d0f19b389bc2cdd1ba54bf}\label{class_c_device_ad291230463d0f19b389bc2cdd1ba54bf}} 
+\index{CDevice@{CDevice}!m\_DeviceInstance@{m\_DeviceInstance}}
+\index{m\_DeviceInstance@{m\_DeviceInstance}!CDevice@{CDevice}}
+\doxysubsubsection{\texorpdfstring{m\_DeviceInstance}{m\_DeviceInstance}}
+{\footnotesize\ttfamily \mbox{\hyperlink{class_c_device}{C\+Device}} $\ast$ C\+Device\+::m\+\_\+\+Device\+Instance = nullptr\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [private]}}
+
+Pointer to the instance which is used for the Singleton \mbox{\Hypertarget{class_c_device_a39ccba0bdc511d14435efffc82d75125}\label{class_c_device_a39ccba0bdc511d14435efffc82d75125}} 
+\index{CDevice@{CDevice}!m\_struc@{m\_struc}}
+\index{m\_struc@{m\_struc}!CDevice@{CDevice}}
+\doxysubsubsection{\texorpdfstring{m\_struc}{m\_struc}}
+{\footnotesize\ttfamily \mbox{\hyperlink{struct_device_struct}{Device\+Struct}} C\+Device\+::m\+\_\+struc}
+
+Local variable which stores the information received from \mbox{\hyperlink{class_c_device_a398c0767c61e5598c3399f51bd4a3970}{init(\+Device\+Struct s)}} 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Device.\+h\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Device.\+cpp\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/Tutorial07.\+cpp\end{DoxyCompactItemize}

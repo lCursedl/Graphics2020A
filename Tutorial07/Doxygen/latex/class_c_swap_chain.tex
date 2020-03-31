@@ -1,0 +1,115 @@
+\hypertarget{class_c_swap_chain}{}\doxysection{C\+Swap\+Chain Class Reference}
+\label{class_c_swap_chain}\index{CSwapChain@{CSwapChain}}
+
+
+Class which contains a Singleton for a DirectX Swap Chain implementation.  
+
+
+
+
+{\ttfamily \#include $<$C\+Swap\+Chain.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{class_c_swap_chain_abf3e67267c68969765387cac192a0ec1}{init}} (\mbox{\hyperlink{struct_swap_chain_struct}{Swap\+Chain\+Struct}} s)
+\begin{DoxyCompactList}\small\item\em Receives a \mbox{\hyperlink{struct_swap_chain_struct}{Swap\+Chain\+Struct}} to copy its values. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_c_swap_chain_a587d11249f8f16715c71f5554248ccb9}\label{class_c_swap_chain_a587d11249f8f16715c71f5554248ccb9}} 
+void {\bfseries operator=} (\mbox{\hyperlink{class_c_swap_chain}{C\+Swap\+Chain}} const \&)=delete
+\item 
+void $\ast$ \mbox{\hyperlink{class_c_swap_chain_a56997b906356f381caab483b9f86103a}{get\+Swap\+Chain}} ()
+\begin{DoxyCompactList}\small\item\em Function to get a void pointer to instance. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{class_c_swap_chain}{C\+Swap\+Chain}} $\ast$ \mbox{\hyperlink{class_c_swap_chain_a1f21ac2070e68387424ead065438373b}{get\+Instance}} ()
+\begin{DoxyCompactList}\small\item\em Function to get instance object. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+I\+D\+X\+G\+I\+Swap\+Chain $\ast$ \mbox{\hyperlink{class_c_swap_chain_a35998a767c749d1746f2a65b6ef2cd80}{m\+\_\+p\+Swap\+Chain}}
+\item 
+D\+X\+G\+I\+\_\+\+S\+W\+A\+P\+\_\+\+C\+H\+A\+I\+N\+\_\+\+D\+E\+SC \mbox{\hyperlink{class_c_swap_chain_aace250f315c8b27e94d6280f6a94f1ca}{m\+\_\+sd}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{class_c_swap_chain}{C\+Swap\+Chain}} $\ast$ \mbox{\hyperlink{class_c_swap_chain_a850d127bbc4b34dab638cc4197697d34}{m\+\_\+p\+S\+C\+Instance}} = nullptr
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Class which contains a Singleton for a DirectX Swap Chain implementation. 
+
+Instance can be initialized using a pointer for the class and setting it to N\+U\+LL. Then when needed, make a pointer of the class and assign its value given by \mbox{\hyperlink{class_c_swap_chain_a1f21ac2070e68387424ead065438373b}{get\+Instance()}}. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_c_swap_chain_a1f21ac2070e68387424ead065438373b}\label{class_c_swap_chain_a1f21ac2070e68387424ead065438373b}} 
+\index{CSwapChain@{CSwapChain}!getInstance@{getInstance}}
+\index{getInstance@{getInstance}!CSwapChain@{CSwapChain}}
+\doxysubsubsection{\texorpdfstring{getInstance()}{getInstance()}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{class_c_swap_chain}{C\+Swap\+Chain}} $\ast$ C\+Swap\+Chain\+::get\+Instance (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Function to get instance object. 
+
+\begin{DoxyReturn}{Returns}
+a pointer to the instance. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_c_swap_chain_a56997b906356f381caab483b9f86103a}\label{class_c_swap_chain_a56997b906356f381caab483b9f86103a}} 
+\index{CSwapChain@{CSwapChain}!getSwapChain@{getSwapChain}}
+\index{getSwapChain@{getSwapChain}!CSwapChain@{CSwapChain}}
+\doxysubsubsection{\texorpdfstring{getSwapChain()}{getSwapChain()}}
+{\footnotesize\ttfamily void $\ast$ C\+Swap\+Chain\+::get\+Swap\+Chain (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Function to get a void pointer to instance. 
+
+\begin{DoxyReturn}{Returns}
+void pointer to instance. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{class_c_swap_chain_abf3e67267c68969765387cac192a0ec1}\label{class_c_swap_chain_abf3e67267c68969765387cac192a0ec1}} 
+\index{CSwapChain@{CSwapChain}!init@{init}}
+\index{init@{init}!CSwapChain@{CSwapChain}}
+\doxysubsubsection{\texorpdfstring{init()}{init()}}
+{\footnotesize\ttfamily void C\+Swap\+Chain\+::init (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{struct_swap_chain_struct}{Swap\+Chain\+Struct}}}]{s }\end{DoxyParamCaption})}
+
+
+
+Receives a \mbox{\hyperlink{struct_swap_chain_struct}{Swap\+Chain\+Struct}} to copy its values. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em s} & \mbox{\hyperlink{struct_swap_chain_struct}{Swap\+Chain\+Struct}} with the desired information. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{class_c_swap_chain_a850d127bbc4b34dab638cc4197697d34}\label{class_c_swap_chain_a850d127bbc4b34dab638cc4197697d34}} 
+\index{CSwapChain@{CSwapChain}!m\_pSCInstance@{m\_pSCInstance}}
+\index{m\_pSCInstance@{m\_pSCInstance}!CSwapChain@{CSwapChain}}
+\doxysubsubsection{\texorpdfstring{m\_pSCInstance}{m\_pSCInstance}}
+{\footnotesize\ttfamily \mbox{\hyperlink{class_c_swap_chain}{C\+Swap\+Chain}} $\ast$ C\+Swap\+Chain\+::m\+\_\+p\+S\+C\+Instance = nullptr\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [private]}}
+
+Pointer to the instance which is used for the Singleton \mbox{\Hypertarget{class_c_swap_chain_a35998a767c749d1746f2a65b6ef2cd80}\label{class_c_swap_chain_a35998a767c749d1746f2a65b6ef2cd80}} 
+\index{CSwapChain@{CSwapChain}!m\_pSwapChain@{m\_pSwapChain}}
+\index{m\_pSwapChain@{m\_pSwapChain}!CSwapChain@{CSwapChain}}
+\doxysubsubsection{\texorpdfstring{m\_pSwapChain}{m\_pSwapChain}}
+{\footnotesize\ttfamily I\+D\+X\+G\+I\+Swap\+Chain$\ast$ C\+Swap\+Chain\+::m\+\_\+p\+Swap\+Chain}
+
+Pointer to a DirectX Swap Chain \mbox{\Hypertarget{class_c_swap_chain_aace250f315c8b27e94d6280f6a94f1ca}\label{class_c_swap_chain_aace250f315c8b27e94d6280f6a94f1ca}} 
+\index{CSwapChain@{CSwapChain}!m\_sd@{m\_sd}}
+\index{m\_sd@{m\_sd}!CSwapChain@{CSwapChain}}
+\doxysubsubsection{\texorpdfstring{m\_sd}{m\_sd}}
+{\footnotesize\ttfamily D\+X\+G\+I\+\_\+\+S\+W\+A\+P\+\_\+\+C\+H\+A\+I\+N\+\_\+\+D\+E\+SC C\+Swap\+Chain\+::m\+\_\+sd}
+
+DirectX\textquotesingle{}s Swap Chain structure 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Swap\+Chain.\+h\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/C\+Swap\+Chain.\+cpp\item 
+D\+:/\+Cursed/\+Escritorio/\+U\+A\+D/5 2020\+A/\+Graficas/\+Graphics2020\+A/\+Tutorial07/Tutorial07.\+cpp\end{DoxyCompactItemize}
