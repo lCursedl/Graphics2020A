@@ -40,6 +40,7 @@ bool CGraphicsAPI::loadMesh(const char * path, CSceneManager * SM, const aiScene
 			newMesh->addChildren(childMesh);
 			childMesh->m_Materials->m_TextureDir = dirName;
 			meshRead(model, childMesh, i, dev);
+			readMeshTexture(model, childMesh, i, dev);
 			SM->addMesh(childMesh);
 		}
 	}
@@ -64,11 +65,21 @@ void CGraphicsAPI::meshRead(const aiScene * model, CMesh * mesh, int index, CDev
 
 	for (int i = 0; i < numVertex; i++)
 	{
-		meshVertex[i].Pos.x = model->mMeshes[index]->mVertices[i].x;
-		meshVertex[i].Pos.y = model->mMeshes[index]->mVertices[i].y;
-		meshVertex[i].Pos.z = model->mMeshes[index]->mVertices[i].z;
-		meshVertex[i].Tex.x = model->mMeshes[index]->mTextureCoords[0][i].x;
-		meshVertex[i].Tex.y = model->mMeshes[index]->mTextureCoords[0][i].y;
+		meshVertex[i].msPos.x = model->mMeshes[index]->mVertices[i].x;
+		meshVertex[i].msPos.y = model->mMeshes[index]->mVertices[i].y;
+		meshVertex[i].msPos.z = model->mMeshes[index]->mVertices[i].z;
+		meshVertex[i].texcoord.x = model->mMeshes[index]->mTextureCoords[0][i].x;
+		meshVertex[i].texcoord.y = model->mMeshes[index]->mTextureCoords[0][i].y;
+		meshVertex[i].msNormal.x = model->mMeshes[index]->mNormals[i].x;
+		meshVertex[i].msNormal.y = model->mMeshes[index]->mNormals[i].y;
+		meshVertex[i].msNormal.z = model->mMeshes[index]->mNormals[i].z;
+		meshVertex[i].msNormal.w = 1;
+		meshVertex[i].msBinormal.x = model->mMeshes[index]->mBitangents[i].x;
+		meshVertex[i].msBinormal.y = model->mMeshes[index]->mBitangents[i].y;
+		meshVertex[i].msBinormal.z = model->mMeshes[index]->mBitangents[i].z;
+		meshVertex[i].msTangent.x = model->mMeshes[index]->mTangents[i].x;
+		meshVertex[i].msTangent.y = model->mMeshes[index]->mTangents[i].y;
+		meshVertex[i].msTangent.z = model->mMeshes[index]->mTangents[i].z;
 	}
 
 	mesh->setVertex(meshVertex, numVertex);

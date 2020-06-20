@@ -26,20 +26,31 @@ cbuffer cbChangesEveryFrame : register( b2 )
     float4 vMeshColor;
 };
 
+cbuffer LightCB : register (b3)
+{
+	float4 lightDir;
+};
+
 
 //--------------------------------------------------------------------------------------
 struct VS_INPUT
 {
-    float4 Pos : POSITION;
+    float4 Pos : POSITION0;
     float2 Tex : TEXCOORD0;
+	float4 Normal : NORMAL0;
 };
 
 struct PS_INPUT
 {
     float4 Pos : SV_POSITION;
     float2 Tex : TEXCOORD0;
+	float3 Normal : NORMAL0;
 };
 
+struct PS_OUTPUT
+{
+	float4 color : COLOR0;
+};
 
 //--------------------------------------------------------------------------------------
 // Vertex Shader
@@ -50,6 +61,7 @@ PS_INPUT VS( VS_INPUT input )
     output.Pos = mul( input.Pos, World );
     output.Pos = mul( output.Pos, View );
     output.Pos = mul( output.Pos, Projection );
+	output.Normal = mul(input.Normal, World);
     output.Tex = input.Tex;
     
     return output;
@@ -61,5 +73,12 @@ PS_INPUT VS( VS_INPUT input )
 //--------------------------------------------------------------------------------------
 float4 PS( PS_INPUT input) : SV_Target
 {
-    return txDiffuse.Sample( samLinear, input.Tex ) * vMeshColor;
+	//Light
+	float4 light = normalize(-lightDir);
+	//Dot product
+	float Ndl = dot(input.Normal, light);
+	//Output
+	float4 color;
+	color = (txDiffuse.Sample( samLinear, input.Tex ) *vMeshColor) * Ndl;
+	return color;
 }

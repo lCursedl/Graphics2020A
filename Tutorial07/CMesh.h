@@ -8,6 +8,7 @@
 #include "CDeviceContext.h"
 #include "CMaterial.h"
 #include <vector>
+#include <iostream>
 #include <Windows.h>
 
 #ifdef  OPENGL

@@ -60,7 +60,7 @@ private:
 		// check for errors
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
 		{
-			//std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
+			std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
 			return;
 		}
 		// retrieve the directory path of the filepath

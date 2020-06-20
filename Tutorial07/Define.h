@@ -383,8 +383,11 @@ enum COMPARISON_FUNC
 */
 struct SimpleVertex
 {
-	glm::vec3 Pos;			/**< Vector 3 for Position */
-	glm::vec2 Tex;			/**< Vector 2 for Texture coordinates */
+	glm::vec3 msPos;			/**< Vector 3 for Position */
+	glm::vec2 texcoord;			/**< Vector 2 for Texture coordinates */
+	glm::vec4 msNormal;
+	glm::vec3 msBinormal;
+	glm::vec3 msTangent;
 };
 /**	\struct SimpleVertex
 *	\brief Structure which defines a buffer with position and texture coords
@@ -406,7 +409,14 @@ struct CBChangeOnResize
 {
 	glm::mat4 mWorld;		/**< Matrix4 for World */
 	glm::vec4 vMeshColor;	/**< Vec4 for Color */
+	glm::vec4 vmViewPos;
 };
 /**	\struct CBChangesEveryFrame
 *	\brief Structure which defines a World matrix and a color
 */
+struct LightCB
+{
+	glm::vec4 mLightDir;
+	glm::vec4 lightPointPos;
+	glm::vec4 lightPointAtt;
+};

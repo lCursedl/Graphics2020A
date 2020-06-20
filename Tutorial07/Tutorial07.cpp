@@ -27,6 +27,7 @@
 #include "amgui/imgui.h"
 
 #include "CGraphicsAPI.h"
+#include "CPass.h"
 #include <iostream>
 
 #ifdef OPENGL
@@ -109,6 +110,14 @@ CCamera *							InactiveCamera = NULL;
 unsigned int						imguiWindowW;
 unsigned int						imguiWindowH;
 
+CBuffer								LightBuffer;
+glm::vec4							g_LightDir;
+glm::vec4							g_PointPos;
+glm::vec4							g_PointAtt;
+glm::vec3							g_LightDir3 = { 0.f, -1.f, 0.f };
+
+CPass								DiffusePass;
+
 glm::vec3 boardpos(-5, 1, 0);
 
 #ifdef D3D11
@@ -128,6 +137,7 @@ unsigned int rbo;
 // Forward declarations
 //--------------------------------------------------------------------------------------
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
+
 #ifdef D3D11
 HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
 HRESULT InitDevice();
@@ -141,6 +151,7 @@ const char* vertexShaderSource = "#version 330 core\n"
 "layout(location = 2) in vec2 aTexCoords;\n"
 
 "out vec2 TexCoords;\n"
+"out vec3 Normal;\n"
 "uniform mat4 model;\n"
 "uniform mat4 view;\n"
 "uniform mat4 projection;\n"
@@ -148,15 +159,20 @@ const char* vertexShaderSource = "#version 330 core\n"
 "{\n"
 	"gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
 	"TexCoords = aTexCoords;\n"
+	"Normal = aNormal;\n"
 "}\n";
 
 const char* fragmentShaderSource = "#version 330 core\n"
 "out vec4 FragColor;\n"
 "in vec2 TexCoords;\n"
+"in vec3 Normal;\n"
 "uniform sampler2D texture_diffuse1;\n"
+"uniform vec3 lightDir;\n"
 "void main()\n"
 "{\n"
-	"FragColor = texture(texture_diffuse1, TexCoords);\n"
+	"vec3 light = normalize(-lightDir);\n"
+	"float Ndl = dot(Normal, light);\n"
+	"FragColor = texture(texture_diffuse1, TexCoords) * Ndl;\n"
 "}\n;";
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int heigth)
@@ -281,6 +297,7 @@ HRESULT CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* pShaderBlob, ID
 			if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) elementDesc.Format = DXGI_FORMAT_R32G32_UINT;
 			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) elementDesc.Format = DXGI_FORMAT_R32G32_SINT;
 			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) elementDesc.Format = DXGI_FORMAT_R32G32_FLOAT;
+			offset += 8;
 		}
 		else if (paramDesc.Mask <= 15)
 		{
@@ -316,7 +333,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
-
 #ifdef D3D11
 	if (FAILED(InitWindow(hInstance, nCmdShow)))
 		return 0;
@@ -356,6 +372,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 					InactiveCamera = ActiveCamera;
 					ActiveCamera = temp;
 				}
+				ImGui::SliderFloat("X", &g_LightDir.x, -1.f, 1.f, "%.2f", .5f);
+				ImGui::SliderFloat("Y", &g_LightDir.y, -1.f, 1.f, "%.2f", .5f);
+				ImGui::SliderFloat("Z", &g_LightDir.z, -1.f, 1.f, "%.2f", .5f);
+				ImGui::SliderFloat("Pos X", &g_PointPos.x, -1000.f, 1000.f, "%1.f");
+				ImGui::SliderFloat("Pos Y", &g_PointPos.y, -1000.f, 1000.f, "%1.f");
+				ImGui::SliderFloat("Pos Z", &g_PointPos.z, -1000.f, 1000.f, "%1.f");
+				ImGui::SliderFloat("Attenuation", &g_PointAtt.x, 0.f, 2.f, "%.3", 0.01f);
 			}
 			ImGui::End();
 			Render();
@@ -477,11 +500,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	imguiWindowW = FIRSTW;
 
 	float vertices[] = {
-		// positions         // texture coords
-		 1.f,  1.f, 0.0f,  0.0f, 0.0f, // top right
-		 1.f, -1.f, 0.0f,  0.0f, 1.0f, // bottom right
-		-1.f, -1.f, 0.0f,  1.0f, 1.0f, // bottom left
-		-1.f,  1.f, 0.0f,  1.0f, 0.0f  // top left 
+		// positions       // texture coords    //Normals
+		 1.f,  1.f, 0.0f,  0.0f, 0.0f,			1.f,  1.f, 0.0f,// top right
+		 1.f, -1.f, 0.0f,  0.0f, 1.0f,			1.f, -1.f, 0.0f,// bottom right
+		-1.f, -1.f, 0.0f,  1.0f, 1.0f,			-1.f, -1.f, 0.0f,// bottom left
+		-1.f,  1.f, 0.0f,  1.0f, 0.0f,			-1.f,  1.f, 0.0f// top left 
 	};
 
 	unsigned int indices[] = {  // note that we start from 0!
@@ -557,11 +580,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
 		unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
 		unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+		unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lightDir");
 		
 		// pass them to the shaders (3 different ways)
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);
+		glUniform3fv(lightLoc, 1, &g_LightDir3[0]);
 
 		//Draw models
 		nano.Draw(shaderProgram);
@@ -583,6 +608,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);
+		glUniform3fv(lightLoc, 1, &g_LightDir3[0]);
 
 		nano.Draw(shaderProgram);
 		glBindVertexArray(VAO);
@@ -611,6 +637,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 				ActiveCamera = InactiveCamera;
 				InactiveCamera = temp;
 			}
+			ImGui::SliderFloat("X", &g_LightDir3.x, -1.f, 1.f, "%.2f", .5f);
+			ImGui::SliderFloat("Y", &g_LightDir3.y, -1.f, 1.f, "%.2f", .5f);
+			ImGui::SliderFloat("Z", &g_LightDir3.z, -1.f, 1.f, "%.2f", .5f);
 		}
 		ImGui::End();
 		ImGui::Render();
@@ -676,15 +705,14 @@ HRESULT CompileShaderFromFile( WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR sz
 {
     HRESULT hr = S_OK;
 
-    DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+    DWORD dwShaderFlags = D3DCOMPILE_ENABLE_BACKWARDS_COMPATIBILITY;
 #if defined( DEBUG ) || defined( _DEBUG )
     // Set the D3DCOMPILE_DEBUG flag to embed debug information in the shaders.
     // Setting this flag improves the shader debugging experience, but still allows 
     // the shaders to be optimized and to run exactly the way they will run in 
     // the release configuration of this program.
     dwShaderFlags |= D3DCOMPILE_DEBUG;
-#endif
-
+#endif	
     ID3DBlob* pErrorBlob;
     hr = D3DX11CompileFromFile( szFileName, NULL, NULL, szEntryPoint, szShaderModel, 
         dwShaderFlags, 0, NULL, ppBlobOut, &pErrorBlob, NULL );
@@ -819,7 +847,7 @@ HRESULT InitDevice()
 	ptrDC->RSSetViewports(1, &tempVP.m_Viewport);
 
     // Compile the vertex shader
-    hr = CompileShaderFromFile( L"Tutorial07.fx", "VS", "vs_4_0", &g_VertexShader.m_pVSBlob );
+    hr = CompileShaderFromFile( L"Tutorial07Specular.fx", "vs_main", "vs_4_0", &g_VertexShader.m_pVSBlob );
     if( FAILED( hr ) )
     {
         MessageBox( NULL,
@@ -844,7 +872,7 @@ HRESULT InitDevice()
 	ptrDC->IASetInputLayout(g_VertexShader.m_pInputLayout );
 
     // Compile the pixel shader
-    hr = CompileShaderFromFile( L"Tutorial07.fx", "PS", "ps_4_0", &g_PixelShader.m_pPSBlob);
+    hr = CompileShaderFromFile( L"Tutorial07Specular.fx", "ps_main", "ps_4_0", &g_PixelShader.m_pPSBlob);
     if( FAILED( hr ) )
     {
         MessageBox( NULL,
@@ -861,35 +889,35 @@ HRESULT InitDevice()
     // Create vertex buffer
     SimpleVertex vertices[] =
     {
-        { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 0.0f, 0.0f ) },
-        { glm::vec3( 1.0f, 1.0f, -1.0f  ), glm::vec2( 1.0f, 0.0f ) },
-        { glm::vec3( 1.0f, 1.0f, 1.0f   ), glm::vec2( 1.0f, 1.0f ) },
-        { glm::vec3( -1.0f, 1.0f, 1.0f  ), glm::vec2( 0.0f, 1.0f ) },
+        { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 0.0f, 0.0f ), glm::vec4( -1.0f, 1.0f, -1.0f, 0.f) },
+        { glm::vec3( 1.0f, 1.0f, -1.0f  ), glm::vec2( 1.0f, 0.0f ), glm::vec4( 1.0f, 1.0f, -1.0f, 0.f) },
+        { glm::vec3( 1.0f, 1.0f, 1.0f   ), glm::vec2( 1.0f, 1.0f ), glm::vec4( 1.0f, 1.0f, 1.0f , 0.f) },
+        { glm::vec3( -1.0f, 1.0f, 1.0f  ), glm::vec2( 0.0f, 1.0f ), glm::vec4( -1.0f, 1.0f, 1.0f, 0.f) },
 
-        { glm::vec3( -1.0f, -1.0f, -1.0f), glm::vec2( 0.0f, 0.0f ) },
-        { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
-        { glm::vec3( 1.0f, -1.0f, 1.0f  ), glm::vec2( 1.0f, 1.0f ) },
-        { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 1.0f ) },
+        { glm::vec3( -1.0f, -1.0f, -1.0f), glm::vec2( 0.0f, 0.0f ), glm::vec4( -1.0f, -1.0f, -1.0f, 0.f) },
+        { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ), glm::vec4( 1.0f, -1.0f, -1.0f , 0.f) },
+        { glm::vec3( 1.0f, -1.0f, 1.0f  ), glm::vec2( 1.0f, 1.0f ), glm::vec4( 1.0f, -1.0f, 1.0f , 0.f) },
+        { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 1.0f ), glm::vec4( -1.0f, -1.0f, 1.0f, 0.f) },
 
-        { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 0.0f ) },
-        { glm::vec3( -1.0f, -1.0f, -1.0f), glm::vec2( 1.0f, 0.0f ) },
-        { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 1.0f, 1.0f ) },
-        { glm::vec3( -1.0f, 1.0f, 1.0f  ), glm::vec2( 0.0f, 1.0f ) },
+        { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 0.0f ), glm::vec4( -1.0f, -1.0f, 1.0f, 0.f) },
+        { glm::vec3( -1.0f, -1.0f, -1.0f), glm::vec2( 1.0f, 0.0f ), glm::vec4( -1.0f, -1.0f, -1.0f, 0.f) },
+        { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 1.0f, 1.0f ), glm::vec4( -1.0f, 1.0f, -1.0f, 0.f) },
+        { glm::vec3( -1.0f, 1.0f, 1.0f  ), glm::vec2( 0.0f, 1.0f ), glm::vec4( -1.0f, 1.0f, 1.0f, 0.f) },
 
-        { glm::vec3( 1.0f, -1.0f, 1.0f  ), glm::vec2( 0.0f, 0.0f ) },
-        { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
-        { glm::vec3( 1.0f, 1.0f, -1.0f  ), glm::vec2( 1.0f, 1.0f ) },
-        { glm::vec3( 1.0f, 1.0f, 1.0f   ), glm::vec2( 0.0f, 1.0f ) },
+        { glm::vec3( 1.0f, -1.0f, 1.0f  ), glm::vec2( 0.0f, 0.0f ), glm::vec4( 1.0f, -1.0f, 1.0f, 0.f) },
+        { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ), glm::vec4( 1.0f, -1.0f, -1.0f, 0.f) },
+        { glm::vec3( 1.0f, 1.0f, -1.0f  ), glm::vec2( 1.0f, 1.0f ), glm::vec4( 1.0f, 1.0f, -1.0f, 0.f) },
+        { glm::vec3( 1.0f, 1.0f, 1.0f   ), glm::vec2( 0.0f, 1.0f ), glm::vec4( 1.0f, 1.0f, 1.0f, 0.f) },
 
-        { glm::vec3( -1.0f, -1.0f, -1.0f), glm::vec2( 0.0f, 0.0f ) },
-        { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
-        { glm::vec3( 1.0f, 1.0f, -1.0f  ), glm::vec2( 1.0f, 1.0f ) },
-        { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 0.0f, 1.0f ) },
+        { glm::vec3( -1.0f, -1.0f, -1.0f), glm::vec2( 0.0f, 0.0f ), glm::vec4( -1.0f, -1.0f, -1.0f, 0.f) },
+        { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ), glm::vec4( 1.0f, -1.0f, -1.0f, 0.f) },
+        { glm::vec3( 1.0f, 1.0f, -1.0f  ), glm::vec2( 1.0f, 1.0f ), glm::vec4( 1.0f, 1.0f, -1.0f, 0.f) },
+        { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 0.0f, 1.0f ), glm::vec4( -1.0f, 1.0f, -1.0f, 0.f) },
 
-        { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 0.0f ) },
-        { glm::vec3( 1.0f, -1.0f, 1.0f  ), glm::vec2( 1.0f, 0.0f ) },
-        { glm::vec3( 1.0f, 1.0f, 1.0f   ), glm::vec2( 1.0f, 1.0f ) },
-        { glm::vec3( -1.0f, 1.0f, 1.0f  ), glm::vec2( 0.0f, 1.0f ) },
+        { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 0.0f ), glm::vec4( -1.0f, -1.0f, 1.0f, 0.f) },
+        { glm::vec3( 1.0f, -1.0f, 1.0f  ), glm::vec2( 1.0f, 0.0f ), glm::vec4( 1.0f, -1.0f, 1.0f, 0.f) },
+        { glm::vec3( 1.0f, 1.0f, 1.0f   ), glm::vec2( 1.0f, 1.0f ), glm::vec4( 1.0f, 1.0f, 1.0f , 0.f) },
+        { glm::vec3( -1.0f, 1.0f, 1.0f  ), glm::vec2( 0.0f, 1.0f ), glm::vec4( -1.0f, 1.0f, 1.0f , 0.f) },
     };
 
 	BufferStruct bufferstrct;
@@ -902,17 +930,17 @@ HRESULT InitDevice()
 	subrsrcData.psysMem = vertices;
 	g_VertexBuffer.init(subrsrcData, bufferstrct);
 
-    hr = ptrDevice->CreateBuffer( &g_VertexBuffer.m_Buffer.m_bd, &g_VertexBuffer.m_Data, &g_VertexBuffer.m_Buffer.m_pBuffer );
+   /* hr = ptrDevice->CreateBuffer( &g_VertexBuffer.m_Buffer.m_bd, &g_VertexBuffer.m_Data, &g_VertexBuffer.m_Buffer.m_pBuffer );
     if( FAILED( hr ) )
-        return hr;
+        return hr;*/
 
     // Set vertex buffer
-    UINT stride = sizeof( SimpleVertex );
+    /*UINT stride = sizeof( SimpleVertex );
     UINT offset = 0;
-	ptrDC->IASetVertexBuffers( 0, 1, &g_VertexBuffer.m_Buffer.m_pBuffer, &stride, &offset );
+	ptrDC->IASetVertexBuffers( 0, 1, &g_VertexBuffer.m_Buffer.m_pBuffer, &stride, &offset );*/
 
     // Create index buffer
-    WORD indices[] =
+    /*WORD indices[] =
     {
         3,1,0,
         2,1,3,
@@ -931,35 +959,35 @@ HRESULT InitDevice()
 
         22,20,21,
         23,20,22
-    };
+    };*/
 
-	bufferstrct.usage = USAGE_DEFAULT;
-	bufferstrct.byteWidth = sizeof( WORD ) * 36;
-	bufferstrct.bindFlags = 2;		// D3D11_BIND_INDEX_BUFFER;
-	bufferstrct.cpuAccessFlags = 0;
-	subrsrcData.psysMem = indices;
-	g_IndexBuffer.init(subrsrcData, bufferstrct);
-    hr = ptrDevice->CreateBuffer( &g_IndexBuffer.m_Buffer.m_bd, &g_IndexBuffer.m_Data, &g_IndexBuffer.m_Buffer.m_pBuffer );
-    if( FAILED( hr ) )
-        return hr;
+	//bufferstrct.usage = USAGE_DEFAULT;
+	//bufferstrct.byteWidth = sizeof( WORD ) * 36;
+	//bufferstrct.bindFlags = 2;		// D3D11_BIND_INDEX_BUFFER;
+	//bufferstrct.cpuAccessFlags = 0;
+	//subrsrcData.psysMem = indices;
+	//g_IndexBuffer.init(subrsrcData, bufferstrct);
+ //   hr = ptrDevice->CreateBuffer( &g_IndexBuffer.m_Buffer.m_bd, &g_IndexBuffer.m_Data, &g_IndexBuffer.m_Buffer.m_pBuffer );
+ //   if( FAILED( hr ) )
+ //       return hr;
 
     // Set index buffer
-	ptrDC->IASetIndexBuffer(g_IndexBuffer.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0 );
+	//ptrDC->IASetIndexBuffer(g_IndexBuffer.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0 );
 
     // Set primitive topology
 	//ptrDC->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 
 	//Create billboard VertexBuffer
-	SimpleVertex boardVertex[]=
+	/*SimpleVertex boardVertex[]=
 	{
-		{glm::vec3(1.f, 1.f, 0.f),		glm::vec2(1.f, 0.f)},
-		{glm::vec3(1.f, -1.f, 0.f),		glm::vec2(1.f, 1.f)},
-		{glm::vec3(-1.f, -1.f, 0.f),	glm::vec2(0.f, 1.f)},
-		{glm::vec3(-1.f, 1.f, 0.f),		glm::vec2(0.f, 0.f)}
+		{glm::vec3(1.f, 1.f, 0.f),		glm::vec2(1.f, 0.f), glm::vec4(1.f, 0.f, 0.f, 0.f)},
+		{glm::vec3(1.f, -1.f, 0.f),		glm::vec2(1.f, 1.f), glm::vec4(1.f, 0.f, 0.f, 0.f)},
+		{glm::vec3(-1.f, -1.f, 0.f),	glm::vec2(0.f, 1.f), glm::vec4(1.f, 0.f, 0.f, 0.f)},
+		{glm::vec3(-1.f, 1.f, 0.f),		glm::vec2(0.f, 0.f), glm::vec4(1.f, 0.f, 0.f, 0.f)}
 
-	};
+	};*/
 
-	bufferstrct.usage = USAGE_DEFAULT;
+	/*bufferstrct.usage = USAGE_DEFAULT;
 	bufferstrct.byteWidth = sizeof(SimpleVertex) * 4;
 	bufferstrct.bindFlags = 1;
 	bufferstrct.cpuAccessFlags = 0;
@@ -971,21 +999,21 @@ HRESULT InitDevice()
 	if (FAILED(hr))
 	{
 		return hr;
-	}
+	}*/
 
 	//Set billboard VB
-	stride = sizeof(SimpleVertex);
+	/*stride = sizeof(SimpleVertex);
 	offset = 0;
-	ptrDC->IASetVertexBuffers(0, 1, &g_BoardVB.m_Buffer.m_pBuffer, &stride, &offset);
+	ptrDC->IASetVertexBuffers(0, 1, &g_BoardVB.m_Buffer.m_pBuffer, &stride, &offset);*/
 
 	//Create billboard IB
-	WORD boardIndices[] = 
+	/*WORD boardIndices[] = 
 	{
 		3,1,0,
 		2,1,3
-	};
+	};*/
 
-	bufferstrct.usage = USAGE_DEFAULT;
+	/*bufferstrct.usage = USAGE_DEFAULT;
 	bufferstrct.byteWidth = sizeof(WORD) * 6;
 	bufferstrct.bindFlags = 2;
 	bufferstrct.cpuAccessFlags = 0;
@@ -995,12 +1023,12 @@ HRESULT InitDevice()
 	if (FAILED(hr))
 	{
 		return hr;
-	}
+	}*/
 
 	//Set billboard IB
-	ptrDC->IASetIndexBuffer(g_BoardIB.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
+	//ptrDC->IASetIndexBuffer(g_BoardIB.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
 
-	ptrDC->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	//ptrDC->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     // Create the constant buffers
 	bufferstrct.usage = USAGE_DEFAULT;
@@ -1050,6 +1078,15 @@ HRESULT InitDevice()
 	if (FAILED(hr))
 		return hr;
 
+	//Create Light source cb	
+	bufferstrct.byteWidth = sizeof(LightCB);
+	LightBuffer.init(bufferstrct);
+	hr = ptrDevice->CreateBuffer(&LightBuffer.m_bd, NULL, &LightBuffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
     // Load the Texture 
     hr = D3DX11CreateShaderResourceViewFromFile( ptrDevice, L"seafloor.dds", NULL, NULL, &g_pTextureRV, NULL );
     if( FAILED( hr ) )
@@ -1071,6 +1108,7 @@ HRESULT InitDevice()
     hr = ptrDevice->CreateSamplerState( &g_SamplerState.m_Desc, &g_SamplerState.m_pSamplerLinear );
     if( FAILED( hr ) )
         return hr;
+
 #endif
     // Initialize the world matrix
 	g_World = glm::mat4(1.0f);
@@ -1117,6 +1155,18 @@ HRESULT InitDevice()
 #ifdef D3D11
 	ptrDC->UpdateSubresource(FirstPerson.m_CBChangesOnResize.m_pBuffer, 0, NULL, &cbChangesOnResize2, 0, 0);
 #endif
+	//Set Light direction
+	LightCB L;
+	g_LightDir = { 0.f, -1.f, 0.f, 0.f };
+	g_PointPos = { 1.f, 0.f, 1.f, 0.f };
+	g_PointAtt = { 1.f, 0.f, 0.f, 0.f };
+	L.lightPointPos = g_PointPos;
+	L.lightPointAtt = g_PointAtt;
+	L.mLightDir = g_LightDir;
+#ifdef D3D11
+	ptrDC->UpdateSubresource(LightBuffer.m_pBuffer, 0, NULL, &L, 0, 0);
+#endif // D3D11
+
 
 	//Initialize texture, SRV and RTV for inactive camera
 
@@ -1173,13 +1223,21 @@ HRESULT InitDevice()
 
 	g_pDevice->m_Device = ptrDevice;
 	g_DeviceContext->m_DeviceContext = ptrDC;
-	graphicApi.loadMesh("MP5.fbx", &SCManager, graphicApi.m_Model, g_DeviceContext, g_pDevice);
+	graphicApi.loadMesh("Models/Scene.fbx", &SCManager, graphicApi.m_Model, g_DeviceContext, g_pDevice);
 
 #endif
 
 	//Set active and inactive camera
 	ActiveCamera = &g_Camera;
 	InactiveCamera = &FirstPerson;
+
+	StructPass P;
+	P.DeviceContext = g_DeviceContext;
+	P.LightBuffer = &LightBuffer;
+	P.PixelShader = &g_PixelShader;
+	P.VertexShader = &g_VertexShader;
+
+	DiffusePass.init(P);
 
     return S_OK;
 }
@@ -1201,6 +1259,7 @@ void CleanupDevice()
 	if (g_BoardVB.m_Buffer.m_pBuffer) g_BoardVB.m_Buffer.m_pBuffer->Release();
     if( g_IndexBuffer.m_Buffer.m_pBuffer ) g_IndexBuffer.m_Buffer.m_pBuffer->Release();
 	if (g_BoardIB.m_Buffer.m_pBuffer) g_BoardIB.m_Buffer.m_pBuffer->Release();
+	if (LightBuffer.m_pBuffer ) LightBuffer.m_pBuffer->Release();
     if( g_VertexShader.m_pInputLayout ) g_VertexShader.m_pInputLayout->Release();
     if( g_VertexShader.m_pVertexShader ) g_VertexShader.m_pVertexShader->Release();
     if( g_PixelShader.m_pPixelShader) g_PixelShader.m_pPixelShader->Release();
@@ -1457,144 +1516,180 @@ void Render()
     float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
 
 	//Set inactive camera RTV and DSV
-	g_DeviceContext->m_DeviceContext->OMSetRenderTargets(1, &SecondRTV.m_pRTV, DepthStencilViewFree.m_pDepthStencilView);
-	g_DeviceContext->m_DeviceContext->ClearRenderTargetView(SecondRTV.m_pRTV, ClearColor);
+	//g_DeviceContext->m_DeviceContext->OMSetRenderTargets(1, &SecondRTV.m_pRTV, DepthStencilViewFree.m_pDepthStencilView);
+	g_DeviceContext->m_DeviceContext->ClearRenderTargetView(g_RenderTargetView.m_pRTV, ClearColor);
 	g_DeviceContext->m_DeviceContext->ClearDepthStencilView(DepthStencilViewFree.m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-
-	unsigned int stride = sizeof(SimpleVertex);
-	unsigned int offset = 0;
-
-	g_DeviceContext->m_DeviceContext->IASetVertexBuffers(0, 1, &g_VertexBuffer.m_Buffer.m_pBuffer, &stride, &offset);
-	g_DeviceContext->m_DeviceContext->IASetIndexBuffer(g_IndexBuffer.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
-
-	CBChangesEveryFrame cb;
-	g_World = glm::mat4(1.f);
-	g_World = glm::translate(g_World,ActiveCamera->getPos());
-	cb.mWorld = glm::transpose(g_World);
-	cb.vMeshColor = g_MeshColor;
-	g_DeviceContext->m_DeviceContext->UpdateSubresource(InactiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
-
-	//Draw main camera into second RT if visible
-	/*ptrDC->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
-	ptrDC->VSSetConstantBuffers(0, 1, &InactiveCamera->m_CBNeverChanges.m_pBuffer);
-	ptrDC->VSSetConstantBuffers(1, 1, &InactiveCamera->m_CBChangesOnResize.m_pBuffer);
-	ptrDC->VSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-	ptrDC->PSSetShader(g_PixelShader.m_pPixelShader, NULL, 0);
-	ptrDC->PSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-	ptrDC->PSSetShaderResources(0, 1, &g_pTextureRV);
-	ptrDC->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
-	ptrDC->DrawIndexed(36, 0, 0);
-	ID3D11ShaderResourceView* temp = NULL;
-	ptrDC->PSSetShaderResources(0, 1, &temp);*/
-
-	for (int i = 0; i < 32; i++){
-
-		g_World = glm::mat4(1.f);
-		g_World = glm::translate(g_World, Lab[i]);
-		
-		cb.mWorld = glm::transpose(g_World);
-		cb.vMeshColor = g_MeshColor;
-		g_DeviceContext->m_DeviceContext->UpdateSubresource(InactiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
-
-		g_DeviceContext->m_DeviceContext->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
-		g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(0, 1, &InactiveCamera->m_CBNeverChanges.m_pBuffer);
-		g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(1, 1, &InactiveCamera->m_CBChangesOnResize.m_pBuffer);
-		g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-		g_DeviceContext->m_DeviceContext->PSSetShader(g_PixelShader.m_pPixelShader, NULL, 0);
-		g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-		g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &g_pTextureRV);
-		g_DeviceContext->m_DeviceContext->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
-		g_DeviceContext->m_DeviceContext->DrawIndexed(36, 0, 0);
-		ID3D11ShaderResourceView* temp = NULL;
-		g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &temp);
-	}
-
-	//Draw model
 	CBChangesEveryFrame cbMesh;
 	cbMesh.mWorld =
 	{
-		1, 0, 0, ActiveCamera->getPos().x,
-		0, 1, 0, ActiveCamera->getPos().y,
-		0, 0, 1, ActiveCamera->getPos().z,
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
 		0, 0, 0, 1
 	};
 
-	cbMesh.vMeshColor = { 1, 0, 0, 1 };
-	g_DeviceContext->m_DeviceContext->UpdateSubresource(InactiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cbMesh, 0, 0);
-	for (int i = 0; i < SCManager.m_MeshList.size(); i++)
-	{
-		g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-		g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &SCManager.m_MeshList[i]->m_Materials->m_TextureDiffuse);
-		g_DeviceContext->m_DeviceContext->VSSetShaderResources(0, 1, &SCManager.m_MeshList[i]->m_Materials->m_TextureDiffuse);
+	cbMesh.vMeshColor = { 1, 1, 1, 1 };
+	cbMesh.vmViewPos = { ActiveCamera->getLAt().x, ActiveCamera->getLAt().y, ActiveCamera->getLAt().z, 0 };
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(ActiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cbMesh, 0, 0);
 
-		g_DeviceContext->m_DeviceContext->IASetVertexBuffers(0, 1, &SCManager.m_MeshList[i]->m_VB->m_pBuffer, &stride, &offset);
-		g_DeviceContext->m_DeviceContext->IASetIndexBuffer(SCManager.m_MeshList[i]->m_IB->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
-
-		g_DeviceContext->m_DeviceContext->DrawIndexed(SCManager.m_MeshList[i]->m_IndexNum, 0, 0);
-	}
-
-	//Set backbuffer and main DSV
-	g_DeviceContext->m_DeviceContext->OMSetRenderTargets(1, &g_RenderTargetView.m_pRTV, DepthStencilViewFree.m_pDepthStencilView);
-	g_DeviceContext->m_DeviceContext->ClearRenderTargetView(g_RenderTargetView.m_pRTV, ClearColor);
-	g_DeviceContext->m_DeviceContext->ClearDepthStencilView( DepthStencilViewFree.m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0 );
-
-	g_DeviceContext->m_DeviceContext->IASetVertexBuffers(0, 1, &g_VertexBuffer.m_Buffer.m_pBuffer, &stride, &offset);
-	g_DeviceContext->m_DeviceContext->IASetIndexBuffer(g_IndexBuffer.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
-
-    //
-    // Update variables that change once per frame
-    //
-
-	for (int i = 0; i < 32; i++){
-		
-		g_World = glm::mat4(1.f);
-		g_World = glm::translate(g_World, Lab[i]);
-
-		cb.mWorld = glm::transpose(g_World);
-		cb.vMeshColor = g_MeshColor;
-		g_DeviceContext->m_DeviceContext->UpdateSubresource(ActiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
-
-		g_DeviceContext->m_DeviceContext->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
-		g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(0, 1, &ActiveCamera->m_CBNeverChanges.m_pBuffer);
-		g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(1, 1, &ActiveCamera->m_CBChangesOnResize.m_pBuffer);
-		g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-		g_DeviceContext->m_DeviceContext->PSSetShader( g_PixelShader.m_pPixelShader, NULL, 0);
-		g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-		g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &InactiveSRV);
-		g_DeviceContext->m_DeviceContext->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
-		g_DeviceContext->m_DeviceContext->DrawIndexed(36, 0, 0);
-		ID3D11ShaderResourceView* temp = NULL;
-		g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &temp);
-	}
-	//Draw billboard
-
-	g_DeviceContext->m_DeviceContext->IASetVertexBuffers(0, 1, &g_BoardVB.m_Buffer.m_pBuffer, &stride, &offset);
-	g_DeviceContext->m_DeviceContext->IASetIndexBuffer(g_BoardIB.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
-
-	glm::vec3 boardLook = glm::normalize(ActiveCamera->getPos() - boardpos);
-	glm::vec3 boardRight = glm::cross(glm::normalize(ActiveCamera->Up), boardLook);
-	glm::vec3 boardUp = glm::cross(boardLook, boardRight);
-
-	glm::mat4 boarMat(boardRight.x, boardRight.y, boardRight.z, 0, boardUp.x, boardUp.y, boardUp.z, 0, boardLook.x, boardLook.y, boardLook.z, 0, boardpos.x, boardpos.y, boardpos.z, 1);
-
-	g_World = boarMat;
-
-	cb.mWorld = glm::transpose(g_World);
-	cb.vMeshColor = g_MeshColor;
-	g_DeviceContext->m_DeviceContext->UpdateSubresource(ActiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
-
-	g_DeviceContext->m_DeviceContext->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
-	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(0, 1, &ActiveCamera->m_CBNeverChanges.m_pBuffer);
-	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(1, 1, &ActiveCamera->m_CBChangesOnResize.m_pBuffer);
-	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-	g_DeviceContext->m_DeviceContext->PSSetShader(g_PixelShader.m_pPixelShader, NULL, 0);
-	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-	g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &InactiveSRV);
+	LightCB lcb;
+	lcb.mLightDir = g_LightDir;
+	lcb.lightPointPos = g_PointPos;
+	lcb.lightPointAtt = g_PointAtt;
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(LightBuffer.m_pBuffer, 0, NULL, &lcb, 0, 0);
 	g_DeviceContext->m_DeviceContext->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
-	g_DeviceContext->m_DeviceContext->DrawIndexed(6, 0, 0);
-	ID3D11ShaderResourceView* temp = NULL;
-	g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &temp);
+	//DiffusePass.render(&SecondRTV, &DepthStencilViewFree, &SCManager, InactiveCamera);
+	DiffusePass.render(&g_RenderTargetView, &DepthStencilViewFree, &SCManager, ActiveCamera);
 
+	//unsigned int stride = sizeof(SimpleVertex);
+	//unsigned int offset = 0;
+	//
+	//g_DeviceContext->m_DeviceContext->IASetVertexBuffers(0, 1, &g_VertexBuffer.m_Buffer.m_pBuffer, &stride, &offset);
+	//g_DeviceContext->m_DeviceContext->IASetIndexBuffer(g_IndexBuffer.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
+	//
+	//CBChangesEveryFrame cb;
+	//g_World = glm::mat4(1.f);
+	//g_World = glm::translate(g_World,ActiveCamera->getPos());
+	//cb.mWorld = glm::transpose(g_World);
+	//cb.vMeshColor = g_MeshColor;
+	//g_DeviceContext->m_DeviceContext->UpdateSubresource(InactiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
+	//
+	////Draw main camera into second RT if visible
+	//*ptrDC->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
+	//ptrDC->VSSetConstantBuffers(0, 1, &InactiveCamera->m_CBNeverChanges.m_pBuffer);
+	//ptrDC->VSSetConstantBuffers(1, 1, &InactiveCamera->m_CBChangesOnResize.m_pBuffer);
+	//ptrDC->VSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+	//ptrDC->PSSetShader(g_PixelShader.m_pPixelShader, NULL, 0);
+	//ptrDC->PSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+	//ptrDC->PSSetShaderResources(0, 1, &g_pTextureRV);
+	//ptrDC->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
+	//ptrDC->DrawIndexed(36, 0, 0);
+	//ID3D11ShaderResourceView* temp = NULL;
+	//ptrDC->PSSetShaderResources(0, 1, &temp);*/
+	//
+	//for (int i = 0; i < 32; i++){
+	//
+	//	g_World = glm::mat4(1.f);
+	//	g_World = glm::translate(g_World, Lab[i]);
+	//	
+	//	cb.mWorld = glm::transpose(g_World);
+	//	cb.vMeshColor = g_MeshColor;
+	//	g_DeviceContext->m_DeviceContext->UpdateSubresource(InactiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
+	//
+	//	g_DeviceContext->m_DeviceContext->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
+	//	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(0, 1, &InactiveCamera->m_CBNeverChanges.m_pBuffer);
+	//	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(1, 1, &InactiveCamera->m_CBChangesOnResize.m_pBuffer);
+	//	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+	//	
+	//	g_DeviceContext->m_DeviceContext->PSSetShader(g_PixelShader.m_pPixelShader, NULL, 0);
+	//	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+	//	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(3, 1, &LightBuffer.m_pBuffer);
+	//	g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &g_pTextureRV);
+	//	g_DeviceContext->m_DeviceContext->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
+	//	g_DeviceContext->m_DeviceContext->DrawIndexed(36, 0, 0);
+	//	ID3D11ShaderResourceView* temp = NULL;
+	//	g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &temp);
+	//}
+	//
+	////Draw model
+	//CBChangesEveryFrame cbMesh;
+	//cbMesh.mWorld =
+	//{
+	//	1, 0, 0, ActiveCamera->getPos().x,
+	//	0, 1, 0, ActiveCamera->getPos().y,
+	//	0, 0, 1, ActiveCamera->getPos().z,
+	//	0, 0, 0, 1
+	//};
+	//
+	//cbMesh.vMeshColor = { 1, 1, 1, 1 };
+	//g_DeviceContext->m_DeviceContext->UpdateSubresource(InactiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cbMesh, 0, 0);
+	//for (int i = 0; i < SCManager.m_MeshList.size(); i++)
+	//{
+	//	g_DeviceContext->m_DeviceContext->IASetVertexBuffers(0, 1, &SCManager.m_MeshList[i]->m_VB->m_pBuffer, &stride, &offset);
+	//	g_DeviceContext->m_DeviceContext->IASetIndexBuffer(SCManager.m_MeshList[i]->m_IB->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
+	//
+	//	//g_DeviceContext->m_DeviceContext->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);		
+	//	
+	//	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(1, 1, &InactiveCamera->m_CBChangesOnResize.m_pBuffer);
+	//	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+	//	g_DeviceContext->m_DeviceContext->VSSetShaderResources(0, 1, &SCManager.m_MeshList[i]->m_Materials->m_TextureDiffuse);
+	//	
+	//	//g_DeviceContext->m_DeviceContext->PSSetShader(g_PixelShader.m_pPixelShader, NULL, 0);
+	//	
+	//	g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &SCManager.m_MeshList[i]->m_Materials->m_TextureDiffuse);
+	//	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+	//	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(3, 1, &LightBuffer.m_pBuffer);
+	//
+	//	g_DeviceContext->m_DeviceContext->DrawIndexed(SCManager.m_MeshList[i]->m_IndexNum, 0, 0);
+	//}
+	//
+	////Set backbuffer and main DSV
+	//g_DeviceContext->m_DeviceContext->OMSetRenderTargets(1, &g_RenderTargetView.m_pRTV, DepthStencilViewFree.m_pDepthStencilView);
+	//g_DeviceContext->m_DeviceContext->ClearRenderTargetView(g_RenderTargetView.m_pRTV, ClearColor);
+	//g_DeviceContext->m_DeviceContext->ClearDepthStencilView( DepthStencilViewFree.m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0 );
+	//
+	//g_DeviceContext->m_DeviceContext->IASetVertexBuffers(0, 1, &g_VertexBuffer.m_Buffer.m_pBuffer, &stride, &offset);
+	//g_DeviceContext->m_DeviceContext->IASetIndexBuffer(g_IndexBuffer.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
+	//
+	//   //
+	//   // Update variables that change once per frame
+	//   //
+	//
+	//for (int i = 0; i < 32; i++){
+	//	
+	//	g_World = glm::mat4(1.f);
+	//	g_World = glm::translate(g_World, Lab[i]);
+	//
+	//	cb.mWorld = glm::transpose(g_World);
+	//	cb.vMeshColor = g_MeshColor;
+	//	g_DeviceContext->m_DeviceContext->UpdateSubresource(ActiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
+	//
+	//	g_DeviceContext->m_DeviceContext->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
+	//	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(0, 1, &ActiveCamera->m_CBNeverChanges.m_pBuffer);
+	//	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(1, 1, &ActiveCamera->m_CBChangesOnResize.m_pBuffer);
+	//	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+	//	
+	//
+	//	g_DeviceContext->m_DeviceContext->PSSetShader( g_PixelShader.m_pPixelShader, NULL, 0);
+	//	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+	//	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(3, 1, &LightBuffer.m_pBuffer);
+	//	g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &InactiveSRV);
+	//	g_DeviceContext->m_DeviceContext->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
+	//	g_DeviceContext->m_DeviceContext->DrawIndexed(36, 0, 0);
+	//	ID3D11ShaderResourceView* temp = NULL;
+	//	g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &temp);
+	//}
+	////Draw billboard
+	//
+	//g_DeviceContext->m_DeviceContext->IASetVertexBuffers(0, 1, &g_BoardVB.m_Buffer.m_pBuffer, &stride, &offset);
+	//g_DeviceContext->m_DeviceContext->IASetIndexBuffer(g_BoardIB.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
+	//
+	//glm::vec3 boardLook = glm::normalize(ActiveCamera->getPos() - boardpos);
+	//glm::vec3 boardRight = glm::cross(glm::normalize(ActiveCamera->Up), boardLook);
+	//glm::vec3 boardUp = glm::cross(boardLook, boardRight);
+	//
+	//glm::mat4 boarMat(boardRight.x, boardRight.y, boardRight.z, 0, boardUp.x, boardUp.y, boardUp.z, 0, boardLook.x, boardLook.y, boardLook.z, 0, boardpos.x, boardpos.y, boardpos.z, 1);
+	//
+	//g_World = boarMat;
+	//
+	//cb.mWorld = glm::transpose(g_World);
+	//cb.vMeshColor = g_MeshColor;
+	//g_DeviceContext->m_DeviceContext->UpdateSubresource(ActiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
+	//
+	//g_DeviceContext->m_DeviceContext->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
+	//g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(0, 1, &ActiveCamera->m_CBNeverChanges.m_pBuffer);
+	//g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(1, 1, &ActiveCamera->m_CBChangesOnResize.m_pBuffer);
+	//g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+	//
+	//
+	//g_DeviceContext->m_DeviceContext->PSSetShader(g_PixelShader.m_pPixelShader, NULL, 0);
+	//g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+	//g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(3, 1, &LightBuffer.m_pBuffer);
+	//g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &InactiveSRV);
+	//g_DeviceContext->m_DeviceContext->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
+	//g_DeviceContext->m_DeviceContext->DrawIndexed(6, 0, 0);
+	//ID3D11ShaderResourceView* temp = NULL;
+	//g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &temp);
     //
     // Present our back buffer to our front buffer
     //

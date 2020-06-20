@@ -119,14 +119,10 @@
       <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="glad.c" />
+    <ClCompile Include="CPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tutorial07.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Tutorial07.fx">
-      <Filter>Shaders</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <CLInclude Include="resource.h">
@@ -300,7 +296,14 @@
     <ClInclude Include="amgui\imgui_impl_glfw.h">
       <Filter>imgui</Filter>
     </ClInclude>
+    <ClInclude Include="CPass.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Tutorial07.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Tutorial07Specular.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
