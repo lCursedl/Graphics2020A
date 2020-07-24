@@ -54,7 +54,7 @@ cbuffer LightDir: register(b3)
     float4 mLightDir;
     float3 lightPointPos;
     float4 lightPointAtt;
-
+	float4 lightColor;
 };
 //--------------------------------------------------------------------------------------
 //Input layout
@@ -244,7 +244,7 @@ PS_OUTPUT ps_main(VS_OUTPUT Input)
 #if  defined(PIXEL_LIGHT) ||  defined(NORMAL_MAP_LIGHT)
     //mViewDirection
     float3 wsmViewDir = normalize(vmViewPos.xyz - Input.wsPos.xyz/*-vmViewDir.xyz*/);
-    float3 diffuse2 = float3(1, 1, 1);
+	float3 diffuse2 = lightColor.xyz;// float3(1, 1, 1);
     float3 specular2 = float3(1, 1, 1);
     float3 diffuse = float3(0, 0, 0);
     float3 specular = float3(0, 0, 0);

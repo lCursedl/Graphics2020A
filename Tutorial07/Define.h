@@ -385,9 +385,11 @@ struct SimpleVertex
 {
 	glm::vec3 msPos;			/**< Vector 3 for Position */
 	glm::vec2 texcoord;			/**< Vector 2 for Texture coordinates */
-	glm::vec4 msNormal;
+	int BoneID[4];
+	float Weights[4] = { 0.f };
+	/*glm::vec4 msNormal;
 	glm::vec3 msBinormal;
-	glm::vec3 msTangent;
+	glm::vec3 msTangent;*/
 };
 /**	\struct SimpleVertex
 *	\brief Structure which defines a buffer with position and texture coords
@@ -419,4 +421,10 @@ struct LightCB
 	glm::vec4 mLightDir;
 	glm::vec4 lightPointPos;
 	glm::vec4 lightPointAtt;
+	glm::vec4 lightColor;
+};
+
+struct BoneCB
+{
+	glm::mat4 gBones[100];
 };

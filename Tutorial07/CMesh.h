@@ -1,4 +1,6 @@
 #pragma once
+#define NUM_BONES_PERVERTEX 4
+#define MAXBONES 100
 
 #include "Define.h"
 #include "Includes.h"
@@ -8,6 +10,7 @@
 #include "CDeviceContext.h"
 #include "CMaterial.h"
 #include <vector>
+#include <map>
 #include <iostream>
 #include <Windows.h>
 
@@ -34,6 +37,26 @@ struct Texture
 *	\brief Structure which defines the required attributes for a Texture
 */
 #endif // D3D11
+
+struct VertexBoneData
+{
+public:
+	float BoneID[NUM_BONES_PERVERTEX] = { 0 };
+	float Weights[NUM_BONES_PERVERTEX] = { 0 };
+	void addBoneData(unsigned int boneid, float weight);
+};
+
+struct BoneInfo
+{
+	glm::mat4 BoneOffset;
+	glm::mat4 FinalTransformation;
+
+	BoneInfo()
+	{
+		BoneOffset = glm::mat4(0.f);
+		FinalTransformation = glm::mat4(0.f);
+	}
+};
 
 class CMesh
 {
@@ -158,6 +181,10 @@ public:
 	int					m_SceneID;			/**< int which defines the Scene ID of the Mesh */
 
 	CBChangesEveryFrame	m_MeshData;			/**< Structure which contains data for a Constant Buffer */
+	std::vector<VertexBoneData> m_BonesPerVertex;
+	std::map<std::string, unsigned int> m_BoneMapping;
+	std::vector<BoneInfo> m_Boneinfo;
+	unsigned int m_NumBones;
 #elif OPENGL
 public:
 	std::vector<Vertex> vertices;			/**< vector of Vertex which contains the vertices */

@@ -22,6 +22,7 @@ CMesh::CMesh()
 		0, 0, 0, 1
 	};
 	m_MeshData.vMeshColor = { 1, 0, 0, 1 };
+	m_NumBones = 0;
 }
 
 CMesh::~CMesh()
@@ -252,3 +253,16 @@ void CMesh::setupMesh()
 	glBindVertexArray(0);
 }
 #endif // D3D11
+
+void VertexBoneData::addBoneData(unsigned int boneid, float weight)
+{
+	for (unsigned int i = 0; i < NUM_BONES_PERVERTEX; i++)
+	{
+		if (Weights[i] == 0.f)
+		{
+			BoneID[i] = boneid;
+			Weights[i] = weight;
+			return;
+		}
+	}
+}

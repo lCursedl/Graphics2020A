@@ -305,5 +305,8 @@
     <FxCompile Include="Tutorial07Specular.fx">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Tutorial07Animation.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

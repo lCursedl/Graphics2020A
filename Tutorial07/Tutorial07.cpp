@@ -61,6 +61,13 @@ glm::vec3 Lab[32]{
 	{4, 0, 2}, {2, 0, 2}
 };
 
+long long GetCurrentTimeMillis()
+{
+#ifdef WIN32
+	return GetTickCount();
+#endif // WIN32
+}
+
 CDevice * CDevice::m_DeviceInstance = nullptr;
 CSwapChain * CSwapChain::m_pSCInstance = nullptr;
 CDeviceContext * CDeviceContext::m_DCInstance = nullptr;
@@ -115,10 +122,19 @@ glm::vec4							g_LightDir;
 glm::vec4							g_PointPos;
 glm::vec4							g_PointAtt;
 glm::vec3							g_LightDir3 = { 0.f, -1.f, 0.f };
-
+glm::vec4							g_LightColor;
 CPass								DiffusePass;
+CBuffer								BoneBuffer;
 
 glm::vec3 boardpos(-5, 1, 0);
+
+long long m_startTime;
+
+float GetRunningTime()
+{
+	float RunningTime = (float)((double)GetCurrentTimeMillis() - (double)m_startTime) / 1000.0f;
+	return RunningTime;
+}
 
 #ifdef D3D11
 ID3D11Device * ptrDevice = static_cast<ID3D11Device*>(g_pDevice->getDevice());
@@ -127,6 +143,8 @@ IDXGISwapChain* ptrSC = static_cast<IDXGISwapChain*>(g_SwapChain->getSwapChain()
 
 CGraphicsAPI						graphicApi;
 CSceneManager						SCManager;
+Assimp::Importer*					MyImporter = new Assimp::Importer();
+const aiScene*						MyScene;
 #elif OPENGL
 unsigned int framebuffer;
 unsigned int textureColorbuffer;
@@ -253,7 +271,6 @@ void mouse_move_callback(GLFWwindow* window, double xpos, double ypos)
 
 #endif
 
-
 #ifdef D3D11
 HRESULT CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* pShaderBlob, ID3D11Device* pD3DDevice, ID3D11InputLayout** pInputLayout)
 {
@@ -378,7 +395,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 				ImGui::SliderFloat("Pos X", &g_PointPos.x, -1000.f, 1000.f, "%1.f");
 				ImGui::SliderFloat("Pos Y", &g_PointPos.y, -1000.f, 1000.f, "%1.f");
 				ImGui::SliderFloat("Pos Z", &g_PointPos.z, -1000.f, 1000.f, "%1.f");
-				ImGui::SliderFloat("Attenuation", &g_PointAtt.x, 0.f, 2.f, "%.3", 0.01f);
+				ImGui::SliderFloat("Attenuation", &g_PointAtt.x, 0.0f, 1.0f, "%.1f", .1f);
+				ImGui::SliderFloat("R", &g_LightColor.x, 0.f, 1.f, "%.1f", 0.1f);
+				ImGui::SliderFloat("G", &g_LightColor.y, 0.f, 1.f, "%.1f", 0.1f);
+				ImGui::SliderFloat("B", &g_LightColor.z, 0.f, 1.f, "%.1f", 0.1f);
 			}
 			ImGui::End();
 			Render();
@@ -847,7 +867,7 @@ HRESULT InitDevice()
 	ptrDC->RSSetViewports(1, &tempVP.m_Viewport);
 
     // Compile the vertex shader
-    hr = CompileShaderFromFile( L"Tutorial07Specular.fx", "vs_main", "vs_4_0", &g_VertexShader.m_pVSBlob );
+    hr = CompileShaderFromFile( L"Tutorial07Animation.fx", "vs_main", "vs_4_0", &g_VertexShader.m_pVSBlob );
     if( FAILED( hr ) )
     {
         MessageBox( NULL,
@@ -872,7 +892,7 @@ HRESULT InitDevice()
 	ptrDC->IASetInputLayout(g_VertexShader.m_pInputLayout );
 
     // Compile the pixel shader
-    hr = CompileShaderFromFile( L"Tutorial07Specular.fx", "ps_main", "ps_4_0", &g_PixelShader.m_pPSBlob);
+    hr = CompileShaderFromFile( L"Tutorial07Animation.fx", "ps_main", "ps_4_0", &g_PixelShader.m_pPSBlob);
     if( FAILED( hr ) )
     {
         MessageBox( NULL,
@@ -889,42 +909,42 @@ HRESULT InitDevice()
     // Create vertex buffer
     SimpleVertex vertices[] =
     {
-        { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 0.0f, 0.0f ), glm::vec4( -1.0f, 1.0f, -1.0f, 0.f) },
-        { glm::vec3( 1.0f, 1.0f, -1.0f  ), glm::vec2( 1.0f, 0.0f ), glm::vec4( 1.0f, 1.0f, -1.0f, 0.f) },
-        { glm::vec3( 1.0f, 1.0f, 1.0f   ), glm::vec2( 1.0f, 1.0f ), glm::vec4( 1.0f, 1.0f, 1.0f , 0.f) },
-        { glm::vec3( -1.0f, 1.0f, 1.0f  ), glm::vec2( 0.0f, 1.0f ), glm::vec4( -1.0f, 1.0f, 1.0f, 0.f) },
+        { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 0.0f, 0.0f ) },
+        { glm::vec3( 1.0f, 1.0f, -1.0f  ), glm::vec2( 1.0f, 0.0f ) },
+        { glm::vec3( 1.0f, 1.0f, 1.0f   ), glm::vec2( 1.0f, 1.0f ) },
+        { glm::vec3( -1.0f, 1.0f, 1.0f  ), glm::vec2( 0.0f, 1.0f ) },
 
-        { glm::vec3( -1.0f, -1.0f, -1.0f), glm::vec2( 0.0f, 0.0f ), glm::vec4( -1.0f, -1.0f, -1.0f, 0.f) },
-        { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ), glm::vec4( 1.0f, -1.0f, -1.0f , 0.f) },
-        { glm::vec3( 1.0f, -1.0f, 1.0f  ), glm::vec2( 1.0f, 1.0f ), glm::vec4( 1.0f, -1.0f, 1.0f , 0.f) },
-        { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 1.0f ), glm::vec4( -1.0f, -1.0f, 1.0f, 0.f) },
+        { glm::vec3( -1.0f, -1.0f, -1.0f), glm::vec2( 0.0f, 0.0f ) },
+        { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
+        { glm::vec3( 1.0f, -1.0f, 1.0f  ), glm::vec2( 1.0f, 1.0f ) },
+        { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 1.0f ) },
 
-        { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 0.0f ), glm::vec4( -1.0f, -1.0f, 1.0f, 0.f) },
-        { glm::vec3( -1.0f, -1.0f, -1.0f), glm::vec2( 1.0f, 0.0f ), glm::vec4( -1.0f, -1.0f, -1.0f, 0.f) },
-        { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 1.0f, 1.0f ), glm::vec4( -1.0f, 1.0f, -1.0f, 0.f) },
-        { glm::vec3( -1.0f, 1.0f, 1.0f  ), glm::vec2( 0.0f, 1.0f ), glm::vec4( -1.0f, 1.0f, 1.0f, 0.f) },
+        { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 0.0f ) },
+        { glm::vec3( -1.0f, -1.0f, -1.0f), glm::vec2( 1.0f, 0.0f ) },
+        { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 1.0f, 1.0f ) },
+        { glm::vec3( -1.0f, 1.0f, 1.0f  ), glm::vec2( 0.0f, 1.0f ) },
 
-        { glm::vec3( 1.0f, -1.0f, 1.0f  ), glm::vec2( 0.0f, 0.0f ), glm::vec4( 1.0f, -1.0f, 1.0f, 0.f) },
-        { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ), glm::vec4( 1.0f, -1.0f, -1.0f, 0.f) },
-        { glm::vec3( 1.0f, 1.0f, -1.0f  ), glm::vec2( 1.0f, 1.0f ), glm::vec4( 1.0f, 1.0f, -1.0f, 0.f) },
-        { glm::vec3( 1.0f, 1.0f, 1.0f   ), glm::vec2( 0.0f, 1.0f ), glm::vec4( 1.0f, 1.0f, 1.0f, 0.f) },
+        { glm::vec3( 1.0f, -1.0f, 1.0f  ), glm::vec2( 0.0f, 0.0f ) },
+        { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
+        { glm::vec3( 1.0f, 1.0f , -1.0f ), glm::vec2( 1.0f, 1.0f ) },
+		{ glm::vec3( 1.0f, 1.0f , 1.0f  ), glm::vec2( 0.0f, 1.0f ) },
 
-        { glm::vec3( -1.0f, -1.0f, -1.0f), glm::vec2( 0.0f, 0.0f ), glm::vec4( -1.0f, -1.0f, -1.0f, 0.f) },
-        { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ), glm::vec4( 1.0f, -1.0f, -1.0f, 0.f) },
-        { glm::vec3( 1.0f, 1.0f, -1.0f  ), glm::vec2( 1.0f, 1.0f ), glm::vec4( 1.0f, 1.0f, -1.0f, 0.f) },
-        { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 0.0f, 1.0f ), glm::vec4( -1.0f, 1.0f, -1.0f, 0.f) },
+        { glm::vec3( -1.0f, -1.0f, -1.0f), glm::vec2( 0.0f, 0.0f ) },
+        { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
+        { glm::vec3( 1.0f, 1.0f, -1.0f  ), glm::vec2( 1.0f, 1.0f ) },
+        { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 0.0f, 1.0f ) },
 
-        { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 0.0f ), glm::vec4( -1.0f, -1.0f, 1.0f, 0.f) },
-        { glm::vec3( 1.0f, -1.0f, 1.0f  ), glm::vec2( 1.0f, 0.0f ), glm::vec4( 1.0f, -1.0f, 1.0f, 0.f) },
-        { glm::vec3( 1.0f, 1.0f, 1.0f   ), glm::vec2( 1.0f, 1.0f ), glm::vec4( 1.0f, 1.0f, 1.0f , 0.f) },
-        { glm::vec3( -1.0f, 1.0f, 1.0f  ), glm::vec2( 0.0f, 1.0f ), glm::vec4( -1.0f, 1.0f, 1.0f , 0.f) },
+        { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 0.0f ) },
+        { glm::vec3( 1.0f, -1.0f, 1.0f  ), glm::vec2( 1.0f, 0.0f ) },
+        { glm::vec3( 1.0f, 1.0f, 1.0f   ), glm::vec2( 1.0f, 1.0f ) },
+        { glm::vec3( -1.0f, 1.0f, 1.0f  ), glm::vec2( 0.0f, 1.0f ) },
     };
 
 	BufferStruct bufferstrct;
 	bufferstrct.usage = USAGE_DEFAULT;
 	bufferstrct.byteWidth = sizeof(SimpleVertex) * 24;
 	bufferstrct.bindFlags = 1;			// D3D11_BIND_VERTEX_BUFFER;
-	bufferstrct.cpuAccessFlags = 0;
+	bufferstrct.cpuAccessFlags = 0; 
 
 	SubresourceData subrsrcData;
 	subrsrcData.psysMem = vertices;
@@ -1083,9 +1103,12 @@ HRESULT InitDevice()
 	LightBuffer.init(bufferstrct);
 	hr = ptrDevice->CreateBuffer(&LightBuffer.m_bd, NULL, &LightBuffer.m_pBuffer);
 	if (FAILED(hr))
-	{
 		return hr;
-	}
+
+	//Create Bone CB
+	bufferstrct.byteWidth = sizeof(BoneCB);
+	BoneBuffer.init(bufferstrct);
+	hr = ptrDevice->CreateBuffer(&BoneBuffer.m_bd, NULL, &BoneBuffer.m_pBuffer);
 
     // Load the Texture 
     hr = D3DX11CreateShaderResourceViewFromFile( ptrDevice, L"seafloor.dds", NULL, NULL, &g_pTextureRV, NULL );
@@ -1160,9 +1183,11 @@ HRESULT InitDevice()
 	g_LightDir = { 0.f, -1.f, 0.f, 0.f };
 	g_PointPos = { 1.f, 0.f, 1.f, 0.f };
 	g_PointAtt = { 1.f, 0.f, 0.f, 0.f };
+	g_LightColor = { 1.f, 1.f, 1.f, 1.f };
 	L.lightPointPos = g_PointPos;
 	L.lightPointAtt = g_PointAtt;
 	L.mLightDir = g_LightDir;
+	L.lightColor = g_LightColor;
 #ifdef D3D11
 	ptrDC->UpdateSubresource(LightBuffer.m_pBuffer, 0, NULL, &L, 0, 0);
 #endif // D3D11
@@ -1223,7 +1248,7 @@ HRESULT InitDevice()
 
 	g_pDevice->m_Device = ptrDevice;
 	g_DeviceContext->m_DeviceContext = ptrDC;
-	graphicApi.loadMesh("Models/Scene.fbx", &SCManager, graphicApi.m_Model, g_DeviceContext, g_pDevice);
+	MyScene = graphicApi.loadMesh("Models/dwarf.x", &SCManager, graphicApi.m_Model, g_DeviceContext, g_pDevice, MyImporter);
 
 #endif
 
@@ -1236,6 +1261,7 @@ HRESULT InitDevice()
 	P.LightBuffer = &LightBuffer;
 	P.PixelShader = &g_PixelShader;
 	P.VertexShader = &g_VertexShader;
+	P.BoneBuffer = &BoneBuffer;
 
 	DiffusePass.init(P);
 
@@ -1503,6 +1529,24 @@ void Render()
 		g_DeviceContext->m_DeviceContext->UpdateSubresource(ActiveCamera->m_CBNeverChanges.m_pBuffer, 0, NULL, &cbNeverChanges, 0, 0);
 	}
 
+	std::vector<glm::mat4> Transforms;
+
+	float RunningTime = GetRunningTime();
+
+	graphicApi.BoneTransform(RunningTime, Transforms, MyScene, &SCManager);
+
+	BoneCB cbBone;
+
+	for (int i = 0; i < Transforms.size(); i++)
+	{
+		if (i < 100)
+		{
+			cbBone.gBones[i] = Transforms[i];
+		}
+	}
+
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(BoneBuffer.m_pBuffer, 0, NULL, &cbBone, 0, 0);
+
     // Rotate cube around the origin
     //g_World = XMMatrixRotationY( t );
 	//g_World = glm::rotate(g_World, .001f, {0, 1, 0});
@@ -1536,8 +1580,10 @@ void Render()
 	lcb.mLightDir = g_LightDir;
 	lcb.lightPointPos = g_PointPos;
 	lcb.lightPointAtt = g_PointAtt;
+	lcb.lightColor = g_LightColor;
 	g_DeviceContext->m_DeviceContext->UpdateSubresource(LightBuffer.m_pBuffer, 0, NULL, &lcb, 0, 0);
 	g_DeviceContext->m_DeviceContext->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
+
 	//DiffusePass.render(&SecondRTV, &DepthStencilViewFree, &SCManager, InactiveCamera);
 	DiffusePass.render(&g_RenderTargetView, &DepthStencilViewFree, &SCManager, ActiveCamera);
 

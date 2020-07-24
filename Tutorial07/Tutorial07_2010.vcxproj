@@ -904,6 +904,20 @@
     <ClCompile Include="Tutorial07.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Tutorial07Animation.fx">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">vs_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">vs_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">vs_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">vs_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">4.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="Tutorial07.fx">
       <FileType>Document</FileType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">PS</EntryPointName>
