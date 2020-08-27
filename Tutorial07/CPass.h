@@ -8,15 +8,19 @@
 #include "CBuffer.h"
 #include "CSceneManager.h"
 #include "CCamera.h"
+#include "CTexture2D.h"
 
 struct StructPass
 {
-	CVertexShader * VertexShader;
-	CPixelShader * PixelShader;
-	CDeviceContext * DeviceContext;
-	CViewport * Viewport;
-	CBuffer * LightBuffer;
-	CBuffer * BoneBuffer;
+	CDeviceContext	* DeviceContext;
+	CDevice			* Device;
+	CViewport		* Viewport;
+	unsigned int	RTVcount;
+	Texture2DStruct TextureStruct;
+#ifdef D3D11
+	D3D11_RASTERIZER_DESC rstate;
+#endif // D3D11
+
 };
 
 class CPass
@@ -25,24 +29,35 @@ public:
 	CPass();
 	~CPass();
 
-	CVertexShader		* m_pVS;
-	CPixelShader		* m_pPS;
+	CVertexShader		m_pVS;
+	CPixelShader		m_pPS;
 	CDeviceContext		* m_pDC;
 	CViewport			* m_pVP;
-	CBuffer				* m_pLCB;
-	CBuffer				* m_pBCB;
-	
-	void init(StructPass P);
+#ifdef D3D11
+	ID3D11RasterizerState * m_pRS;
+#endif // D3D11
+
+	std::vector<ID3D11RenderTargetView*>	m_pRTVs;
+	std::vector<CTexture2D*> m_pTextures;
+	std::vector<ID3D11ShaderResourceView*> m_ShaderResources;
+	std::vector<ID3D11ShaderResourceView*> m_PassOutput;
+
+	void init(StructPass P, int level);
 
 #ifdef D3D11
-	void setRT(CRenderTargetView * pRTV, CDepthStencilView * pDSV);
+	void setRT(CDepthStencilView * pDSV);
 	void setShaders();
-	void setCBs(CBuffer * VCB, CBuffer * PCB, CBuffer * LCB);
-	void setViewport();
-	void clear(CDeviceContext * pDC, CRenderTargetView * pRTV, float ClearColor[4], CDepthStencilView * pDSV);
-	void draw(CSceneManager * pSC, CCamera * pCam);
-	void render(CRenderTargetView * pRTV, CDepthStencilView * pDTV, CSceneManager * pSC, CCamera * pCam);
-
+	void setCBs(CBuffer * VCB, CBuffer * PCB);									//N
+	void setViewport();															//N
+	void clear(float ClearColor[4], CDepthStencilView * pDSV);
+	void draw(CSceneManager * pSC, UINT pStride);
+	void render(CDepthStencilView * pDSV, CSceneManager * pSC, CCamera * pCam);	//N
+	void setPass(CDepthStencilView * pDSV);
+	void addShaderResource(CDevice * Device ,CTexture2D* Tex);
+	void initFromTexture(CTexture2D* texture, CDevice* Device);
+	void setRasterizerState(ID3D11RasterizerState* RSState);
+	void setDepthStencilState(ID3D11DepthStencilState * DSState, UINT Value);
+	void releasePass();
 #elif OPENGL
 	void clear();
 #endif // D3D11	

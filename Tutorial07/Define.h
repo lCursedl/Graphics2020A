@@ -385,15 +385,16 @@ struct SimpleVertex
 {
 	glm::vec3 msPos;			/**< Vector 3 for Position */
 	glm::vec2 texcoord;			/**< Vector 2 for Texture coordinates */
-	int BoneID[4];
-	float Weights[4] = { 0.f };
-	/*glm::vec4 msNormal;
+	/*int BoneID[4];
+	float Weights[4] = { 0.f };*/
+	glm::vec3 msNormal;
 	glm::vec3 msBinormal;
-	glm::vec3 msTangent;*/
+	glm::vec3 msTangent;
 };
 /**	\struct SimpleVertex
 *	\brief Structure which defines a buffer with position and texture coords
 */
+
 struct CBNeverChanges
 {
 	glm::mat4 mView;		/**< Matrix4 for View */
@@ -410,21 +411,48 @@ struct CBChangeOnResize
 */struct CBChangesEveryFrame
 {
 	glm::mat4 mWorld;		/**< Matrix4 for World */
-	glm::vec4 vMeshColor;	/**< Vec4 for Color */
-	glm::vec4 vmViewPos;
 };
 /**	\struct CBChangesEveryFrame
 *	\brief Structure which defines a World matrix and a color
 */
-struct LightCB
-{
-	glm::vec4 mLightDir;
-	glm::vec4 lightPointPos;
-	glm::vec4 lightPointAtt;
-	glm::vec4 lightColor;
-};
 
 struct BoneCB
 {
 	glm::mat4 gBones[100];
+};
+
+struct SSAOCB
+{
+	float kIntensity;
+	float kScale;
+	float kBias;
+	float kSample;
+};
+
+struct LightCB
+{
+	float kDiffuse;
+	float kAmbient;
+	float kSpecular;
+	float specularPower;
+	glm::vec4 lightDir;
+	glm::vec4 lightColor;
+	glm::vec4 vViewPos;
+};
+
+struct BrightCB
+{
+	int mipLevel;
+	glm::vec3 Threshold;
+};
+
+struct BlurCB
+{
+	int mipLevel;
+	glm::vec3 Viewport;
+};
+
+struct AddBrightCB
+{
+	glm::ivec4 mipLevel;
 };

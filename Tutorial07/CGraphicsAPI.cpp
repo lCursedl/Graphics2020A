@@ -4,7 +4,15 @@ CGraphicsAPI::CGraphicsAPI() {}
 
 CGraphicsAPI::~CGraphicsAPI() {}
 
-const aiScene* CGraphicsAPI::loadMesh(const char * path, CSceneManager * SM, const aiScene * model, CDeviceContext * DC, CDevice * dev, Assimp::Importer* Imp)
+const aiScene* CGraphicsAPI::loadMesh(const char * path,
+										CSceneManager * SM,
+										const aiScene * model,
+										CDeviceContext * DC,
+										CDevice * dev, Assimp::Importer* Imp,
+										const char * diffuse_path,
+										const char * normal_path,
+										const char * specular_path,
+										bool simpleread)
 {
 	model = Imp->ReadFile(path, aiProcessPreset_TargetRealtime_Fast | aiProcess_ConvertToLeftHanded | aiProcess_FindInstances
 		| aiProcess_ValidateDataStructure | aiProcess_OptimizeMeshes | aiProcess_Debone);
@@ -27,8 +35,31 @@ const aiScene* CGraphicsAPI::loadMesh(const char * path, CSceneManager * SM, con
 
 	std::string dirName = newMesh->m_Materials->m_TextureDir;
 
-	meshRead(model, newMesh, 0, dev);
-	readMeshTexture(model, newMesh, 0, dev);
+	meshRead(model, newMesh, 0, dev, simpleread);
+	//readMeshTexture(model, newMesh, 0, dev);
+
+	if (diffuse_path != "")
+	{
+		wchar_t wtext[50];
+		mbstowcs(wtext, diffuse_path, strlen(diffuse_path) + 1);
+		LPWSTR ptr = wtext;
+		D3DX11CreateShaderResourceViewFromFile(dev->m_Device, ptr, NULL, NULL, &newMesh->m_Materials->m_TextureDiffuse, NULL);
+	}
+	if (normal_path != "")
+	{
+		wchar_t wtext[50];
+		mbstowcs(wtext, normal_path, strlen(normal_path) + 1);
+		LPWSTR ptr = wtext;
+		D3DX11CreateShaderResourceViewFromFile(dev->m_Device, ptr, NULL, NULL, &newMesh->m_Materials->m_TextureNormal, NULL);
+	}
+	if (specular_path != "")
+	{
+		wchar_t wtext[50];
+		mbstowcs(wtext, specular_path, strlen(specular_path) + 1);
+		LPWSTR ptr = wtext;
+		D3DX11CreateShaderResourceViewFromFile(dev->m_Device, ptr, NULL, NULL, &newMesh->m_Materials->m_TextureSpecular, NULL);
+	}
+
 	SM->addMesh(newMesh);
 
 	if (model->mNumMeshes > 1)
@@ -39,15 +70,15 @@ const aiScene* CGraphicsAPI::loadMesh(const char * path, CSceneManager * SM, con
 			childMesh->setParent(newMesh);
 			newMesh->addChildren(childMesh);
 			childMesh->m_Materials->m_TextureDir = dirName;
-			meshRead(model, childMesh, i, dev);
-			readMeshTexture(model, childMesh, i, dev);
+			meshRead(model, childMesh, i, dev, simpleread);
+			//readMeshTexture(model, childMesh, i, dev);			
 			SM->addMesh(childMesh);
 		}
 	}
 	return model;
 }
 
-void CGraphicsAPI::meshRead(const aiScene * model, CMesh * mesh, int index, CDevice * dev)
+void CGraphicsAPI::meshRead(const aiScene * model, CMesh * mesh, int index, CDevice * dev, bool simple)
 {
 	std::vector <std::uint32_t> indis;
 	indis.reserve(model->mMeshes[index]->mNumFaces * 3);
@@ -59,36 +90,36 @@ void CGraphicsAPI::meshRead(const aiScene * model, CMesh * mesh, int index, CDev
 	SimpleVertex* meshVertex = new SimpleVertex[numVertex];
 	WORD* meshIndex = new WORD[numIndex];
 
-	for (unsigned int i = 0; i < mNumBones; i++)
-	{
-		unsigned int BoneIndex = 0;
-		std::string BoneName(model->mMeshes[index]->mBones[i]->mName.data);
+	//for (unsigned int i = 0; i < mNumBones; i++)
+	//{
+	//	unsigned int BoneIndex = 0;
+	//	std::string BoneName(model->mMeshes[index]->mBones[i]->mName.data);
 
-		if (mesh->m_BoneMapping.find(BoneName) == mesh->m_BoneMapping.end())
-		{
-			BoneIndex = mesh->m_NumBones;
-			mesh->m_NumBones++;
-			BoneInfo bi;
-			mesh->m_Boneinfo.push_back(bi);
-		}
-		else
-		{
-			BoneIndex = mesh->m_BoneMapping[BoneName];
-		}
+	//	if (mesh->m_BoneMapping.find(BoneName) == mesh->m_BoneMapping.end())
+	//	{
+	//		BoneIndex = mesh->m_NumBones;
+	//		mesh->m_NumBones++;
+	//		BoneInfo bi;
+	//		mesh->m_Boneinfo.push_back(bi);
+	//	}
+	//	else
+	//	{
+	//		BoneIndex = mesh->m_BoneMapping[BoneName];
+	//	}
 
-		mesh->m_BoneMapping[BoneName] = BoneIndex;
-		//glm matrix is column major, assimp matrix is row major transpose
-		mesh->m_Boneinfo[BoneIndex].BoneOffset = glm::transpose(glm::make_mat4(&model->mMeshes[index]->mBones[i]->mOffsetMatrix.a1));
-		
-		for (int j = 0; j < model->mMeshes[index]->mBones[i]->mNumWeights; j++)
-		{
-			for (int k = 0; k < 4; k++)
-			{
-				meshVertex[model->mMeshes[index]->mBones[i]->mWeights[j].mVertexId].BoneID[k] = BoneIndex;
-				meshVertex[model->mMeshes[index]->mBones[i]->mWeights[j].mVertexId].Weights[k] = model->mMeshes[index]->mBones[i]->mWeights[j].mWeight;
-			}			
-		}
-	}
+	//	mesh->m_BoneMapping[BoneName] = BoneIndex;
+	//	//glm matrix is column major, assimp matrix is row major transpose
+	//	mesh->m_Boneinfo[BoneIndex].BoneOffset = glm::transpose(glm::make_mat4(&model->mMeshes[index]->mBones[i]->mOffsetMatrix.a1));
+	//	
+	//	for (int j = 0; j < model->mMeshes[index]->mBones[i]->mNumWeights; j++)
+	//	{
+	//		for (int k = 0; k < 4; k++)
+	//		{
+	//			meshVertex[model->mMeshes[index]->mBones[i]->mWeights[j].mVertexId].BoneID[k] = BoneIndex;
+	//			meshVertex[model->mMeshes[index]->mBones[i]->mWeights[j].mVertexId].Weights[k] = model->mMeshes[index]->mBones[i]->mWeights[j].mWeight;
+	//		}			
+	//	}
+	//}
 
 	for (std::uint32_t faceIdx = 0u; faceIdx < model->mMeshes[index]->mNumFaces; faceIdx++)
 	{
@@ -104,16 +135,19 @@ void CGraphicsAPI::meshRead(const aiScene * model, CMesh * mesh, int index, CDev
 		meshVertex[i].msPos.z = model->mMeshes[index]->mVertices[i].z;
 		meshVertex[i].texcoord.x = model->mMeshes[index]->mTextureCoords[0][i].x;
 		meshVertex[i].texcoord.y = model->mMeshes[index]->mTextureCoords[0][i].y;
-		/*meshVertex[i].msNormal.x = model->mMeshes[index]->mNormals[i].x;
-		meshVertex[i].msNormal.y = model->mMeshes[index]->mNormals[i].y;
-		meshVertex[i].msNormal.z = model->mMeshes[index]->mNormals[i].z;
-		meshVertex[i].msNormal.w = 1;
-		meshVertex[i].msBinormal.x = model->mMeshes[index]->mBitangents[i].x;
-		meshVertex[i].msBinormal.y = model->mMeshes[index]->mBitangents[i].y;
-		meshVertex[i].msBinormal.z = model->mMeshes[index]->mBitangents[i].z;
-		meshVertex[i].msTangent.x = model->mMeshes[index]->mTangents[i].x;
-		meshVertex[i].msTangent.y = model->mMeshes[index]->mTangents[i].y;
-		meshVertex[i].msTangent.z = model->mMeshes[index]->mTangents[i].z;*/
+		if (!simple)
+		{
+			meshVertex[i].msNormal.x = model->mMeshes[index]->mNormals[i].x;
+			meshVertex[i].msNormal.y = model->mMeshes[index]->mNormals[i].y;
+			meshVertex[i].msNormal.z = model->mMeshes[index]->mNormals[i].z;
+			//meshVertex[i].msNormal.w = 1;
+			meshVertex[i].msBinormal.x = model->mMeshes[index]->mBitangents[i].x;
+			meshVertex[i].msBinormal.y = model->mMeshes[index]->mBitangents[i].y;
+			meshVertex[i].msBinormal.z = model->mMeshes[index]->mBitangents[i].z;
+			meshVertex[i].msTangent.x = model->mMeshes[index]->mTangents[i].x;
+			meshVertex[i].msTangent.y = model->mMeshes[index]->mTangents[i].y;
+			meshVertex[i].msTangent.z = model->mMeshes[index]->mTangents[i].z;
+		}		
 	}
 
 	mesh->setVertex(meshVertex, numVertex);

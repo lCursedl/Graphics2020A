@@ -24,6 +24,7 @@ public:
 #ifdef D3D11
 	ID3D11ShaderResourceView*	m_TextureDiffuse;	/**< DirectX resource for diffuse texture */
 	ID3D11ShaderResourceView*	m_TextureNormal;	/**< DirectX resource for normal texture */
+	ID3D11ShaderResourceView*	m_TextureSpecular;
 #endif // D3D11	
 };
 /** \class CMaterial

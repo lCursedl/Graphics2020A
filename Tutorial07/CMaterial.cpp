@@ -3,15 +3,13 @@
 CMaterial::CMaterial()
 {
 #ifdef D3D11
-	m_TextureDiffuse = NULL;
-	m_TextureNormal = NULL;
+	m_TextureDiffuse = nullptr;
+	m_TextureNormal = nullptr;
+	m_TextureSpecular = nullptr;
 #endif // D3D11	
 }
 
-CMaterial::~CMaterial()
-{
-
-}
+CMaterial::~CMaterial(){}
 
 void CMaterial::shutdown()
 {
@@ -19,6 +17,14 @@ void CMaterial::shutdown()
 	if (m_TextureDiffuse)
 	{
 		m_TextureDiffuse->Release();
+	}
+	if (m_TextureNormal)
+	{
+		m_TextureNormal->Release();
+	}
+	if (m_TextureSpecular)
+	{
+		m_TextureSpecular->Release();
 	}
 #endif // D3D11
 }

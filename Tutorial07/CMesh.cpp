@@ -21,7 +21,6 @@ CMesh::CMesh()
 		0, 0, 1, .010,
 		0, 0, 0, 1
 	};
-	m_MeshData.vMeshColor = { 1, 0, 0, 1 };
 	m_NumBones = 0;
 }
 
@@ -44,7 +43,6 @@ void CMesh::render(CDeviceContext * DC)
 		0, 0, 1, .010,
 		0, 0, 0, 1
 	};
-	m_MeshData.vMeshColor = { 1, 0, 0, 1 };
 #ifdef D3D11
 	DC->m_DeviceContext->PSSetShaderResources(0, 1, &m_Materials->m_TextureDiffuse);
 	DC->m_DeviceContext->VSSetShaderResources(0, 1, &m_Materials->m_TextureDiffuse);

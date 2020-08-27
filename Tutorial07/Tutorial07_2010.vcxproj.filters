@@ -120,6 +120,7 @@
     </ClCompile>
     <ClCompile Include="glad.c" />
     <ClCompile Include="CPass.cpp" />
+    <ClCompile Include="CRasterizerState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tutorial07.cpp" />
@@ -297,6 +298,7 @@
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="CPass.h" />
+    <ClInclude Include="CRasterizerState.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Tutorial07.fx">
@@ -306,6 +308,30 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Tutorial07Animation.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SSAO.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Skybox.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Light.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Luminance.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Bright.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="BlurH.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="BlurV.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="AddBright.fx">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

@@ -20,7 +20,7 @@ CMesh *& CSceneManager::getMesh(int ID)
 {
 	for (int i = 0; i < m_MeshList.size(); i++)
 	{
-		if (m_MeshList[i]->getIndexNum() == ID)
+		if (m_MeshList[i]->m_SceneID == ID)
 		{
 			return m_MeshList[i];
 		}

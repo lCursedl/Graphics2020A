@@ -21,7 +21,16 @@ public:
 	
 	//Assimp::Importer* m_Importer = new Assimp::Importer();		/**< Importer pointer for Model loading operations */	
 
-	const aiScene* loadMesh(const char* path, CSceneManager* SM, const aiScene* model, CDeviceContext* DC, CDevice *dev, Assimp::Importer* Imp);
+	const aiScene* loadMesh(const char* path,
+							CSceneManager* SM,
+							const aiScene* model,
+							CDeviceContext* DC,
+							CDevice *dev,
+							Assimp::Importer* Imp,
+							const char * diffuse_path,
+							const char * normal_path,
+							const char * specular_path,
+							bool simpleread);
 	/** \fn bool loadMesh(const char* path, CSceneManager* SM, const aiScene* model, CDeviceContext* DC, Assimp::Importer* importer, CDevice *dev)
 	*	\brief
 	*	@param[in] path
@@ -34,7 +43,7 @@ public:
 	void BoneTransform(float TimeInSeconds, std::vector<glm::mat4>& Transforms, const aiScene * model, CSceneManager * sc);
 
 private:
-	void meshRead(const aiScene* model, CMesh* mesh, int index, CDevice * dev);
+	void meshRead(const aiScene* model, CMesh* mesh, int index, CDevice * dev, bool simple);
 	/** \fn void meshRead(const aiScene* model, CMesh* mesh, int index, CDevice * dev)
 	*	\brief Reads the model info and creates the data for the Mesh
 	*	@param[in] model aiScene pointer from where info is obtained

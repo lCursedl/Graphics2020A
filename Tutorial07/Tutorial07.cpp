@@ -82,8 +82,6 @@ ID3D11ShaderResourceView*           g_pTextureRV = NULL;
 ID3D11ShaderResourceView*           InactiveSRV = NULL;
 #endif
 
-glm::vec4							g_MeshColor { 0.7f, 0.7f, 0.7f, 1.0f };
-
 CCamera								g_Camera;
 CCameraFP							FirstPerson;
 CTexture2D							InactiveCameraTexture;
@@ -117,13 +115,84 @@ CCamera *							InactiveCamera = NULL;
 unsigned int						imguiWindowW;
 unsigned int						imguiWindowH;
 
-CBuffer								LightBuffer;
 glm::vec4							g_LightDir;
 glm::vec4							g_PointPos;
 glm::vec4							g_PointAtt;
 glm::vec3							g_LightDir3 = { 0.f, -1.f, 0.f };
 glm::vec4							g_LightColor;
-CPass								DiffusePass;
+CPass								DiffusePass;	//GBuffer
+
+CPass								SSAOPass;
+CBuffer								SSAOBuffer;
+SSAOCB								SSAOConsBuff;
+
+CPass								SkyboxPass;
+
+CPass								LightPass;
+CBuffer								LightBuffer;
+LightCB								LightConsBuff;
+ID3D11ShaderResourceView *			irradiancesrv;
+
+CPass								LuminancePass;
+
+CPass								BrightPass;
+CBuffer								BrightBuffer;
+BrightCB							BrightConsBuff;
+
+CPass								BlurH1;
+CBuffer								BlurH1Buffer;
+BlurCB								BlurH1ConsBuff;
+
+CPass								BlurH2;
+CBuffer								BlurH2Buffer;
+BlurCB								BlurH2ConsBuff;
+
+CPass								BlurH3;
+CBuffer								BlurH3Buffer;
+BlurCB								BlurH3ConsBuff;
+
+CPass								BlurH4;
+CBuffer								BlurH4Buffer;
+BlurCB								BlurH4ConsBuff;
+
+CPass								BlurV1;
+CBuffer								BlurV1Buffer;
+BlurCB								BlurV1ConsBuff;
+
+CPass								BlurV2;
+CBuffer								BlurV2Buffer;
+BlurCB								BlurV2ConsBuff;
+
+CPass								BlurV3;
+CBuffer								BlurV3Buffer;
+BlurCB								BlurV3ConsBuff;
+
+CPass								BlurV4;
+CBuffer								BlurV4Buffer;
+BlurCB								BlurV4ConsBuff;
+
+CPass								AddBright1;
+CBuffer								AddBright1Buffer;
+AddBrightCB							AddBright1ConsBuff;
+
+CPass								AddBright2;
+CBuffer								AddBright2Buffer;
+AddBrightCB							AddBright2ConsBuff;
+
+CPass								AddBright3;
+CBuffer								AddBright3Buffer;
+AddBrightCB							AddBright3ConsBuff;
+
+CPass								AddBright4;
+CBuffer								AddBright4Buffer;
+AddBrightCB							AddBright4ConsBuff;
+
+ID3D11DepthStencilState*			g_GBufferDSS;
+ID3D11DepthStencilState*			g_SAQDDSS;
+
+ID3D11RasterizerState*				g_GBufferRS;
+ID3D11RasterizerState*				g_SAQDRS;
+
 CBuffer								BoneBuffer;
 
 glm::vec3 boardpos(-5, 1, 0);
@@ -143,6 +212,8 @@ IDXGISwapChain* ptrSC = static_cast<IDXGISwapChain*>(g_SwapChain->getSwapChain()
 
 CGraphicsAPI						graphicApi;
 CSceneManager						SCManager;
+CSceneManager						SCAQ;
+CSceneManager						Cube;
 Assimp::Importer*					MyImporter = new Assimp::Importer();
 const aiScene*						MyScene;
 #elif OPENGL
@@ -376,29 +447,89 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 			ImGui_ImplDX11_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
-			ImGui::Begin("Inactive Camera", nullptr, 8);
+			ImGui::Begin("Passes", nullptr, 8);
 			{
 				ImGui::SetWindowSize(ImVec2(0, 0));
 
-				ImGui::Image(InactiveSRV, ImgDimension);
-
-				ImGui::GetIO().FontGlobalScale;
-				if (ImGui::Button("Change"))
+				if (ImGui::CollapsingHeader("GBuffer"))
 				{
-					CCamera * temp = InactiveCamera;
-					InactiveCamera = ActiveCamera;
-					ActiveCamera = temp;
+					for (int i = 0; i < DiffusePass.m_PassOutput.size(); i++)
+					{
+						ImGui::Image(DiffusePass.m_PassOutput[i], ImgDimension);
+					}					
 				}
-				ImGui::SliderFloat("X", &g_LightDir.x, -1.f, 1.f, "%.2f", .5f);
-				ImGui::SliderFloat("Y", &g_LightDir.y, -1.f, 1.f, "%.2f", .5f);
-				ImGui::SliderFloat("Z", &g_LightDir.z, -1.f, 1.f, "%.2f", .5f);
-				ImGui::SliderFloat("Pos X", &g_PointPos.x, -1000.f, 1000.f, "%1.f");
-				ImGui::SliderFloat("Pos Y", &g_PointPos.y, -1000.f, 1000.f, "%1.f");
-				ImGui::SliderFloat("Pos Z", &g_PointPos.z, -1000.f, 1000.f, "%1.f");
-				ImGui::SliderFloat("Attenuation", &g_PointAtt.x, 0.0f, 1.0f, "%.1f", .1f);
-				ImGui::SliderFloat("R", &g_LightColor.x, 0.f, 1.f, "%.1f", 0.1f);
-				ImGui::SliderFloat("G", &g_LightColor.y, 0.f, 1.f, "%.1f", 0.1f);
-				ImGui::SliderFloat("B", &g_LightColor.z, 0.f, 1.f, "%.1f", 0.1f);
+				if (ImGui::CollapsingHeader("SSAO"))
+				{
+					for (int i = 0; i < SSAOPass.m_PassOutput.size(); i++)
+					{
+						ImGui::Image(SSAOPass.m_PassOutput[i], ImgDimension);
+					}
+					ImGui::SliderFloat("kIntensity", &SSAOConsBuff.kIntensity, 0.0f, 50.0f, "%.5f");
+					ImGui::SliderFloat("kScale", &SSAOConsBuff.kScale, 0.0f, 10.0f, "%.1f");
+					ImGui::SliderFloat("kBias", &SSAOConsBuff.kBias, 0.0f, 1.0f, "%.10f");
+					ImGui::SliderFloat("kSample", &SSAOConsBuff.kSample, 0.0f, 32.0f, "%.5f");
+				}
+				if (ImGui::CollapsingHeader("Skybox"))
+				{
+					for (int i = 0; i < SkyboxPass.m_PassOutput.size(); i++)
+					{
+						ImGui::Image(SkyboxPass.m_PassOutput[i], ImgDimension);
+					}
+				}
+				if (ImGui::CollapsingHeader("Light"))
+				{
+					for (int i = 0; i < LightPass.m_PassOutput.size(); i++)
+					{
+						ImGui::Image(LightPass.m_PassOutput[i], ImgDimension);
+					}
+					ImGui::SliderFloat("kDiffuse", &LightConsBuff.kDiffuse, 0.0f, 1.0f, "%.10f");
+					ImGui::SliderFloat("kAmbient", &LightConsBuff.kAmbient, 0.0f, 1.0f, "%.10f");
+					ImGui::SliderFloat("kSpecular", &LightConsBuff.kSpecular, 0.0f, 10.0f, "%.5f");
+					ImGui::SliderFloat("SpecularPower", &LightConsBuff.specularPower, 0.0f, 32.0f, "%.5f");
+					ImGui::SliderFloat3("LightDir", (float*)&LightConsBuff.lightDir, -1.f, 1.f, "%.10f");
+					ImGui::SliderFloat3("LightColor", (float*)&LightConsBuff.lightColor, 0.f, 1.f, "%.1f");
+				}
+				if (ImGui::CollapsingHeader("Luminance"))
+				{
+					for (int i = 0; i < LuminancePass.m_PassOutput.size(); i++)
+					{
+						ImGui::Image(LuminancePass.m_PassOutput[i], ImgDimension);
+					}
+				}
+				if (ImGui::CollapsingHeader("Bright"))
+				{
+					for (int i = 0; i < BrightPass.m_PassOutput.size(); i++)
+					{
+						ImGui::Image(BrightPass.m_PassOutput[i], ImgDimension);
+					}
+					ImGui::SliderInt("mipLevel", &BrightConsBuff.mipLevel, 0, 5);
+					ImGui::SliderFloat("Threshold", (float*)&BrightConsBuff.Threshold.x, 0.f, 1.f, "%.10f");
+				}
+				if (ImGui::CollapsingHeader("BlurH1"))
+				{
+					for (int i = 0; i < BlurH1.m_PassOutput.size(); i++)
+					{
+						ImGui::Image(BlurH1.m_PassOutput[i], ImgDimension);
+					}
+					ImGui::SliderInt("mipLevelH1", &BlurH1ConsBuff.mipLevel, 0, 5);
+				}
+				if (ImGui::CollapsingHeader("BlurV1"))
+				{
+					for (int i = 0; i < BlurV1.m_PassOutput.size(); i++)
+					{
+						ImGui::Image(BlurV1.m_PassOutput[i], ImgDimension);
+					}
+					ImGui::SliderInt("mipLevelV1", &BlurV1ConsBuff.mipLevel, 0, 5);
+				}
+				if (ImGui::CollapsingHeader("AddBright1"))
+				{
+					for (int i = 0; i < AddBright1.m_PassOutput.size(); i++)
+					{
+						ImGui::Image(AddBright1.m_PassOutput[i], ImgDimension);
+					}
+					ImGui::SliderInt("mipLevelAB1", &AddBright1ConsBuff.mipLevel.x, 0, 5);
+				}
+				ImGui::GetIO().FontGlobalScale;
 			}
 			ImGui::End();
 			Render();
@@ -749,17 +880,57 @@ HRESULT CompileShaderFromFile( WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR sz
 }
 #endif
 
+HRESULT CompileShaders(WCHAR* shaderfile, const char* vertexEntryPoint, const char* pixelEntryPoint, CVertexShader &VS, CPixelShader &PS)
+{
+	// Compile the vertex shader
+	HRESULT hr = CompileShaderFromFile(shaderfile, vertexEntryPoint, "vs_4_0", &VS.m_pVSBlob);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL,
+			L"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", L"Error", MB_OK);
+		return hr;
+	}
+
+	//// Create the vertex shader
+	hr = ptrDevice->CreateVertexShader(VS.m_pVSBlob->GetBufferPointer(), VS.m_pVSBlob->GetBufferSize(), NULL, &VS.m_pVertexShader);
+	if (FAILED(hr))
+	{
+		VS.m_pVSBlob->Release();
+		return hr;
+	}
+
+	//Create input layout from compiled VS
+	hr = CreateInputLayoutDescFromVertexShaderSignature(VS.m_pVSBlob, ptrDevice, &VS.m_pInputLayout);
+	if (FAILED(hr))
+		return hr;
+
+	// Compile the pixel shader
+	hr = CompileShaderFromFile(shaderfile, pixelEntryPoint, "ps_4_0", &PS.m_pPSBlob);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL,
+			L"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", L"Error", MB_OK);
+		return hr;
+	}
+
+	// Create the pixel shader
+	hr = ptrDevice->CreatePixelShader(PS.m_pPSBlob->GetBufferPointer(), PS.m_pPSBlob->GetBufferSize(), NULL, &PS.m_pPixelShader);
+	PS.m_pPSBlob->Release();
+	if (FAILED(hr))
+		return hr;
+}
+
 //--------------------------------------------------------------------------------------
 // Create Direct3D device and swap chain
 //--------------------------------------------------------------------------------------
 HRESULT InitDevice()
 {
-    HRESULT hr = S_OK;
+	HRESULT hr = S_OK;
 
-    RECT rc;
-    GetClientRect( g_hWnd, &rc );
-    unsigned int width = imguiWindowW = rc.right - rc.left;
-    unsigned int height = imguiWindowH = rc.bottom - rc.top;
+	RECT rc;
+	GetClientRect(g_hWnd, &rc);
+	unsigned int width = imguiWindowW = rc.right - rc.left;
+	unsigned int height = imguiWindowH = rc.bottom - rc.top;
 
 #ifdef D3D11
 	DeviceStruct T;
@@ -799,29 +970,29 @@ HRESULT InitDevice()
 
 	g_SwapChain->init(S);
 
-    for( unsigned int driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++ )
-    {
+	for (unsigned int driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++)
+	{
 		g_pDevice->m_struc.m_DriverType = g_pDevice->m_struc.m_DriverTypes[driverTypeIndex];
-        hr = D3D11CreateDeviceAndSwapChain( NULL, (D3D_DRIVER_TYPE)g_pDevice->m_struc.m_DriverType, NULL, g_pDevice->m_struc.m_DeviceFlags, (D3D_FEATURE_LEVEL *)g_pDevice->m_struc.m_FeatureLevels, g_pDevice->m_struc.m_numFeatureLevels,
-                                            D3D11_SDK_VERSION, &g_SwapChain->m_sd, &ptrSC, &ptrDevice, (D3D_FEATURE_LEVEL *)&featureLevel, &ptrDC );
-        if( SUCCEEDED( hr ) )
-            break;
-    }
-    if( FAILED( hr ) )
-        return hr;
+		hr = D3D11CreateDeviceAndSwapChain(NULL, (D3D_DRIVER_TYPE)g_pDevice->m_struc.m_DriverType, NULL, g_pDevice->m_struc.m_DeviceFlags, (D3D_FEATURE_LEVEL *)g_pDevice->m_struc.m_FeatureLevels, g_pDevice->m_struc.m_numFeatureLevels,
+			D3D11_SDK_VERSION, &g_SwapChain->m_sd, &ptrSC, &ptrDevice, (D3D_FEATURE_LEVEL *)&featureLevel, &ptrDC);
+		if (SUCCEEDED(hr))
+			break;
+	}
+	if (FAILED(hr))
+		return hr;
 
-    // Create a render target view
+	// Create a render target view
 	CTexture2D BackBuffer;
-    hr = ptrSC->GetBuffer( 0, __uuidof( ID3D11Texture2D ), ( LPVOID* )&BackBuffer.m_pTexture );
-    if( FAILED( hr ) )
-        return hr;
+	hr = ptrSC->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&BackBuffer.m_pTexture);
+	if (FAILED(hr))
+		return hr;
 
-    hr = ptrDevice->CreateRenderTargetView(BackBuffer.m_pTexture, NULL, &g_RenderTargetView.m_pRTV);
+	hr = ptrDevice->CreateRenderTargetView(BackBuffer.m_pTexture, NULL, &g_RenderTargetView.m_pRTV);
 	BackBuffer.m_pTexture->Release();
-    if( FAILED( hr ) )
-        return hr;
+	if (FAILED(hr))
+		return hr;
 
-    // Create depth stencil texture
+	// Create depth stencil texture
 	Texture2DStruct DepthDesc;
 	DepthDesc.W = width;
 	DepthDesc.H = height;
@@ -841,7 +1012,7 @@ HRESULT InitDevice()
 	if (FAILED(hr))
 		return hr;
 
-    // Create the depth stencil view
+	// Create the depth stencil view
 	DepthStencilViewStruct DSV;
 	DSV.format = g_DepthStencil.m_Data.format;
 	DSV.viewDimension = DSV_DIMENSION_TEXTURE2D;
@@ -849,11 +1020,11 @@ HRESULT InitDevice()
 
 	DepthStencilViewFree.init(DSV, (FORMAT)g_DepthStencil.m_Desc.Format);
 
-    hr = ptrDevice->CreateDepthStencilView(g_DepthStencil.m_pTexture, &DepthStencilViewFree.m_Desc, &DepthStencilViewFree.m_pDepthStencilView );
-    if( FAILED( hr ) )
-        return hr;
+	hr = ptrDevice->CreateDepthStencilView(g_DepthStencil.m_pTexture, &DepthStencilViewFree.m_Desc, &DepthStencilViewFree.m_pDepthStencilView);
+	if (FAILED(hr))
+		return hr;
 
-    // Setup the viewport
+	// Setup the viewport
 	ViewportStruct vpStruct;
 	vpStruct.W = width;
 	vpStruct.H = height;
@@ -866,191 +1037,53 @@ HRESULT InitDevice()
 	tempVP.init(vpStruct);
 	ptrDC->RSSetViewports(1, &tempVP.m_Viewport);
 
-    // Compile the vertex shader
-    hr = CompileShaderFromFile( L"Tutorial07Animation.fx", "vs_main", "vs_4_0", &g_VertexShader.m_pVSBlob );
-    if( FAILED( hr ) )
-    {
-        MessageBox( NULL,
-                    L"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", L"Error", MB_OK );
-        return hr;
-    }
 
-    //// Create the vertex shader
-	hr = ptrDevice->CreateVertexShader( g_VertexShader.m_pVSBlob->GetBufferPointer(), g_VertexShader.m_pVSBlob->GetBufferSize(), NULL, &g_VertexShader.m_pVertexShader );
-    if( FAILED( hr ) )
-    {    
-        g_VertexShader.m_pVSBlob->Release();
-        return hr;
-    }
 
-	//Create input layout from compiled VS
-	hr = CreateInputLayoutDescFromVertexShaderSignature(g_VertexShader.m_pVSBlob, ptrDevice, &g_VertexShader.m_pInputLayout);
-	if (FAILED(hr))
-		return hr;
+	// Create vertex buffer
+	SimpleVertex vertices[] =
+	{
+		{ glm::vec3(-1.0f, 1.0f, -1.0f), glm::vec2(0.0f, 0.0f) },
+		{ glm::vec3(1.0f, 1.0f, -1.0f), glm::vec2(1.0f, 0.0f) },
+		{ glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(1.0f, 1.0f) },
+		{ glm::vec3(-1.0f, 1.0f, 1.0f), glm::vec2(0.0f, 1.0f) },
 
-    // Set the input layout
-	ptrDC->IASetInputLayout(g_VertexShader.m_pInputLayout );
+		{ glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec2(0.0f, 0.0f) },
+		{ glm::vec3(1.0f, -1.0f, -1.0f), glm::vec2(1.0f, 0.0f) },
+		{ glm::vec3(1.0f, -1.0f, 1.0f), glm::vec2(1.0f, 1.0f) },
+		{ glm::vec3(-1.0f, -1.0f, 1.0f), glm::vec2(0.0f, 1.0f) },
 
-    // Compile the pixel shader
-    hr = CompileShaderFromFile( L"Tutorial07Animation.fx", "ps_main", "ps_4_0", &g_PixelShader.m_pPSBlob);
-    if( FAILED( hr ) )
-    {
-        MessageBox( NULL,
-                    L"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", L"Error", MB_OK );
-        return hr;
-    }
+		{ glm::vec3(-1.0f, -1.0f, 1.0f), glm::vec2(0.0f, 0.0f) },
+		{ glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec2(1.0f, 0.0f) },
+		{ glm::vec3(-1.0f, 1.0f, -1.0f), glm::vec2(1.0f, 1.0f) },
+		{ glm::vec3(-1.0f, 1.0f, 1.0f), glm::vec2(0.0f, 1.0f) },
 
-    // Create the pixel shader
-    hr = ptrDevice->CreatePixelShader(g_PixelShader.m_pPSBlob->GetBufferPointer(), g_PixelShader.m_pPSBlob->GetBufferSize(), NULL, &g_PixelShader.m_pPixelShader);
-	g_PixelShader.m_pPSBlob->Release();
-    if( FAILED( hr ) )
-        return hr;
+		{ glm::vec3(1.0f, -1.0f, 1.0f), glm::vec2(0.0f, 0.0f) },
+		{ glm::vec3(1.0f, -1.0f, -1.0f), glm::vec2(1.0f, 0.0f) },
+		{ glm::vec3(1.0f, 1.0f , -1.0f), glm::vec2(1.0f, 1.0f) },
+		{ glm::vec3(1.0f, 1.0f , 1.0f), glm::vec2(0.0f, 1.0f) },
 
-    // Create vertex buffer
-    SimpleVertex vertices[] =
-    {
-        { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 0.0f, 0.0f ) },
-        { glm::vec3( 1.0f, 1.0f, -1.0f  ), glm::vec2( 1.0f, 0.0f ) },
-        { glm::vec3( 1.0f, 1.0f, 1.0f   ), glm::vec2( 1.0f, 1.0f ) },
-        { glm::vec3( -1.0f, 1.0f, 1.0f  ), glm::vec2( 0.0f, 1.0f ) },
+		{ glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec2(0.0f, 0.0f) },
+		{ glm::vec3(1.0f, -1.0f, -1.0f), glm::vec2(1.0f, 0.0f) },
+		{ glm::vec3(1.0f, 1.0f, -1.0f), glm::vec2(1.0f, 1.0f) },
+		{ glm::vec3(-1.0f, 1.0f, -1.0f), glm::vec2(0.0f, 1.0f) },
 
-        { glm::vec3( -1.0f, -1.0f, -1.0f), glm::vec2( 0.0f, 0.0f ) },
-        { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
-        { glm::vec3( 1.0f, -1.0f, 1.0f  ), glm::vec2( 1.0f, 1.0f ) },
-        { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 1.0f ) },
-
-        { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 0.0f ) },
-        { glm::vec3( -1.0f, -1.0f, -1.0f), glm::vec2( 1.0f, 0.0f ) },
-        { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 1.0f, 1.0f ) },
-        { glm::vec3( -1.0f, 1.0f, 1.0f  ), glm::vec2( 0.0f, 1.0f ) },
-
-        { glm::vec3( 1.0f, -1.0f, 1.0f  ), glm::vec2( 0.0f, 0.0f ) },
-        { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
-        { glm::vec3( 1.0f, 1.0f , -1.0f ), glm::vec2( 1.0f, 1.0f ) },
-		{ glm::vec3( 1.0f, 1.0f , 1.0f  ), glm::vec2( 0.0f, 1.0f ) },
-
-        { glm::vec3( -1.0f, -1.0f, -1.0f), glm::vec2( 0.0f, 0.0f ) },
-        { glm::vec3( 1.0f, -1.0f, -1.0f ), glm::vec2( 1.0f, 0.0f ) },
-        { glm::vec3( 1.0f, 1.0f, -1.0f  ), glm::vec2( 1.0f, 1.0f ) },
-        { glm::vec3( -1.0f, 1.0f, -1.0f ), glm::vec2( 0.0f, 1.0f ) },
-
-        { glm::vec3( -1.0f, -1.0f, 1.0f ), glm::vec2( 0.0f, 0.0f ) },
-        { glm::vec3( 1.0f, -1.0f, 1.0f  ), glm::vec2( 1.0f, 0.0f ) },
-        { glm::vec3( 1.0f, 1.0f, 1.0f   ), glm::vec2( 1.0f, 1.0f ) },
-        { glm::vec3( -1.0f, 1.0f, 1.0f  ), glm::vec2( 0.0f, 1.0f ) },
-    };
+		{ glm::vec3(-1.0f, -1.0f, 1.0f), glm::vec2(0.0f, 0.0f) },
+		{ glm::vec3(1.0f, -1.0f, 1.0f), glm::vec2(1.0f, 0.0f) },
+		{ glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(1.0f, 1.0f) },
+		{ glm::vec3(-1.0f, 1.0f, 1.0f), glm::vec2(0.0f, 1.0f) },
+	};
 
 	BufferStruct bufferstrct;
 	bufferstrct.usage = USAGE_DEFAULT;
 	bufferstrct.byteWidth = sizeof(SimpleVertex) * 24;
 	bufferstrct.bindFlags = 1;			// D3D11_BIND_VERTEX_BUFFER;
-	bufferstrct.cpuAccessFlags = 0; 
+	bufferstrct.cpuAccessFlags = 0;
 
 	SubresourceData subrsrcData;
 	subrsrcData.psysMem = vertices;
 	g_VertexBuffer.init(subrsrcData, bufferstrct);
 
-   /* hr = ptrDevice->CreateBuffer( &g_VertexBuffer.m_Buffer.m_bd, &g_VertexBuffer.m_Data, &g_VertexBuffer.m_Buffer.m_pBuffer );
-    if( FAILED( hr ) )
-        return hr;*/
-
-    // Set vertex buffer
-    /*UINT stride = sizeof( SimpleVertex );
-    UINT offset = 0;
-	ptrDC->IASetVertexBuffers( 0, 1, &g_VertexBuffer.m_Buffer.m_pBuffer, &stride, &offset );*/
-
-    // Create index buffer
-    /*WORD indices[] =
-    {
-        3,1,0,
-        2,1,3,
-
-        6,4,5,
-        7,4,6,
-
-        11,9,8,
-        10,9,11,
-
-        14,12,13,
-        15,12,14,
-
-        19,17,16,
-        18,17,19,
-
-        22,20,21,
-        23,20,22
-    };*/
-
-	//bufferstrct.usage = USAGE_DEFAULT;
-	//bufferstrct.byteWidth = sizeof( WORD ) * 36;
-	//bufferstrct.bindFlags = 2;		// D3D11_BIND_INDEX_BUFFER;
-	//bufferstrct.cpuAccessFlags = 0;
-	//subrsrcData.psysMem = indices;
-	//g_IndexBuffer.init(subrsrcData, bufferstrct);
- //   hr = ptrDevice->CreateBuffer( &g_IndexBuffer.m_Buffer.m_bd, &g_IndexBuffer.m_Data, &g_IndexBuffer.m_Buffer.m_pBuffer );
- //   if( FAILED( hr ) )
- //       return hr;
-
-    // Set index buffer
-	//ptrDC->IASetIndexBuffer(g_IndexBuffer.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0 );
-
-    // Set primitive topology
-	//ptrDC->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-
-	//Create billboard VertexBuffer
-	/*SimpleVertex boardVertex[]=
-	{
-		{glm::vec3(1.f, 1.f, 0.f),		glm::vec2(1.f, 0.f), glm::vec4(1.f, 0.f, 0.f, 0.f)},
-		{glm::vec3(1.f, -1.f, 0.f),		glm::vec2(1.f, 1.f), glm::vec4(1.f, 0.f, 0.f, 0.f)},
-		{glm::vec3(-1.f, -1.f, 0.f),	glm::vec2(0.f, 1.f), glm::vec4(1.f, 0.f, 0.f, 0.f)},
-		{glm::vec3(-1.f, 1.f, 0.f),		glm::vec2(0.f, 0.f), glm::vec4(1.f, 0.f, 0.f, 0.f)}
-
-	};*/
-
-	/*bufferstrct.usage = USAGE_DEFAULT;
-	bufferstrct.byteWidth = sizeof(SimpleVertex) * 4;
-	bufferstrct.bindFlags = 1;
-	bufferstrct.cpuAccessFlags = 0;
-
-	subrsrcData.psysMem = boardVertex;
-	g_BoardVB.init(subrsrcData, bufferstrct);
-
-	hr = ptrDevice->CreateBuffer(&g_BoardVB.m_Buffer.m_bd, &g_BoardVB.m_Data, &g_BoardVB.m_Buffer.m_pBuffer);
-	if (FAILED(hr))
-	{
-		return hr;
-	}*/
-
-	//Set billboard VB
-	/*stride = sizeof(SimpleVertex);
-	offset = 0;
-	ptrDC->IASetVertexBuffers(0, 1, &g_BoardVB.m_Buffer.m_pBuffer, &stride, &offset);*/
-
-	//Create billboard IB
-	/*WORD boardIndices[] = 
-	{
-		3,1,0,
-		2,1,3
-	};*/
-
-	/*bufferstrct.usage = USAGE_DEFAULT;
-	bufferstrct.byteWidth = sizeof(WORD) * 6;
-	bufferstrct.bindFlags = 2;
-	bufferstrct.cpuAccessFlags = 0;
-	subrsrcData.psysMem = boardIndices;
-	g_BoardIB.init(subrsrcData, bufferstrct);
-	hr = ptrDevice->CreateBuffer(&g_BoardIB.m_Buffer.m_bd, &g_BoardIB.m_Data, &g_BoardIB.m_Buffer.m_pBuffer);
-	if (FAILED(hr))
-	{
-		return hr;
-	}*/
-
-	//Set billboard IB
-	//ptrDC->IASetIndexBuffer(g_BoardIB.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
-
-	//ptrDC->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-    // Create the constant buffers
+	// Create the constant buffers
 	bufferstrct.usage = USAGE_DEFAULT;
 	bufferstrct.byteWidth = sizeof(CBNeverChanges);
 	bufferstrct.bindFlags = 4;		// D3D11_BIND_CONSTANT_BUFFER;
@@ -1060,9 +1093,9 @@ HRESULT InitDevice()
 
 	//Free Camera
 	g_Camera.m_CBNeverChanges.init(bufferstrct);
-    hr = ptrDevice->CreateBuffer( &g_Camera.m_CBNeverChanges.m_bd, NULL, &g_Camera.m_CBNeverChanges.m_pBuffer );
-    if( FAILED( hr ) )
-        return hr;
+	hr = ptrDevice->CreateBuffer(&g_Camera.m_CBNeverChanges.m_bd, NULL, &g_Camera.m_CBNeverChanges.m_pBuffer);
+	if (FAILED(hr))
+		return hr;
 
 	//FPS Camera
 	FirstPerson.m_CBNeverChanges.init(bufferstrct);
@@ -1074,9 +1107,9 @@ HRESULT InitDevice()
 	bufferstrct.byteWidth = sizeof(CBChangeOnResize);
 	//Free Camera
 	g_Camera.m_CBChangesOnResize.init(bufferstrct);
-    hr = ptrDevice->CreateBuffer( &g_Camera.m_CBChangesOnResize.m_bd, NULL, &g_Camera.m_CBChangesOnResize.m_pBuffer );
-    if( FAILED( hr ) )
-        return hr;
+	hr = ptrDevice->CreateBuffer(&g_Camera.m_CBChangesOnResize.m_bd, NULL, &g_Camera.m_CBChangesOnResize.m_pBuffer);
+	if (FAILED(hr))
+		return hr;
 
 	//FPS Camera
 	FirstPerson.m_CBChangesOnResize.init(bufferstrct);
@@ -1088,9 +1121,9 @@ HRESULT InitDevice()
 	bufferstrct.byteWidth = sizeof(CBChangesEveryFrame);
 	//Free Camera
 	g_Camera.m_CBChangesEveryFrame.init(bufferstrct);
-    hr = ptrDevice->CreateBuffer( &g_Camera.m_CBChangesEveryFrame.m_bd, NULL, &g_Camera.m_CBChangesEveryFrame.m_pBuffer );
-    if( FAILED( hr ) )
-        return hr;
+	hr = ptrDevice->CreateBuffer(&g_Camera.m_CBChangesEveryFrame.m_bd, NULL, &g_Camera.m_CBChangesEveryFrame.m_pBuffer);
+	if (FAILED(hr))
+		return hr;
 
 	//FPS Camera
 	FirstPerson.m_CBChangesEveryFrame.init(bufferstrct);
@@ -1098,24 +1131,7 @@ HRESULT InitDevice()
 	if (FAILED(hr))
 		return hr;
 
-	//Create Light source cb	
-	bufferstrct.byteWidth = sizeof(LightCB);
-	LightBuffer.init(bufferstrct);
-	hr = ptrDevice->CreateBuffer(&LightBuffer.m_bd, NULL, &LightBuffer.m_pBuffer);
-	if (FAILED(hr))
-		return hr;
-
-	//Create Bone CB
-	bufferstrct.byteWidth = sizeof(BoneCB);
-	BoneBuffer.init(bufferstrct);
-	hr = ptrDevice->CreateBuffer(&BoneBuffer.m_bd, NULL, &BoneBuffer.m_pBuffer);
-
-    // Load the Texture 
-    hr = D3DX11CreateShaderResourceViewFromFile( ptrDevice, L"seafloor.dds", NULL, NULL, &g_pTextureRV, NULL );
-    if( FAILED( hr ) )
-        return hr;
-
-    // Create the sample state
+	// Create the sample state
 	SAMPLER_DESC samplerDsc;
 	ZeroMemory(&samplerDsc, sizeof(samplerDsc));
 	samplerDsc.filter = FILTER_MIN_MAG_MIP_LINEAR;
@@ -1128,18 +1144,18 @@ HRESULT InitDevice()
 
 	g_SamplerState.init(samplerDsc);
 
-    hr = ptrDevice->CreateSamplerState( &g_SamplerState.m_Desc, &g_SamplerState.m_pSamplerLinear );
-    if( FAILED( hr ) )
-        return hr;
+	hr = ptrDevice->CreateSamplerState(&g_SamplerState.m_Desc, &g_SamplerState.m_pSamplerLinear);
+	if (FAILED(hr))
+		return hr;
 
 #endif
-    // Initialize the world matrix
+	// Initialize the world matrix
 	g_World = glm::mat4(1.0f);
 
-    // Initialize VM and PM of cameras
+	// Initialize VM and PM of cameras
 	CameraDesc MyDesc;
-	MyDesc.Pos = { 0.f, 5.f, -6.f };
-	MyDesc.LAt = { 0.f, 1.f, 0.f };
+	MyDesc.Pos = { 10.f, 0.f, 0.f };
+	MyDesc.LAt = { 0.f, 0.f, 0.f };
 	MyDesc.Up = { 0.f, 1.f, 0.f };
 	MyDesc.FOV = PIDIV4;
 	MyDesc.Width = width;
@@ -1152,7 +1168,7 @@ HRESULT InitDevice()
 
 	// Set Free Camera VM
 
-    CBNeverChanges cbNeverChanges;
+	CBNeverChanges cbNeverChanges;
 	cbNeverChanges.mView = g_Camera.View;
 #ifdef D3D11
 	ptrDC->UpdateSubresource(g_Camera.m_CBNeverChanges.m_pBuffer, 0, NULL, &cbNeverChanges, 0, 0);
@@ -1165,11 +1181,11 @@ HRESULT InitDevice()
 	ptrDC->UpdateSubresource(FirstPerson.m_CBNeverChanges.m_pBuffer, 0, NULL, &cbNeverChanges2, 0, 0);
 #endif // D3D11
 
-    // Initialize Free Camera PM    
-    CBChangeOnResize cbChangesOnResize;
+	// Initialize Free Camera PM    
+	CBChangeOnResize cbChangesOnResize;
 	cbChangesOnResize.mProjection = glm::transpose(g_Camera.Proj);
 #ifdef D3D11
-	ptrDC->UpdateSubresource( g_Camera.m_CBChangesOnResize.m_pBuffer, 0, NULL, &cbChangesOnResize, 0, 0 );
+	ptrDC->UpdateSubresource(g_Camera.m_CBChangesOnResize.m_pBuffer, 0, NULL, &cbChangesOnResize, 0, 0);
 #endif
 
 	//Initialize FPS Camera PM
@@ -1178,20 +1194,6 @@ HRESULT InitDevice()
 #ifdef D3D11
 	ptrDC->UpdateSubresource(FirstPerson.m_CBChangesOnResize.m_pBuffer, 0, NULL, &cbChangesOnResize2, 0, 0);
 #endif
-	//Set Light direction
-	LightCB L;
-	g_LightDir = { 0.f, -1.f, 0.f, 0.f };
-	g_PointPos = { 1.f, 0.f, 1.f, 0.f };
-	g_PointAtt = { 1.f, 0.f, 0.f, 0.f };
-	g_LightColor = { 1.f, 1.f, 1.f, 1.f };
-	L.lightPointPos = g_PointPos;
-	L.lightPointAtt = g_PointAtt;
-	L.mLightDir = g_LightDir;
-	L.lightColor = g_LightColor;
-#ifdef D3D11
-	ptrDC->UpdateSubresource(LightBuffer.m_pBuffer, 0, NULL, &L, 0, 0);
-#endif // D3D11
-
 
 	//Initialize texture, SRV and RTV for inactive camera
 
@@ -1201,11 +1203,11 @@ HRESULT InitDevice()
 	D.W = width;
 	D.H = height;
 	D.mipLevels = D.arraySize = 1;
-	D.format = FORMAT_R8G8B8A8_UNORM;
+	D.format = FORMAT_R16G16B16A16_FLOAT;
 	D.sampleDesc.count = 1;
 	D.usage = USAGE_DEFAULT;
 	D.flags = 8 | 32;		//D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-	D.cpuAccessFlags = 65536;//D3D11_CPU_ACCESS_WRITE;
+	D.cpuAccessFlags = 0;	//D3D11_CPU_ACCESS_WRITE;
 	D.miscFlags = 0;
 
 	InactiveCameraTexture.init(D);
@@ -1243,12 +1245,16 @@ HRESULT InitDevice()
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	ImGui_ImplWin32_Init(g_hWnd);
-	ImGui_ImplDX11_Init(ptrDevice,ptrDC);
+	ImGui_ImplDX11_Init(ptrDevice, ptrDC);
 	ImGui::StyleColorsDark();
 
 	g_pDevice->m_Device = ptrDevice;
 	g_DeviceContext->m_DeviceContext = ptrDC;
-	MyScene = graphicApi.loadMesh("Models/dwarf.x", &SCManager, graphicApi.m_Model, g_DeviceContext, g_pDevice, MyImporter);
+	//Scene model
+	graphicApi.loadMesh("Models/drakefire_pistol_low.obj", &SCManager, graphicApi.m_Model, g_DeviceContext, g_pDevice, MyImporter, "Models/base_albedo.jpg", "Models/base_normal.jpg", "Models/base_metallic.jpg", false);
+
+	//Screen aligned quad
+	graphicApi.loadMesh("Models/ScreenAlignedQuad.3ds", &SCAQ, graphicApi.m_Model, g_DeviceContext, g_pDevice, MyImporter, "", "", "", false);
 
 #endif
 
@@ -1256,14 +1262,300 @@ HRESULT InitDevice()
 	ActiveCamera = &g_Camera;
 	InactiveCamera = &FirstPerson;
 
+	//Initialize  Rasterizer state
+	D3D11_RASTERIZER_DESC	rsdesc;
+	ZeroMemory(&rsdesc, sizeof(rsdesc));
+	rsdesc.FillMode = D3D11_FILL_SOLID;
+	rsdesc.CullMode = D3D11_CULL_FRONT;
+	rsdesc.FrontCounterClockwise = true;
+
+	hr = g_pDevice->m_Device->CreateRasterizerState(&rsdesc, &g_GBufferRS);
+
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	rsdesc.CullMode = D3D11_CULL_NONE;
+
+	hr = g_pDevice->m_Device->CreateRasterizerState(&rsdesc, &g_SAQDRS);
+
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	//Initialize Depth stencil state
+
+	D3D11_DEPTH_STENCIL_DESC dsdesc;
+	ZeroMemory(&dsdesc, sizeof(dsdesc));
+	dsdesc.StencilEnable = true;
+	dsdesc.DepthEnable = true;
+
+	dsdesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	dsdesc.DepthFunc = D3D11_COMPARISON_LESS;
+
+	dsdesc.StencilReadMask = 0xFF;
+	dsdesc.StencilWriteMask = 0xFF;
+
+	dsdesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	dsdesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	dsdesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	dsdesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	dsdesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	dsdesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	dsdesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	dsdesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	hr = g_pDevice->m_Device->CreateDepthStencilState(&dsdesc, &g_GBufferDSS);
+
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	dsdesc.StencilEnable = false;
+	dsdesc.DepthEnable = false;
+
+	hr = g_pDevice->m_Device->CreateDepthStencilState(&dsdesc, &g_SAQDDSS);
+
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	//Initialize passes
+
+	//GBuffer
 	StructPass P;
 	P.DeviceContext = g_DeviceContext;
-	P.LightBuffer = &LightBuffer;
-	P.PixelShader = &g_PixelShader;
-	P.VertexShader = &g_VertexShader;
-	P.BoneBuffer = &BoneBuffer;
+	P.RTVcount = 5;
+	P.Device = g_pDevice;
+	P.TextureStruct = D;
+	ZeroMemory(&P.rstate, sizeof(P.rstate));
+	P.rstate.FillMode = D3D11_FILL_SOLID;
+	P.rstate.CullMode = D3D11_CULL_FRONT;
+	P.rstate.FrontCounterClockwise = true;
 
-	DiffusePass.init(P);
+	CompileShaders(L"Tutorial07.fx", "vs_main", "ps_main", DiffusePass.m_pVS, DiffusePass.m_pPS);
+
+	DiffusePass.init(P, 1);
+
+	//SSAO
+	P.RTVcount = 1;
+	P.rstate.CullMode = D3D11_CULL_NONE;
+	CompileShaders(L"SSAO.fx", "vs_main", "ps_main", SSAOPass.m_pVS, SSAOPass.m_pPS);
+
+	SSAOPass.init(P, 1);
+
+	BufferStruct ssaoBS;
+	ssaoBS.usage = USAGE_DEFAULT;
+	ssaoBS.byteWidth = sizeof(SSAOCB);
+	ssaoBS.bindFlags = 4;
+	ssaoBS.cpuAccessFlags = 0;
+
+	SSAOBuffer.init(ssaoBS);
+	hr = ptrDevice->CreateBuffer(&SSAOBuffer.m_bd, NULL, &SSAOBuffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	SSAOCB CB;
+	SSAOConsBuff.kIntensity = 8.2f;
+	SSAOConsBuff.kScale = .5f;
+	SSAOConsBuff.kBias = .1f;
+	SSAOConsBuff.kSample = 2.4f;
+
+	SSAOPass.m_ShaderResources.push_back(DiffusePass.m_PassOutput[0]);
+	SSAOPass.m_ShaderResources.push_back(DiffusePass.m_PassOutput[2]);
+
+	//Skybox
+	CompileShaders(L"Skybox.fx", "vs_main", "ps_main", SkyboxPass.m_pVS, SkyboxPass.m_pPS);
+	SkyboxPass.init(P, 1);
+
+	graphicApi.loadMesh("Models/Sphere.3ds", &Cube, graphicApi.m_Model, g_DeviceContext, g_pDevice, MyImporter, "", "", "", false);
+
+	D3DX11_IMAGE_LOAD_INFO loadinfo;
+	loadinfo.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+
+	ID3D11Texture2D* texture;
+	hr = D3DX11CreateTextureFromFile(g_pDevice->m_Device, L"Models/grace_cube.dds", &loadinfo, 0, (ID3D11Resource**)&texture, 0);
+
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	D3D11_TEXTURE2D_DESC textureDesc;
+	texture->GetDesc(&textureDesc);
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
+	ZeroMemory(&viewDesc, sizeof(viewDesc));
+	viewDesc.Format = textureDesc.Format;
+	viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
+	viewDesc.TextureCube.MipLevels = textureDesc.MipLevels;
+	viewDesc.TextureCube.MostDetailedMip = 0;
+
+	hr = g_pDevice->m_Device->CreateShaderResourceView(texture, &viewDesc, &Cube.getMesh(0)->m_Materials->m_TextureDiffuse);
+
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	//Light
+	P.RTVcount = 1;
+	LightPass.init(P, 1);
+
+	ID3D11Texture2D* irradiancetexture;
+	hr = D3DX11CreateTextureFromFile(g_pDevice->m_Device, L"Models/grace_diffuse_cube.dds", &loadinfo, 0, (ID3D11Resource**)&irradiancetexture, 0);
+
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	hr = g_pDevice->m_Device->CreateShaderResourceView(irradiancetexture, &viewDesc, &irradiancesrv);
+
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	LightPass.m_ShaderResources.push_back(DiffusePass.m_PassOutput[4]);
+	LightPass.m_ShaderResources.push_back(DiffusePass.m_PassOutput[1]);
+	LightPass.m_ShaderResources.push_back(DiffusePass.m_PassOutput[2]);
+	LightPass.m_ShaderResources.push_back(DiffusePass.m_PassOutput[3]);	
+	LightPass.m_ShaderResources.push_back(SkyboxPass.m_PassOutput[0]);
+	LightPass.m_ShaderResources.push_back(irradiancesrv);
+
+	//LightPass.m_pRTVs.push_back(SkyboxPass.m_pRTVs[0]);
+	//LightPass.m_PassOutput.push_back(SkyboxPass.m_PassOutput[0]);
+
+	CompileShaders(L"Light.fx", "vs_main", "ps_main", LightPass.m_pVS, LightPass.m_pPS);
+
+	LightConsBuff.kDiffuse = 1.f;
+	LightConsBuff.kAmbient = .028f;
+	LightConsBuff.kSpecular = 2.f;
+	LightConsBuff.specularPower = 16.f;
+	LightConsBuff.lightDir = { -1, -1, -1, 0 };
+	LightConsBuff.lightColor = {.97f, .94f, 1.f, 1.f};
+
+	BufferStruct lightBS;
+	lightBS.usage = USAGE_DEFAULT;
+	lightBS.byteWidth = sizeof(LightCB);
+	lightBS.bindFlags = 4;
+	lightBS.cpuAccessFlags = 0;
+
+	LightBuffer.init(lightBS);
+	hr = ptrDevice->CreateBuffer(&LightBuffer.m_bd, NULL, &LightBuffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	//Luminance
+	P.RTVcount = 1;
+	P.TextureStruct.mipLevels = 5;
+	P.TextureStruct.miscFlags = 0x1L;
+	LuminancePass.init(P, -1);
+
+	LuminancePass.m_ShaderResources.push_back(LightPass.m_PassOutput[0]);
+
+	CompileShaders(L"Luminance.fx", "vs_main", "ps_main", LuminancePass.m_pVS, LuminancePass.m_pPS);
+
+	//Bright
+	BrightPass.init(P, -1);
+
+	BrightPass.m_ShaderResources.push_back(LuminancePass.m_PassOutput[0]);
+	BrightPass.m_ShaderResources.push_back(LightPass.m_PassOutput[0]);
+
+	CompileShaders(L"Bright.fx", "vs_main", "ps_main", BrightPass.m_pVS, BrightPass.m_pPS);
+
+	BufferStruct brightBS;
+	brightBS.usage = USAGE_DEFAULT;
+	brightBS.byteWidth = sizeof(BrightCB);
+	brightBS.bindFlags = 4;
+	brightBS.cpuAccessFlags = 0;
+
+	BrightBuffer.init(brightBS);
+	hr = ptrDevice->CreateBuffer(&BrightBuffer.m_bd, NULL, &BrightBuffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	BrightConsBuff.mipLevel = 0;
+	BrightConsBuff.Threshold.x = .16f;
+
+	//BlurH1
+
+	BlurH1.init(P, -1);
+
+	BlurH1.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+
+	CompileShaders(L"BlurH.fx", "vs_main", "ps_main", BlurH1.m_pVS, BlurH1.m_pPS);
+
+	BufferStruct blurhBS;
+	blurhBS.usage = USAGE_DEFAULT;
+	blurhBS.byteWidth = sizeof(BlurCB);
+	blurhBS.bindFlags = 4;
+	blurhBS.cpuAccessFlags = 0;
+
+	BlurH1Buffer.init(blurhBS);
+	hr = ptrDevice->CreateBuffer(&BlurH1Buffer.m_bd, NULL, &BlurH1Buffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	BlurH1ConsBuff.mipLevel = 4;
+	BlurH1ConsBuff.Viewport.x = width;
+
+	//BlurV1
+
+	BlurV1.init(P, -1);
+
+	BlurV1.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+
+	CompileShaders(L"BlurV.fx", "vs_main", "ps_main", BlurV1.m_pVS, BlurV1.m_pPS);
+
+	BlurV1Buffer.init(blurhBS);
+	hr = ptrDevice->CreateBuffer(&BlurV1Buffer.m_bd, NULL, &BlurV1Buffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	BlurV1ConsBuff.mipLevel = 4;
+	BlurV1ConsBuff.Viewport.x = height;
+
+	//AddBright1
+
+	AddBright1.init(P, -1);
+
+	AddBright1.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+	AddBright1.m_ShaderResources.push_back(BlurH1.m_PassOutput[0]);
+	AddBright1.m_ShaderResources.push_back(BlurV1.m_PassOutput[0]);
+
+	CompileShaders(L"AddBright.fx", "vs_main", "ps_main", AddBright1.m_pVS, AddBright1.m_pPS);
+
+	BufferStruct addbrightBS;
+	addbrightBS.usage = USAGE_DEFAULT;
+	addbrightBS.byteWidth = sizeof(AddBrightCB);
+	addbrightBS.bindFlags = 4;
+	addbrightBS.cpuAccessFlags = 0;
+
+	AddBright1Buffer.init(addbrightBS);
+	hr = ptrDevice->CreateBuffer(&AddBright1Buffer.m_bd, NULL, &AddBright1Buffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	AddBright1ConsBuff.mipLevel.x = 3;
 
     return S_OK;
 }
@@ -1360,6 +1652,90 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 				if (ptrSC)
 				{
 					HRESULT h;
+
+					//Release all passes resources (textures, render target views & shader resource views)
+
+					AddBright1.releasePass();
+					BlurV1.releasePass();
+					BlurH1.releasePass();
+					BrightPass.releasePass();
+					LuminancePass.releasePass();
+					LightPass.releasePass();
+					SkyboxPass.releasePass();
+					SSAOPass.releasePass();
+					DiffusePass.releasePass();
+
+					//Texture
+					Texture2DStruct D;
+					ZeroMemory(&D, sizeof(D));
+					D.W = width;
+					D.H = height;
+					D.mipLevels = D.arraySize = 1;
+					D.format = FORMAT_R16G16B16A16_FLOAT;
+					D.sampleDesc.count = 1;
+					D.usage = USAGE_DEFAULT;
+					D.flags = 8 | 32;		//D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+					D.cpuAccessFlags = 0;	//D3D11_CPU_ACCESS_WRITE;
+					D.miscFlags = 0;
+
+					StructPass P;
+					P.DeviceContext = g_DeviceContext;
+					P.RTVcount = 5;
+					P.Device = g_pDevice;
+					P.TextureStruct = D;
+
+					//GBuffer
+					DiffusePass.init(P, 1);
+
+					//SSAO
+					P.RTVcount = 1;
+					SSAOPass.init(P, 1);
+					SSAOPass.m_ShaderResources.push_back(DiffusePass.m_PassOutput[0]);
+					SSAOPass.m_ShaderResources.push_back(DiffusePass.m_PassOutput[2]);
+
+					//Skybox
+					SkyboxPass.init(P, 1);
+
+					//Light
+					LightPass.init(P, 1);
+					LightPass.m_ShaderResources.push_back(DiffusePass.m_PassOutput[4]);
+					LightPass.m_ShaderResources.push_back(DiffusePass.m_PassOutput[1]);
+					LightPass.m_ShaderResources.push_back(DiffusePass.m_PassOutput[2]);
+					LightPass.m_ShaderResources.push_back(DiffusePass.m_PassOutput[3]);
+					LightPass.m_ShaderResources.push_back(SkyboxPass.m_PassOutput[0]);
+					LightPass.m_ShaderResources.push_back(irradiancesrv);
+
+					//Luminance
+					P.TextureStruct.mipLevels = 5;
+					P.TextureStruct.miscFlags = 0x1L;
+					LuminancePass.init(P, -1);
+					LuminancePass.m_ShaderResources.push_back(LightPass.m_PassOutput[0]);
+
+					//Bright
+					BrightPass.init(P, -1);
+
+					BrightPass.m_ShaderResources.push_back(LuminancePass.m_PassOutput[0]);
+					BrightPass.m_ShaderResources.push_back(LightPass.m_PassOutput[0]);
+
+					//BlurH1
+					BlurH1.init(P, -1);
+
+					BlurH1.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+					BlurH1ConsBuff.Viewport.x = width;
+
+					//BlurV1
+					BlurV1.init(P, -1);
+
+					BlurV1.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+					BlurV1ConsBuff.Viewport.x = height;
+
+					//AddBright1
+					AddBright1.init(P, -1);
+
+					AddBright1.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+					AddBright1.m_ShaderResources.push_back(BlurH1.m_PassOutput[0]);
+					AddBright1.m_ShaderResources.push_back(BlurV1.m_PassOutput[0]);
+
 					//Handle inactive camera first
 					//Release inactive camera texture, SRV and RTV
 					InactiveCameraTexture.m_pTexture->Release();
@@ -1520,6 +1896,13 @@ void Render()
         t = ( dwTimeCur - dwTimeStart ) / 1000.0f;
     }
 
+	float ClearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f }; // red, green, blue, alpha
+
+	//Set GBuffer and configs (constant buffers and resources)
+
+	DiffusePass.setPass(&DepthStencilViewFree);
+	DiffusePass.clear(ClearColor, &DepthStencilViewFree);
+
 	if (ActiveCamera->mForward || ActiveCamera->mBack || ActiveCamera->mLeft || ActiveCamera->mRight || ActiveCamera->mUp || ActiveCamera->mDown || ActiveCamera->mRotateLeft || ActiveCamera->mRotateRight)
 	{
 		ActiveCamera->move();
@@ -1528,6 +1911,8 @@ void Render()
 		cbNeverChanges.mView = ActiveCamera->View;
 		g_DeviceContext->m_DeviceContext->UpdateSubresource(ActiveCamera->m_CBNeverChanges.m_pBuffer, 0, NULL, &cbNeverChanges, 0, 0);
 	}
+
+	/*//Update bone transforms
 
 	std::vector<glm::mat4> Transforms;
 
@@ -1545,24 +1930,9 @@ void Render()
 		}
 	}
 
-	g_DeviceContext->m_DeviceContext->UpdateSubresource(BoneBuffer.m_pBuffer, 0, NULL, &cbBone, 0, 0);
-
-    // Rotate cube around the origin
-    //g_World = XMMatrixRotationY( t );
-	//g_World = glm::rotate(g_World, .001f, {0, 1, 0});
-
-    // Modify the color
-	g_MeshColor.x = (sinf(t * 1.0f) + 1.0f) * 0.5f;
-	g_MeshColor.y = (cosf(t * 3.0f) + 1.0f) * 0.5f;
-	g_MeshColor.z = (sinf(t * 5.0f) + 1.0f) * 0.5f;
-
-    
-    float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(BoneBuffer.m_pBuffer, 0, NULL, &cbBone, 0, 0);*/
 
 	//Set inactive camera RTV and DSV
-	//g_DeviceContext->m_DeviceContext->OMSetRenderTargets(1, &SecondRTV.m_pRTV, DepthStencilViewFree.m_pDepthStencilView);
-	g_DeviceContext->m_DeviceContext->ClearRenderTargetView(g_RenderTargetView.m_pRTV, ClearColor);
-	g_DeviceContext->m_DeviceContext->ClearDepthStencilView(DepthStencilViewFree.m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 	CBChangesEveryFrame cbMesh;
 	cbMesh.mWorld =
 	{
@@ -1572,173 +1942,129 @@ void Render()
 		0, 0, 0, 1
 	};
 
-	cbMesh.vMeshColor = { 1, 1, 1, 1 };
-	cbMesh.vmViewPos = { ActiveCamera->getLAt().x, ActiveCamera->getLAt().y, ActiveCamera->getLAt().z, 0 };
 	g_DeviceContext->m_DeviceContext->UpdateSubresource(ActiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cbMesh, 0, 0);
 
-	LightCB lcb;
-	lcb.mLightDir = g_LightDir;
-	lcb.lightPointPos = g_PointPos;
-	lcb.lightPointAtt = g_PointAtt;
-	lcb.lightColor = g_LightColor;
-	g_DeviceContext->m_DeviceContext->UpdateSubresource(LightBuffer.m_pBuffer, 0, NULL, &lcb, 0, 0);
+	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(0, 1, &ActiveCamera->m_CBNeverChanges.m_pBuffer);
+	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(1, 1, &ActiveCamera->m_CBChangesOnResize.m_pBuffer);
+	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+
+	DiffusePass.setRasterizerState(g_GBufferRS);
+	DiffusePass.setDepthStencilState(g_GBufferDSS, 0);
+	
 	g_DeviceContext->m_DeviceContext->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
 
-	//DiffusePass.render(&SecondRTV, &DepthStencilViewFree, &SCManager, InactiveCamera);
-	DiffusePass.render(&g_RenderTargetView, &DepthStencilViewFree, &SCManager, ActiveCamera);
+	DiffusePass.draw(&SCManager, sizeof(SimpleVertex));
 
-	//unsigned int stride = sizeof(SimpleVertex);
-	//unsigned int offset = 0;
-	//
-	//g_DeviceContext->m_DeviceContext->IASetVertexBuffers(0, 1, &g_VertexBuffer.m_Buffer.m_pBuffer, &stride, &offset);
-	//g_DeviceContext->m_DeviceContext->IASetIndexBuffer(g_IndexBuffer.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
-	//
-	//CBChangesEveryFrame cb;
-	//g_World = glm::mat4(1.f);
-	//g_World = glm::translate(g_World,ActiveCamera->getPos());
-	//cb.mWorld = glm::transpose(g_World);
-	//cb.vMeshColor = g_MeshColor;
-	//g_DeviceContext->m_DeviceContext->UpdateSubresource(InactiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
-	//
-	////Draw main camera into second RT if visible
-	//*ptrDC->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
-	//ptrDC->VSSetConstantBuffers(0, 1, &InactiveCamera->m_CBNeverChanges.m_pBuffer);
-	//ptrDC->VSSetConstantBuffers(1, 1, &InactiveCamera->m_CBChangesOnResize.m_pBuffer);
-	//ptrDC->VSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-	//ptrDC->PSSetShader(g_PixelShader.m_pPixelShader, NULL, 0);
-	//ptrDC->PSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-	//ptrDC->PSSetShaderResources(0, 1, &g_pTextureRV);
-	//ptrDC->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
-	//ptrDC->DrawIndexed(36, 0, 0);
-	//ID3D11ShaderResourceView* temp = NULL;
-	//ptrDC->PSSetShaderResources(0, 1, &temp);*/
-	//
-	//for (int i = 0; i < 32; i++){
-	//
-	//	g_World = glm::mat4(1.f);
-	//	g_World = glm::translate(g_World, Lab[i]);
-	//	
-	//	cb.mWorld = glm::transpose(g_World);
-	//	cb.vMeshColor = g_MeshColor;
-	//	g_DeviceContext->m_DeviceContext->UpdateSubresource(InactiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
-	//
-	//	g_DeviceContext->m_DeviceContext->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
-	//	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(0, 1, &InactiveCamera->m_CBNeverChanges.m_pBuffer);
-	//	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(1, 1, &InactiveCamera->m_CBChangesOnResize.m_pBuffer);
-	//	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-	//	
-	//	g_DeviceContext->m_DeviceContext->PSSetShader(g_PixelShader.m_pPixelShader, NULL, 0);
-	//	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-	//	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(3, 1, &LightBuffer.m_pBuffer);
-	//	g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &g_pTextureRV);
-	//	g_DeviceContext->m_DeviceContext->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
-	//	g_DeviceContext->m_DeviceContext->DrawIndexed(36, 0, 0);
-	//	ID3D11ShaderResourceView* temp = NULL;
-	//	g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &temp);
-	//}
-	//
-	////Draw model
-	//CBChangesEveryFrame cbMesh;
-	//cbMesh.mWorld =
-	//{
-	//	1, 0, 0, ActiveCamera->getPos().x,
-	//	0, 1, 0, ActiveCamera->getPos().y,
-	//	0, 0, 1, ActiveCamera->getPos().z,
-	//	0, 0, 0, 1
-	//};
-	//
-	//cbMesh.vMeshColor = { 1, 1, 1, 1 };
-	//g_DeviceContext->m_DeviceContext->UpdateSubresource(InactiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cbMesh, 0, 0);
-	//for (int i = 0; i < SCManager.m_MeshList.size(); i++)
-	//{
-	//	g_DeviceContext->m_DeviceContext->IASetVertexBuffers(0, 1, &SCManager.m_MeshList[i]->m_VB->m_pBuffer, &stride, &offset);
-	//	g_DeviceContext->m_DeviceContext->IASetIndexBuffer(SCManager.m_MeshList[i]->m_IB->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
-	//
-	//	//g_DeviceContext->m_DeviceContext->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);		
-	//	
-	//	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(1, 1, &InactiveCamera->m_CBChangesOnResize.m_pBuffer);
-	//	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-	//	g_DeviceContext->m_DeviceContext->VSSetShaderResources(0, 1, &SCManager.m_MeshList[i]->m_Materials->m_TextureDiffuse);
-	//	
-	//	//g_DeviceContext->m_DeviceContext->PSSetShader(g_PixelShader.m_pPixelShader, NULL, 0);
-	//	
-	//	g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &SCManager.m_MeshList[i]->m_Materials->m_TextureDiffuse);
-	//	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(2, 1, &InactiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-	//	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(3, 1, &LightBuffer.m_pBuffer);
-	//
-	//	g_DeviceContext->m_DeviceContext->DrawIndexed(SCManager.m_MeshList[i]->m_IndexNum, 0, 0);
-	//}
-	//
-	////Set backbuffer and main DSV
-	//g_DeviceContext->m_DeviceContext->OMSetRenderTargets(1, &g_RenderTargetView.m_pRTV, DepthStencilViewFree.m_pDepthStencilView);
-	//g_DeviceContext->m_DeviceContext->ClearRenderTargetView(g_RenderTargetView.m_pRTV, ClearColor);
-	//g_DeviceContext->m_DeviceContext->ClearDepthStencilView( DepthStencilViewFree.m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0 );
-	//
-	//g_DeviceContext->m_DeviceContext->IASetVertexBuffers(0, 1, &g_VertexBuffer.m_Buffer.m_pBuffer, &stride, &offset);
-	//g_DeviceContext->m_DeviceContext->IASetIndexBuffer(g_IndexBuffer.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
-	//
-	//   //
-	//   // Update variables that change once per frame
-	//   //
-	//
-	//for (int i = 0; i < 32; i++){
-	//	
-	//	g_World = glm::mat4(1.f);
-	//	g_World = glm::translate(g_World, Lab[i]);
-	//
-	//	cb.mWorld = glm::transpose(g_World);
-	//	cb.vMeshColor = g_MeshColor;
-	//	g_DeviceContext->m_DeviceContext->UpdateSubresource(ActiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
-	//
-	//	g_DeviceContext->m_DeviceContext->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
-	//	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(0, 1, &ActiveCamera->m_CBNeverChanges.m_pBuffer);
-	//	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(1, 1, &ActiveCamera->m_CBChangesOnResize.m_pBuffer);
-	//	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-	//	
-	//
-	//	g_DeviceContext->m_DeviceContext->PSSetShader( g_PixelShader.m_pPixelShader, NULL, 0);
-	//	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-	//	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(3, 1, &LightBuffer.m_pBuffer);
-	//	g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &InactiveSRV);
-	//	g_DeviceContext->m_DeviceContext->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
-	//	g_DeviceContext->m_DeviceContext->DrawIndexed(36, 0, 0);
-	//	ID3D11ShaderResourceView* temp = NULL;
-	//	g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &temp);
-	//}
-	////Draw billboard
-	//
-	//g_DeviceContext->m_DeviceContext->IASetVertexBuffers(0, 1, &g_BoardVB.m_Buffer.m_pBuffer, &stride, &offset);
-	//g_DeviceContext->m_DeviceContext->IASetIndexBuffer(g_BoardIB.m_Buffer.m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
-	//
-	//glm::vec3 boardLook = glm::normalize(ActiveCamera->getPos() - boardpos);
-	//glm::vec3 boardRight = glm::cross(glm::normalize(ActiveCamera->Up), boardLook);
-	//glm::vec3 boardUp = glm::cross(boardLook, boardRight);
-	//
-	//glm::mat4 boarMat(boardRight.x, boardRight.y, boardRight.z, 0, boardUp.x, boardUp.y, boardUp.z, 0, boardLook.x, boardLook.y, boardLook.z, 0, boardpos.x, boardpos.y, boardpos.z, 1);
-	//
-	//g_World = boarMat;
-	//
-	//cb.mWorld = glm::transpose(g_World);
-	//cb.vMeshColor = g_MeshColor;
-	//g_DeviceContext->m_DeviceContext->UpdateSubresource(ActiveCamera->m_CBChangesEveryFrame.m_pBuffer, 0, NULL, &cb, 0, 0);
-	//
-	//g_DeviceContext->m_DeviceContext->VSSetShader(g_VertexShader.m_pVertexShader, NULL, 0);
-	//g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(0, 1, &ActiveCamera->m_CBNeverChanges.m_pBuffer);
-	//g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(1, 1, &ActiveCamera->m_CBChangesOnResize.m_pBuffer);
-	//g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-	//
-	//
-	//g_DeviceContext->m_DeviceContext->PSSetShader(g_PixelShader.m_pPixelShader, NULL, 0);
-	//g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
-	//g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(3, 1, &LightBuffer.m_pBuffer);
-	//g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &InactiveSRV);
-	//g_DeviceContext->m_DeviceContext->PSSetSamplers(0, 1, &g_SamplerState.m_pSamplerLinear);
-	//g_DeviceContext->m_DeviceContext->DrawIndexed(6, 0, 0);
-	//ID3D11ShaderResourceView* temp = NULL;
-	//g_DeviceContext->m_DeviceContext->PSSetShaderResources(0, 1, &temp);
+	//SSAO
+
+	ClearColor[0] = 0.f;
+	ClearColor[1] = 0.f;
+	ClearColor[2] = 0.f;
+	ClearColor[3] = 0.f;
+
+	SSAOPass.setPass(&DepthStencilViewFree);
+
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(SSAOBuffer.m_pBuffer, 0, NULL, &SSAOConsBuff, 0, 0);
+	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(0, 1, &SSAOBuffer.m_pBuffer);	
+
+	SSAOPass.setRasterizerState(g_SAQDRS);
+	SSAOPass.setDepthStencilState(g_SAQDDSS, 0);
+
+	SSAOPass.draw(&SCAQ, sizeof(SimpleVertex));
+
+	//Skybox
+
+	SkyboxPass.setPass(&DepthStencilViewFree);
+
+	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(0, 1, &ActiveCamera->m_CBNeverChanges.m_pBuffer);
+	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(1, 1, &ActiveCamera->m_CBChangesOnResize.m_pBuffer);
+	g_DeviceContext->m_DeviceContext->VSSetConstantBuffers(2, 1, &ActiveCamera->m_CBChangesEveryFrame.m_pBuffer);
+
+	SkyboxPass.draw(&Cube, sizeof(SimpleVertex));
+
+	//Light
+
+	LightPass.setPass(&DepthStencilViewFree);
+	LightConsBuff.vViewPos = { ActiveCamera->getLAt().x, ActiveCamera->getLAt().y, ActiveCamera->getLAt().z, 0 };
+
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(LightBuffer.m_pBuffer, 0, NULL, &LightConsBuff, 0, 0);
+	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(0, 1, &LightBuffer.m_pBuffer);
+
+	LightPass.draw(&SCAQ, sizeof(SimpleVertex));
+
+	//Luminance
+
+	LuminancePass.setPass(&DepthStencilViewFree);
+	LuminancePass.draw(&SCAQ, sizeof(SimpleVertex));
+
+	g_DeviceContext->m_DeviceContext->GenerateMips(LuminancePass.m_PassOutput[0]);
+
+	//Bright
+
+	BrightPass.setPass(&DepthStencilViewFree);
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(BrightBuffer.m_pBuffer, 0, NULL, &BrightConsBuff, 0, 0);
+	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(0, 1, &BrightBuffer.m_pBuffer);
+
+	BrightPass.draw(&SCAQ, sizeof(SimpleVertex));
+
+	g_DeviceContext->m_DeviceContext->GenerateMips(BrightPass.m_PassOutput[0]);
+
+	//BlurH1
+
+	BlurH1.setPass(&DepthStencilViewFree);
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(BlurH1Buffer.m_pBuffer, 0, NULL, &BlurH1ConsBuff, 0, 0);
+	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(0, 1, &BlurH1Buffer.m_pBuffer);
+
+	BlurH1.draw(&SCAQ, sizeof(SimpleVertex));
+
+	g_DeviceContext->m_DeviceContext->GenerateMips(BlurH1.m_PassOutput[0]);
+
+	//BlurV1
+
+	BlurV1.setPass(&DepthStencilViewFree);
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(BlurV1Buffer.m_pBuffer, 0, NULL, &BlurV1ConsBuff, 0, 0);
+	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(0, 1, &BlurV1Buffer.m_pBuffer);
+
+	BlurH1.draw(&SCAQ, sizeof(SimpleVertex));
+
+	g_DeviceContext->m_DeviceContext->GenerateMips(BlurV1.m_PassOutput[0]);
+
+	//AddBright1
+
+	AddBright1.setPass(&DepthStencilViewFree);
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(AddBright1Buffer.m_pBuffer, 0, NULL, &AddBright1ConsBuff, 0, 0);
+	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(0, 1, &AddBright1Buffer.m_pBuffer);
+
+	AddBright1.draw(&SCAQ, sizeof(SimpleVertex));
+
+	g_DeviceContext->m_DeviceContext->GenerateMips(AddBright1.m_PassOutput[0]);
+
+	//BlurH2
+
+	//BlurV2
+
+	//AddBright2
+
+	//BlurH3
+
+	//BlurV3
+
+	//AddBright3
+
+	//BlurH4
+
+	//BlurV4
+
+	//AddBright4
+
+	//ToneMap
+
     //
     // Present our back buffer to our front buffer
     //
+
+	g_DeviceContext->m_DeviceContext->OMSetRenderTargets(1, &g_RenderTargetView.m_pRTV, DepthStencilViewFree.m_pDepthStencilView);
+	g_DeviceContext->m_DeviceContext->ClearRenderTargetView(g_RenderTargetView.m_pRTV, ClearColor);
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	ptrSC->Present( 0, 0 );

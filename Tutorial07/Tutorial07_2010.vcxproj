@@ -891,6 +891,7 @@
     <ClCompile Include="CModel.cpp" />
     <ClCompile Include="CPass.cpp" />
     <ClCompile Include="CPixelShader.cpp" />
+    <ClCompile Include="CRasterizerState.cpp" />
     <ClCompile Include="CRenderTargetView.cpp" />
     <ClCompile Include="CSamplerState.cpp" />
     <ClCompile Include="CSceneManager.cpp" />
@@ -904,6 +905,118 @@
     <ClCompile Include="Tutorial07.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="AddBright.fx">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="BlurH.fx">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="BlurV.fx">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Bright.fx">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Light.fx">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Luminance.fx">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">ps_main</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Skybox.fx">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">ps_main</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">ps_main</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">ps_main</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">ps_main</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">Effect</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">Effect</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">Effect</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">Effect</ShaderType>
+    </FxCompile>
+    <FxCompile Include="SSAO.fx">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">PS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">PS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">PS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">4.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">PS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">4.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="Tutorial07Animation.fx">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">vs_main</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">Effect</ShaderType>
@@ -922,14 +1035,14 @@
       <FileType>Document</FileType>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|Win32'">PS</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PS</EntryPointName>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">PS</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|Win32'">ps_main</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='OPENGL_R|Win32'">PS</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PS</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='OPENGL_D|Win32'">PS</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">PS</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_R|x64'">PS</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">PS</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='DIRECTX_D|x64'">ps_main</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='OPENGL_R|x64'">PS</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PS</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='OPENGL_D|x64'">PS</EntryPointName>
@@ -1002,6 +1115,7 @@
     <ClInclude Include="CModel.h" />
     <ClInclude Include="CPass.h" />
     <ClInclude Include="CPixelShader.h" />
+    <ClInclude Include="CRasterizerState.h" />
     <ClInclude Include="CRenderTargetView.h" />
     <ClInclude Include="CSamplerState.h" />
     <ClInclude Include="CSceneManager.h" />
