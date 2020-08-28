@@ -12,42 +12,47 @@
 
 struct StructPass
 {
+#ifdef D3D11
 	CDeviceContext	* DeviceContext;
 	CDevice			* Device;
 	CViewport		* Viewport;
 	unsigned int	RTVcount;
 	Texture2DStruct TextureStruct;
-#ifdef D3D11
+
 	D3D11_RASTERIZER_DESC rstate;
 #endif // D3D11
-
 };
+
+#ifdef OPENGL
+#include "CModel.h"
+#endif // OPENGL
+
 
 class CPass
 {
 public:
 	CPass();
 	~CPass();
-
+#ifdef D3D11
 	CVertexShader		m_pVS;
 	CPixelShader		m_pPS;
 	CDeviceContext		* m_pDC;
 	CViewport			* m_pVP;
-#ifdef D3D11
+
 	ID3D11RasterizerState * m_pRS;
-#endif // D3D11
 	//Vector para almacenar render target views
 	std::vector<ID3D11RenderTargetView*>	m_pRTVs;
-	//Vector para almacenar las texturas del pase, que generar rtvs y shader resource views
-	std::vector<CTexture2D*> m_pTextures;
 	//Vector que almacena recursos provenientes de otros pases
 	std::vector<ID3D11ShaderResourceView*> m_ShaderResources;
 	//Vector que almacena shader resource views, para compartir con otros pases y dibujar con imgui
 	std::vector<ID3D11ShaderResourceView*> m_PassOutput;
 
+	//Vector para almacenar las texturas del pase, que generar rtvs y shader resource views
+	std::vector<CTexture2D*> m_pTextures;	
+
 	void init(StructPass P, int level);
 
-#ifdef D3D11
+
 	//Funcion para asignar los render target views
 	void setRT(CDepthStencilView * pDSV);
 	//Funcion para asignar los shaders del pase
@@ -70,6 +75,18 @@ public:
 	//Funcion para vaciar los recursos tomados de otros pases
 	void clearShaderResources();
 #elif OPENGL
+	
+	unsigned int m_Framebuffer;
+	std::vector<unsigned int> m_TextureColorBuffers;
+	unsigned int m_TextureAmount;
+	int m_ShaderProgram;
+	CModel * m_PassModel;
+
+	void init(unsigned int  texcount, int w, int h);
+	void compileShaders(const char* vsSource, const char * psSource);
+	void draw();
+	void insertTexture(int itexture);
 	void clear();
-#endif // D3D11	
+
+#endif
 };

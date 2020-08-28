@@ -131,7 +131,10 @@ CPass								SkyboxPass;
 CPass								LightPass;
 CBuffer								LightBuffer;
 LightCB								LightConsBuff;
+
+#ifdef D3D11
 ID3D11ShaderResourceView *			irradiancesrv;
+#endif // D3D11
 
 CPass								LuminancePass;
 
@@ -191,11 +194,13 @@ CPass								ToneMapPass;
 CBuffer								ToneMapBuffer;
 ToneMapCB							ToneMapConsBuff;
 
+#ifdef D3D11
 ID3D11DepthStencilState*			g_GBufferDSS;
 ID3D11DepthStencilState*			g_SAQDDSS;
 
 ID3D11RasterizerState*				g_GBufferRS;
 ID3D11RasterizerState*				g_SAQDRS;
+#endif // D3D11
 
 CBuffer								BoneBuffer;
 
@@ -238,7 +243,7 @@ void CleanupDevice();
 void Render();
 
 #elif OPENGL
-const char* vertexShaderSource = "#version 330 core\n"
+const char* defaultVS = "#version 400 core\n"
 "layout(location = 0) in vec3 aPos;\n"
 "layout(location = 1) in vec3 aNormal;\n"
 "layout(location = 2) in vec2 aTexCoords;\n"
@@ -255,7 +260,7 @@ const char* vertexShaderSource = "#version 330 core\n"
 	"Normal = aNormal;\n"
 "}\n";
 
-const char* fragmentShaderSource = "#version 330 core\n"
+const char* defaultPS = "#version 400 core\n"
 "out vec4 FragColor;\n"
 "in vec2 TexCoords;\n"
 "in vec3 Normal;\n"
@@ -563,8 +568,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 #else
 
 	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	GLFWwindow* window = glfwCreateWindow(800, 600, "Tutorial 07", NULL, NULL);
@@ -592,11 +597,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	}
 	// Setup Platform/Renderer bindings
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	ImGui_ImplOpenGL3_Init("#version 130");
+	ImGui_ImplOpenGL3_Init("#version 400");
 	glEnable(GL_DEPTH_TEST);
 	//Vertex shader
 	int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+	glShaderSource(vertexShader, 1, &defaultVS, NULL);
 	glCompileShader(vertexShader);
 	//VS error check
 	int success;
@@ -608,7 +613,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	}
 	//Pixel Shader
 	int pixelShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(pixelShader, 1, &fragmentShaderSource, NULL);
+	glShaderSource(pixelShader, 1, &defaultPS, NULL);
 	glCompileShader(pixelShader);
 	//PS error check
 	glGetShaderiv(pixelShader, GL_COMPILE_STATUS, &success);
@@ -646,7 +651,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	ActiveCamera = &g_Camera;
 	InactiveCamera = &FirstPerson;
 
-	CModel nano("Models/Scene/Scene.fbx");
+	CModel nano("Models/drakefire_pistol_low.obj", "base_albedo.jpg", "base_metallic.jpg", "base_normal.jpg");
 
 	//Framebuffer configuration
 	glGenFramebuffers(1, &framebuffer);
@@ -901,7 +906,7 @@ HRESULT CompileShaderFromFile( WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR sz
 
     return S_OK;
 }
-#endif
+
 
 HRESULT CompileShaders(WCHAR* shaderfile, const char* vertexEntryPoint, const char* pixelEntryPoint, CVertexShader &VS, CPixelShader &PS)
 {
@@ -1583,15 +1588,15 @@ HRESULT InitDevice()
 	AddBright1ConsBuff.mipLevel.x = 3;
 
 	//BlurH2
-	//P.RTVcount = 0;
+	P.RTVcount = 0;
 	BlurH2.init(P, -1);
 
 	BlurH2.m_pVS = BlurH1.m_pVS;
 	BlurH2.m_pPS = BlurH1.m_pPS;
 
 	BlurH2.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
-	//BlurH2.m_PassOutput.push_back(BlurH1.m_PassOutput[0]);
-	//BlurH2.m_pRTVs.push_back(BlurH1.m_pRTVs[0]);
+	BlurH2.m_PassOutput.push_back(BlurH1.m_PassOutput[0]);
+	BlurH2.m_pRTVs.push_back(BlurH1.m_pRTVs[0]);
 
 	BlurH2Buffer.init(blurhBS);
 	hr = ptrDevice->CreateBuffer(&BlurH2Buffer.m_bd, NULL, &BlurH2Buffer.m_pBuffer);
@@ -1604,7 +1609,6 @@ HRESULT InitDevice()
 	BlurH2ConsBuff.Viewport.x = width;
 
 	//BlurV2
-	P.RTVcount = 0;
 	BlurV2.init(P, -1);
 
 	BlurV2.m_pVS = BlurV1.m_pVS;
@@ -1807,7 +1811,7 @@ HRESULT InitDevice()
 
     return S_OK;
 }
-
+#endif
 
 //--------------------------------------------------------------------------------------
 // Clean up the objects we've created
@@ -2231,9 +2235,10 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 //--------------------------------------------------------------------------------------
 // Render a frame
 //--------------------------------------------------------------------------------------
+#ifdef D3D11
 void Render()
 {
-#ifdef D3D11
+
     // Update our time
     static float t = 0.0f;
     if( g_pDevice->m_struc.m_DriverType == D3D_DRIVER_TYPE_REFERENCE )
@@ -2506,5 +2511,5 @@ void Render()
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	ptrSC->Present( 0, 0 );
-#endif
 }
+#endif

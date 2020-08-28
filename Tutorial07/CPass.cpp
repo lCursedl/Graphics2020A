@@ -1,13 +1,16 @@
 #include "CPass.h"
 
+
 CPass::CPass()
 {
+#ifdef D3D11
 	m_pDC = nullptr;
 	m_pVP = nullptr;
+#endif // D3D11	
 }
 
 CPass::~CPass(){}
-
+#ifdef D3D11
 void CPass::setShaders()
 {
 #ifdef D3D11
@@ -232,3 +235,86 @@ void CPass::clearShaderResources()
 	}
 	m_ShaderResources.clear();
 }
+#elif OPENGL
+
+	void CPass::init(unsigned int texcount, int w, int h)
+	{
+		glGenFramebuffers(1, &m_Framebuffer);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_Framebuffer);
+		m_TextureAmount = texcount;
+		glGenTextures(m_TextureAmount, m_TextureColorBuffers.data());
+
+		for (int i = 0; i < m_TextureAmount; i++)
+		{
+			//Create texture
+			glBindTexture(GL_TEXTURE_2D, m_TextureColorBuffers[i]);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, w, h, 0, GL_RGBA, GL_FLOAT, NULL);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			//Attach texture to framebuffer
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_TextureColorBuffers[i], 0);
+		}
+
+	}
+
+	void CPass::compileShaders(const char * vsSource, const char * psSource)
+	{
+		//Vertex shader compilation
+		int m_VertexShader = glCreateShader(GL_VERTEX_SHADER);
+		glShaderSource(m_VertexShader, 1, &vsSource, NULL);
+		glCompileShader(m_VertexShader);
+		//VS error check
+		int success;
+		char infoLog[512];
+		glGetShaderiv(m_VertexShader, GL_COMPILE_STATUS, &success);
+		if (!success)
+		{
+			glGetShaderInfoLog(m_VertexShader, 512, NULL, infoLog);
+		}
+		//Pixel shader compilation
+		int m_PixelShader = glCreateShader(GL_FRAGMENT_SHADER);
+		glShaderSource(m_PixelShader, 1, &psSource, NULL);
+		glCompileShader(m_PixelShader);
+		//PS error check
+		glGetShaderiv(m_PixelShader, GL_COMPILE_STATUS, &success);
+		if (!success)
+		{
+			glGetShaderInfoLog(m_PixelShader, 512, NULL, infoLog);
+		}
+		//Link shaders
+		m_ShaderProgram = glCreateProgram();
+		glAttachShader(m_ShaderProgram, m_VertexShader);
+		glAttachShader(m_ShaderProgram, m_PixelShader);
+		glLinkProgram(m_ShaderProgram);
+		//Linking error check
+		glGetProgramiv(m_ShaderProgram, GL_LINK_STATUS, &success);
+		if (!success)
+		{
+			glGetProgramInfoLog(m_ShaderProgram, 512, NULL, infoLog);
+		}
+		glDeleteShader(m_VertexShader);
+		glDeleteShader(m_PixelShader);
+	}
+
+	void CPass::draw()
+	{
+		m_PassModel->Draw(m_ShaderProgram);
+	}
+
+	void CPass::insertTexture(int itexture)
+	{
+		Texture T;
+		T.id = itexture;
+		T.type = "texture_diffuse";
+		m_PassModel->meshes[0].textures.push_back(T);
+	}
+
+	void CPass::clear()
+	{
+		glClearColor(0.f, 0.f, 0.f, 1.f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
+#endif
