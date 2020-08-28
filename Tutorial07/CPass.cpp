@@ -217,13 +217,18 @@ void CPass::releasePass()
 		m_PassOutput[i]->Release();
 	}
 
+	m_pTextures.clear();
+	m_pRTVs.clear();
+	m_PassOutput.clear();
+
+	clearShaderResources();
+}
+
+void CPass::clearShaderResources()
+{
 	for (int i = 0; i < m_ShaderResources.size(); i++)
 	{
 		m_ShaderResources[i] = nullptr;
 	}
-
-	m_pTextures.clear();
-	m_pRTVs.clear();
-	m_PassOutput.clear();
 	m_ShaderResources.clear();
 }

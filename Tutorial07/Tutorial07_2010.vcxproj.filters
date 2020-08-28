@@ -334,5 +334,8 @@
     <FxCompile Include="AddBright.fx">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="ToneMap.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

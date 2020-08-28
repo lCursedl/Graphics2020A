@@ -187,6 +187,10 @@ CPass								AddBright4;
 CBuffer								AddBright4Buffer;
 AddBrightCB							AddBright4ConsBuff;
 
+CPass								ToneMapPass;
+CBuffer								ToneMapBuffer;
+ToneMapCB							ToneMapConsBuff;
+
 ID3D11DepthStencilState*			g_GBufferDSS;
 ID3D11DepthStencilState*			g_SAQDDSS;
 
@@ -505,21 +509,27 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 					ImGui::SliderInt("mipLevel", &BrightConsBuff.mipLevel, 0, 5);
 					ImGui::SliderFloat("Threshold", (float*)&BrightConsBuff.Threshold.x, 0.f, 1.f, "%.10f");
 				}
-				if (ImGui::CollapsingHeader("BlurH1"))
+				if (ImGui::CollapsingHeader("BlurH"))
 				{
 					for (int i = 0; i < BlurH1.m_PassOutput.size(); i++)
 					{
 						ImGui::Image(BlurH1.m_PassOutput[i], ImgDimension);
 					}
 					ImGui::SliderInt("mipLevelH1", &BlurH1ConsBuff.mipLevel, 0, 5);
+					ImGui::SliderInt("mipLevelH2", &BlurH2ConsBuff.mipLevel, 0, 5);
+					ImGui::SliderInt("mipLevelH3", &BlurH3ConsBuff.mipLevel, 0, 5);
+					ImGui::SliderInt("mipLevelH4", &BlurH4ConsBuff.mipLevel, 0, 5);
 				}
-				if (ImGui::CollapsingHeader("BlurV1"))
+				if (ImGui::CollapsingHeader("BlurV"))
 				{
 					for (int i = 0; i < BlurV1.m_PassOutput.size(); i++)
 					{
 						ImGui::Image(BlurV1.m_PassOutput[i], ImgDimension);
 					}
 					ImGui::SliderInt("mipLevelV1", &BlurV1ConsBuff.mipLevel, 0, 5);
+					ImGui::SliderInt("mipLevelV2", &BlurV2ConsBuff.mipLevel, 0, 5);
+					ImGui::SliderInt("mipLevelV3", &BlurV3ConsBuff.mipLevel, 0, 5);
+					ImGui::SliderInt("mipLevelV4", &BlurV4ConsBuff.mipLevel, 0, 5);
 				}
 				if (ImGui::CollapsingHeader("AddBright1"))
 				{
@@ -528,6 +538,19 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 						ImGui::Image(AddBright1.m_PassOutput[i], ImgDimension);
 					}
 					ImGui::SliderInt("mipLevelAB1", &AddBright1ConsBuff.mipLevel.x, 0, 5);
+					ImGui::SliderInt("mipLevelAB2", &AddBright2ConsBuff.mipLevel.x, 0, 5);
+					ImGui::SliderInt("mipLevelAB3", &AddBright3ConsBuff.mipLevel.x, 0, 5);
+					ImGui::SliderInt("mipLevelAB4", &AddBright4ConsBuff.mipLevel.x, 0, 5);
+				}
+				if (ImGui::CollapsingHeader("ToneMap"))
+				{
+					for (int i = 0; i < ToneMapPass.m_PassOutput.size(); i++)
+					{
+						ImGui::Image(ToneMapPass.m_PassOutput[i], ImgDimension);
+					}
+					ImGui::SliderFloat("kExposure", &ToneMapConsBuff.kExposure, 0.f, 20.f, "%.5f");
+					ImGui::SliderFloat("kBloom", &ToneMapConsBuff.kBloom, 0.f, 10.f, "%.5f");
+					ImGui::SliderInt("colorSpace", &ToneMapConsBuff.colorSpace, 0, 3);
 				}
 				ImGui::GetIO().FontGlobalScale;
 			}
@@ -1327,6 +1350,8 @@ HRESULT InitDevice()
 
 	//Initialize passes
 
+	
+
 	//GBuffer
 	StructPass P;
 	P.DeviceContext = g_DeviceContext;
@@ -1557,6 +1582,229 @@ HRESULT InitDevice()
 
 	AddBright1ConsBuff.mipLevel.x = 3;
 
+	//BlurH2
+	//P.RTVcount = 0;
+	BlurH2.init(P, -1);
+
+	BlurH2.m_pVS = BlurH1.m_pVS;
+	BlurH2.m_pPS = BlurH1.m_pPS;
+
+	BlurH2.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+	//BlurH2.m_PassOutput.push_back(BlurH1.m_PassOutput[0]);
+	//BlurH2.m_pRTVs.push_back(BlurH1.m_pRTVs[0]);
+
+	BlurH2Buffer.init(blurhBS);
+	hr = ptrDevice->CreateBuffer(&BlurH2Buffer.m_bd, NULL, &BlurH2Buffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	BlurH2ConsBuff.mipLevel = 3;
+	BlurH2ConsBuff.Viewport.x = width;
+
+	//BlurV2
+	P.RTVcount = 0;
+	BlurV2.init(P, -1);
+
+	BlurV2.m_pVS = BlurV1.m_pVS;
+	BlurV2.m_pPS = BlurV1.m_pPS;
+
+	BlurV2.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+	BlurV2.m_PassOutput.push_back(BlurV1.m_PassOutput[0]);
+	BlurV2.m_pRTVs.push_back(BlurV1.m_pRTVs[0]);
+
+	BlurV2Buffer.init(blurhBS);
+	hr = ptrDevice->CreateBuffer(&BlurV2Buffer.m_bd, NULL, &BlurV2Buffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	BlurV2ConsBuff.mipLevel = 3;
+	BlurV2ConsBuff.Viewport.x = height;
+
+	//AddBright2
+
+	AddBright2.init(P, -1);
+
+	AddBright2.m_pVS = AddBright1.m_pVS;
+	AddBright2.m_pPS = AddBright1.m_pPS;
+
+	AddBright2.m_PassOutput.push_back(AddBright1.m_PassOutput[0]);
+	AddBright2.m_pRTVs.push_back(AddBright1.m_pRTVs[0]);
+
+	AddBright2.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+	AddBright2.m_ShaderResources.push_back(BlurH2.m_PassOutput[0]);
+	AddBright2.m_ShaderResources.push_back(BlurV2.m_PassOutput[0]);
+
+	AddBright2Buffer.init(addbrightBS);
+	hr = ptrDevice->CreateBuffer(&AddBright2Buffer.m_bd, NULL, &AddBright2Buffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	AddBright2ConsBuff.mipLevel.x = 2;
+
+	//BlurH3
+
+	BlurH3.init(P, -1);
+
+	BlurH3.m_pVS = BlurH2.m_pVS;
+	BlurH3.m_pPS = BlurH2.m_pPS;
+
+	BlurH3.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+	BlurH3.m_PassOutput.push_back(BlurH2.m_PassOutput[0]);
+	BlurH3.m_pRTVs.push_back(BlurH2.m_pRTVs[0]);
+
+	BlurH3Buffer.init(blurhBS);
+	hr = ptrDevice->CreateBuffer(&BlurH3Buffer.m_bd, NULL, &BlurH3Buffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	BlurH3ConsBuff.mipLevel = 2;
+	BlurH3ConsBuff.Viewport.x = width;
+
+	//BlurV3
+	BlurV3.init(P, -1);
+
+	BlurV3.m_pVS = BlurV2.m_pVS;
+	BlurV3.m_pPS = BlurV2.m_pPS;
+
+	BlurV3.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+	BlurV3.m_PassOutput.push_back(BlurV2.m_PassOutput[0]);
+	BlurV3.m_pRTVs.push_back(BlurV2.m_pRTVs[0]);
+
+	BlurV3Buffer.init(blurhBS);
+	hr = ptrDevice->CreateBuffer(&BlurV3Buffer.m_bd, NULL, &BlurV3Buffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	BlurV3ConsBuff.mipLevel = 2;
+	BlurV3ConsBuff.Viewport.x = height;
+
+	//AddBright3
+
+	AddBright3.init(P, 5);
+
+	AddBright3.m_pVS = AddBright2.m_pVS;
+	AddBright3.m_pPS = AddBright2.m_pPS;
+
+	AddBright3.m_PassOutput.push_back(AddBright2.m_PassOutput[0]);
+	AddBright3.m_pRTVs.push_back(AddBright2.m_pRTVs[0]);
+
+	AddBright3.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+	AddBright3.m_ShaderResources.push_back(BlurH3.m_PassOutput[0]);
+	AddBright3.m_ShaderResources.push_back(BlurV3.m_PassOutput[0]);
+
+	AddBright3Buffer.init(addbrightBS);
+	hr = ptrDevice->CreateBuffer(&AddBright3Buffer.m_bd, NULL, &AddBright3Buffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	AddBright3ConsBuff.mipLevel.x = 1;
+
+	//BlurH4
+	BlurH4.init(P, 5);
+
+	BlurH4.m_pVS = BlurH3.m_pVS;
+	BlurH4.m_pPS = BlurH3.m_pPS;
+
+	BlurH4.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+	BlurH4.m_PassOutput.push_back(BlurH3.m_PassOutput[0]);
+	BlurH4.m_pRTVs.push_back(BlurH3.m_pRTVs[0]);
+
+	BlurH4Buffer.init(blurhBS);
+	hr = ptrDevice->CreateBuffer(&BlurH4Buffer.m_bd, NULL, &BlurH4Buffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	BlurH4ConsBuff.mipLevel = 1;
+	BlurH4ConsBuff.Viewport.x = width;
+
+	//BlurV4
+	BlurV4.init(P, -1);
+
+	BlurV4.m_pVS = BlurV2.m_pVS;
+	BlurV4.m_pPS = BlurV2.m_pPS;
+
+	BlurV4.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+	BlurV4.m_PassOutput.push_back(BlurV3.m_PassOutput[0]);
+	BlurV4.m_pRTVs.push_back(BlurV3.m_pRTVs[0]);
+
+	BlurV4Buffer.init(blurhBS);
+	hr = ptrDevice->CreateBuffer(&BlurV4Buffer.m_bd, NULL, &BlurV4Buffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	BlurV4ConsBuff.mipLevel = 2;
+	BlurV4ConsBuff.Viewport.x = height;
+
+	//AddBright4
+
+	AddBright4.init(P, -1);
+
+	AddBright4.m_pVS = AddBright3.m_pVS;
+	AddBright4.m_pPS = AddBright3.m_pPS;
+
+	AddBright4.m_PassOutput.push_back(AddBright3.m_PassOutput[0]);
+	AddBright4.m_pRTVs.push_back(AddBright3.m_pRTVs[0]);
+
+	AddBright4.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+	AddBright4.m_ShaderResources.push_back(BlurH4.m_PassOutput[0]);
+	AddBright4.m_ShaderResources.push_back(BlurV4.m_PassOutput[0]);
+
+	AddBright4Buffer.init(addbrightBS);
+	hr = ptrDevice->CreateBuffer(&AddBright4Buffer.m_bd, NULL, &AddBright4Buffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	AddBright4ConsBuff.mipLevel.x = 0;
+
+	//ToneMap
+	P.RTVcount = 1;
+	P.TextureStruct.miscFlags = 0;	
+	P.TextureStruct.mipLevels = 1;
+
+	ToneMapPass.init(P, 1);
+	
+	CompileShaders(L"ToneMap.fx", "vs_main", "ps_main", ToneMapPass.m_pVS, ToneMapPass.m_pPS);
+
+	ToneMapPass.m_ShaderResources.push_back(LightPass.m_PassOutput[0]);
+	ToneMapPass.m_ShaderResources.push_back(SSAOPass.m_PassOutput[0]);
+	ToneMapPass.m_ShaderResources.push_back(AddBright4.m_PassOutput[0]);
+
+	BufferStruct tonemapBS;
+	tonemapBS.usage = USAGE_DEFAULT;
+	tonemapBS.byteWidth = sizeof(ToneMapCB);
+	tonemapBS.bindFlags = 4;
+	tonemapBS.cpuAccessFlags = 0;
+
+	ToneMapBuffer.init(tonemapBS);
+
+	hr = ptrDevice->CreateBuffer(&ToneMapBuffer.m_bd, NULL, &ToneMapBuffer.m_pBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	ToneMapConsBuff.colorSpace = 2;
+	ToneMapConsBuff.kBloom = .3f;
+	ToneMapConsBuff.kExposure = 3.2f;
+
     return S_OK;
 }
 
@@ -1655,6 +1903,26 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 
 					//Release all passes resources (textures, render target views & shader resource views)
 
+					ToneMapPass.releasePass();
+					
+					//Because Addbright 2 - 4, BlurH 2 - 4 & BlurV 2 - 4
+					//use resources from their first passes, they only need
+					//to clear the shader resources
+
+					AddBright4.clearShaderResources();
+					AddBright3.clearShaderResources();
+					AddBright2.clearShaderResources();
+
+					BlurV4.clearShaderResources();
+					BlurV3.clearShaderResources();
+					BlurV2.clearShaderResources();
+
+					BlurH4.clearShaderResources();
+					BlurH3.clearShaderResources();
+					BlurH2.clearShaderResources();
+
+					//Continue releasing resources
+
 					AddBright1.releasePass();
 					BlurV1.releasePass();
 					BlurH1.releasePass();
@@ -1684,12 +1952,17 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 					P.Device = g_pDevice;
 					P.TextureStruct = D;
 
+					//Almost same process as InitDevice with minor changes
+					//Texture resolution is adjusted to new window height/width
+					//As so, shader resources need to be rebinded
+
 					//GBuffer
 					DiffusePass.init(P, 1);
 
 					//SSAO
 					P.RTVcount = 1;
 					SSAOPass.init(P, 1);
+					//Example of resource rebinding
 					SSAOPass.m_ShaderResources.push_back(DiffusePass.m_PassOutput[0]);
 					SSAOPass.m_ShaderResources.push_back(DiffusePass.m_PassOutput[2]);
 
@@ -1735,6 +2008,86 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 					AddBright1.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
 					AddBright1.m_ShaderResources.push_back(BlurH1.m_PassOutput[0]);
 					AddBright1.m_ShaderResources.push_back(BlurV1.m_PassOutput[0]);
+
+					//Because this pases use info from their originals, its only needed to
+					//Rebind resources, rtvs & srvs
+
+					//BlurH2					
+
+					BlurH2.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+					BlurH2.m_PassOutput[0] = BlurH1.m_PassOutput[0];
+					BlurH2.m_pRTVs[0] = BlurH1.m_pRTVs[0];
+					BlurH2ConsBuff.Viewport.x = width;
+
+					//BlurV2
+
+					BlurV2.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+					BlurV2.m_PassOutput[0] = BlurV1.m_PassOutput[0];
+					BlurV2.m_pRTVs[0] = BlurV1.m_pRTVs[0];
+					BlurV2ConsBuff.Viewport.x = height;
+
+					//AddBright2
+
+					AddBright2.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+					AddBright2.m_ShaderResources.push_back(BlurH2.m_PassOutput[0]);
+					AddBright2.m_ShaderResources.push_back(BlurV2.m_PassOutput[0]);
+					AddBright2.m_PassOutput[0] = AddBright1.m_PassOutput[0];
+					AddBright2.m_pRTVs[0] = AddBright1.m_pRTVs[0];
+					
+					//BlurH3
+
+					BlurH3.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+					BlurH3.m_PassOutput[0] = BlurH2.m_PassOutput[0];
+					BlurH3.m_pRTVs[0] = BlurH2.m_pRTVs[0];
+					BlurH3ConsBuff.Viewport.x = width;
+
+					//BlurV3
+
+					BlurV3.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+					BlurV3.m_PassOutput[0] = BlurV2.m_PassOutput[0];
+					BlurV3.m_pRTVs[0] = BlurV2.m_pRTVs[0];
+					BlurV3ConsBuff.Viewport.x = height;
+
+					//AddBright3
+
+					AddBright3.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+					AddBright3.m_ShaderResources.push_back(BlurH3.m_PassOutput[0]);
+					AddBright3.m_ShaderResources.push_back(BlurV3.m_PassOutput[0]);
+					AddBright3.m_PassOutput[0] = AddBright2.m_PassOutput[0];
+					AddBright3.m_pRTVs[0] = AddBright2.m_pRTVs[0];
+
+					//BlurH4
+
+					BlurH4.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+					BlurH4.m_PassOutput[0] = BlurH3.m_PassOutput[0];
+					BlurH4.m_pRTVs[0] = BlurH3.m_pRTVs[0];
+					BlurH4ConsBuff.Viewport.x = width;
+
+					//BlurV4
+
+					BlurV4.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+					BlurV4.m_PassOutput[0] = BlurV3.m_PassOutput[0];
+					BlurV4.m_pRTVs[0] = BlurV3.m_pRTVs[0];
+					BlurV4ConsBuff.Viewport.x = height;
+
+					//AddBright4
+
+					AddBright4.m_ShaderResources.push_back(BrightPass.m_PassOutput[0]);
+					AddBright4.m_ShaderResources.push_back(BlurH4.m_PassOutput[0]);
+					AddBright4.m_ShaderResources.push_back(BlurV4.m_PassOutput[0]);
+					AddBright4.m_PassOutput[0] = AddBright3.m_PassOutput[0];
+					AddBright4.m_pRTVs[0] = AddBright3.m_pRTVs[0];
+
+					//ToneMap
+
+					P.TextureStruct.miscFlags = 0;
+					P.TextureStruct.mipLevels = 1;
+
+					ToneMapPass.init(P, 1);
+
+					ToneMapPass.m_ShaderResources.push_back(LightPass.m_PassOutput[0]);
+					ToneMapPass.m_ShaderResources.push_back(SSAOPass.m_PassOutput[0]);
+					ToneMapPass.m_ShaderResources.push_back(AddBright4.m_PassOutput[0]);
 
 					//Handle inactive camera first
 					//Release inactive camera texture, SRV and RTV
@@ -2025,7 +2378,7 @@ void Render()
 	g_DeviceContext->m_DeviceContext->UpdateSubresource(BlurV1Buffer.m_pBuffer, 0, NULL, &BlurV1ConsBuff, 0, 0);
 	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(0, 1, &BlurV1Buffer.m_pBuffer);
 
-	BlurH1.draw(&SCAQ, sizeof(SimpleVertex));
+	BlurV1.draw(&SCAQ, sizeof(SimpleVertex));
 
 	g_DeviceContext->m_DeviceContext->GenerateMips(BlurV1.m_PassOutput[0]);
 
@@ -2041,30 +2394,115 @@ void Render()
 
 	//BlurH2
 
+	BlurH2.setPass(&DepthStencilViewFree);
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(BlurH2Buffer.m_pBuffer, 0, NULL, &BlurH2ConsBuff, 0, 0);
+	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(0, 1, &BlurH2Buffer.m_pBuffer);
+
+	BlurH2.draw(&SCAQ, sizeof(SimpleVertex));
+
+	g_DeviceContext->m_DeviceContext->GenerateMips(BlurH2.m_PassOutput[0]);
+
 	//BlurV2
+
+	BlurV2.setPass(&DepthStencilViewFree);
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(BlurV2Buffer.m_pBuffer, 0, NULL, &BlurV2ConsBuff, 0, 0);
+	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(0, 1, &BlurV2Buffer.m_pBuffer);
+
+	BlurV2.draw(&SCAQ, sizeof(SimpleVertex));
+
+	g_DeviceContext->m_DeviceContext->GenerateMips(BlurV2.m_PassOutput[0]);
 
 	//AddBright2
 
+	AddBright2.setPass(&DepthStencilViewFree);
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(AddBright2Buffer.m_pBuffer, 0, NULL, &AddBright2ConsBuff, 0, 0);
+	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(0, 1, &AddBright2Buffer.m_pBuffer);
+
+	AddBright2.draw(&SCAQ, sizeof(SimpleVertex));
+
+	g_DeviceContext->m_DeviceContext->GenerateMips(AddBright2.m_PassOutput[0]);
+
 	//BlurH3
+
+	BlurH3.setPass(&DepthStencilViewFree);
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(BlurH3Buffer.m_pBuffer, 0, NULL, &BlurH3ConsBuff, 0, 0);
+	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(0, 1, &BlurH3Buffer.m_pBuffer);
+
+	BlurH3.draw(&SCAQ, sizeof(SimpleVertex));
+
+	g_DeviceContext->m_DeviceContext->GenerateMips(BlurH3.m_PassOutput[0]);
 
 	//BlurV3
 
+	BlurV3.setPass(&DepthStencilViewFree);
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(BlurV3Buffer.m_pBuffer, 0, NULL, &BlurV3ConsBuff, 0, 0);
+	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(0, 1, &BlurV3Buffer.m_pBuffer);
+
+	BlurV3.draw(&SCAQ, sizeof(SimpleVertex));
+
+	g_DeviceContext->m_DeviceContext->GenerateMips(BlurV3.m_PassOutput[0]);
+
 	//AddBright3
+
+	AddBright3.setPass(&DepthStencilViewFree);
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(AddBright3Buffer.m_pBuffer, 0, NULL, &AddBright3ConsBuff, 0, 0);
+	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(0, 1, &AddBright3Buffer.m_pBuffer);
+
+	AddBright3.draw(&SCAQ, sizeof(SimpleVertex));
+
+	g_DeviceContext->m_DeviceContext->GenerateMips(AddBright3.m_PassOutput[0]);
 
 	//BlurH4
 
+	BlurH4.setPass(&DepthStencilViewFree);
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(BlurH4Buffer.m_pBuffer, 0, NULL, &BlurH4ConsBuff, 0, 0);
+	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(0, 1, &BlurH4Buffer.m_pBuffer);
+
+	BlurH4.draw(&SCAQ, sizeof(SimpleVertex));
+
+	g_DeviceContext->m_DeviceContext->GenerateMips(BlurH4.m_PassOutput[0]);
+
 	//BlurV4
+
+	BlurV4.setPass(&DepthStencilViewFree);
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(BlurV4Buffer.m_pBuffer, 0, NULL, &BlurV4ConsBuff, 0, 0);
+	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(0, 1, &BlurV4Buffer.m_pBuffer);
+
+	BlurV4.draw(&SCAQ, sizeof(SimpleVertex));
+
+	g_DeviceContext->m_DeviceContext->GenerateMips(BlurV4.m_PassOutput[0]);
 
 	//AddBright4
 
+	AddBright4.setPass(&DepthStencilViewFree);
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(AddBright4Buffer.m_pBuffer, 0, NULL, &AddBright4ConsBuff, 0, 0);
+	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(0, 1, &AddBright4Buffer.m_pBuffer);
+
+	AddBright4.draw(&SCAQ, sizeof(SimpleVertex));
+
+	g_DeviceContext->m_DeviceContext->GenerateMips(AddBright4.m_PassOutput[0]);
+
 	//ToneMap
+
+	ToneMapPass.setPass(&DepthStencilViewFree);
+	ToneMapPass.clear(ClearColor, &DepthStencilViewFree);
+	g_DeviceContext->m_DeviceContext->UpdateSubresource(ToneMapBuffer.m_pBuffer, 0, NULL, &ToneMapConsBuff, 0, 0);
+	g_DeviceContext->m_DeviceContext->PSSetConstantBuffers(0, 1, &ToneMapBuffer.m_pBuffer);
+
+	ToneMapPass.draw(&SCAQ, sizeof(SimpleVertex));
+
+	//Main window (backbuffer)
+
+	g_DeviceContext->m_DeviceContext->OMSetRenderTargets(1, &g_RenderTargetView.m_pRTV, DepthStencilViewFree.m_pDepthStencilView);
+	g_DeviceContext->m_DeviceContext->ClearRenderTargetView(g_RenderTargetView.m_pRTV, ClearColor);
+	g_DeviceContext->m_DeviceContext->ClearDepthStencilView(DepthStencilViewFree.m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.f, 0);
+
+	ToneMapPass.draw(&SCAQ, sizeof(SimpleVertex));
 
     //
     // Present our back buffer to our front buffer
     //
-
-	g_DeviceContext->m_DeviceContext->OMSetRenderTargets(1, &g_RenderTargetView.m_pRTV, DepthStencilViewFree.m_pDepthStencilView);
-	g_DeviceContext->m_DeviceContext->ClearRenderTargetView(g_RenderTargetView.m_pRTV, ClearColor);
+	
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	ptrSC->Present( 0, 0 );

@@ -456,3 +456,11 @@ struct AddBrightCB
 {
 	glm::ivec4 mipLevel;
 };
+
+struct ToneMapCB
+{
+	float kExposure;
+	float kBloom;
+	int colorSpace;
+	float filler;
+};
